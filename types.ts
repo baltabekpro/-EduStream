@@ -67,6 +67,7 @@ export interface StudentResult {
         name: string;
         accuracy: number;
     };
+    subject?: string; // Optional in API response sometimes
     image: string;
     questions: OCRRegion[];
     status: 'pending' | 'graded' | 'flagged'; 
@@ -88,6 +89,13 @@ export interface AISession {
     title: string;
     date: string;
     docId: string;
+}
+
+export interface Material {
+    id: string;
+    title: string;
+    content: string;
+    uploadDate?: string;
 }
 
 export interface QuizConfig {

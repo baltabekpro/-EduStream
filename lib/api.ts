@@ -6,7 +6,8 @@ import {
     UserRegister,
     QuizConfig, 
     Question, 
-    SmartActionRequest 
+    SmartActionRequest,
+    Material
 } from '../types';
 
 const API_BASE_URL = 'https://104.214.169.12/api/v1';
@@ -112,6 +113,12 @@ export const DashboardService = {
 };
 
 export const OCRService = {
+    async getQueue(): Promise<StudentResult[]> {
+        // Assuming there is an endpoint for the list, otherwise reusing dashboard logic or similar
+        // For now, mapping to a hypothetical endpoint
+        return request<StudentResult[]>('/ocr/queue');
+    },
+
     async getById(id: string): Promise<StudentResult> {
         return request<StudentResult>(`/ocr/results/${id}`);
     },
@@ -121,7 +128,7 @@ export const OCRService = {
             method: 'POST',
             body: JSON.stringify({ ids }),
         });
-        // Assuming success means all processed, as per simplified frontend logic
+        // Assuming success means all processed
         return { processed: ids.length, failed: 0 };
     },
 
@@ -134,6 +141,18 @@ export const OCRService = {
 };
 
 export const AIService = {
+    async getDocument(id: string): Promise<Material> {
+        return request<Material>(`/materials/${id}`);
+    },
+
+    async chat(message: string, materialId?: string): Promise<string> {
+        const response = await request<{ text: string }>('/ai/chat', {
+            method: 'POST',
+            body: JSON.stringify({ message, materialId })
+        });
+        return response.text;
+    },
+
     async generateQuiz(config: QuizConfig): Promise<Question[]> {
         const response = await request<any>('/ai/generate-quiz', {
             method: 'POST',

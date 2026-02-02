@@ -1,8 +1,8 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { currentUser } from '../data/mockData';
 import { useCourse, CourseType } from '../context/CourseContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useUser } from '../context/UserContext';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -14,6 +14,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const { selectedCourse, setCourse } = useCourse();
   const { t, language, setLanguage } = useLanguage();
+  const { user } = useUser();
 
   const menuItems = [
     { icon: 'dashboard', label: t('nav.dashboard'), path: '/dashboard' },
@@ -25,6 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('token');
     navigate('/login');
   };
 
@@ -145,14 +147,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <div className="relative">
                 <div 
                   className="bg-center bg-no-repeat bg-cover rounded-full size-8 border border-slate-500"
-                  style={{ backgroundImage: `url("${currentUser.avatar}")` }}
+                  style={{ backgroundImage: user?.avatar ? `url("${user.avatar}")` : undefined, backgroundColor: '#334155' }}
                 ></div>
                 {/* Online Indicator */}
                 <div className="absolute -bottom-0.5 -right-0.5 size-3 bg-green-500 border-2 border-surface rounded-full"></div>
             </div>
             <div className="overflow-hidden">
-               <p className="text-xs font-bold text-white truncate">{currentUser.firstName} {currentUser.lastName}</p>
-               <p className="text-xs text-slate-400 truncate">{currentUser.role}</p>
+               <p className="text-xs font-bold text-white truncate">{user ? `${user.firstName} ${user.lastName}` : 'Загрузка...'}</p>
+               <p className="text-xs text-slate-400 truncate">{user?.role || 'Учитель'}</p>
             </div>
           </div>
         </div>

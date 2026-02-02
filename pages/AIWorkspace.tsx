@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { aiWorkspaceData } from '../data/mockData';
 import { useToast } from '../components/Toast';
 import { AIService } from '../lib/api';
 import { useLanguage } from '../context/LanguageContext';
 import { PageTransition } from '../components/PageTransition';
-import { Question, QuizConfig, SmartActionRequest } from '../types';
+import { Question, QuizConfig, SmartActionRequest, Material } from '../types';
 
 interface Message {
   id: number;
@@ -56,6 +55,10 @@ const AIWorkspace: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('canvas');
   const [selection, setSelection] = useState<{text: string, x: number, y: number} | null>(null);
   
+  // Document State
+  const [documentData, setDocumentData] = useState<Material | null>(null);
+  const [isLoadingDoc, setIsLoadingDoc] = useState(true);
+
   // Test Builder State
   const [testQuestions, setTestQuestions] = useState<Question[]>([]);
   const [testConfig, setTestConfig] = useState<QuizConfig>({
@@ -69,14 +72,34 @@ const AIWorkspace: React.FC = () => {
 
   // Load Initial Data
   useEffect(() => {
-     setMessages(aiWorkspaceData.initialMessages);
-     
-     if (location.state?.templateConfig) {
-         setActiveTab('test-builder');
-         setTestConfig(location.state.templateConfig);
-         handleGenerateTest(location.state.templateConfig);
-     }
-  }, []);
+     const init = async () => {
+         try {
+             // In a real scenario, ID comes from route params or list.
+             // Here we fetch a default document for demo if no ID provided.
+             const docId = location.state?.docId || 'default-doc';
+             const doc = await AIService.getDocument(docId);
+             setDocumentData(doc);
+             setMessages([{ 
+                 id: 1, 
+                 type: 'ai', 
+                 text: `I've analyzed the document "${doc.title}". I'm ready to answer questions or generate a test.` 
+             }]);
+         } catch (e) {
+             addToast("Failed to load document", "error");
+             setDocumentData({ id: 'err', title: 'Error', content: 'Failed to load content.' });
+         } finally {
+             setIsLoadingDoc(false);
+         }
+
+         if (location.state?.templateConfig) {
+             setActiveTab('test-builder');
+             setTestConfig(location.state.templateConfig);
+             handleGenerateTest(location.state.templateConfig);
+         }
+     };
+
+     init();
+  }, [location.state]);
 
   // Scroll to bottom
   useEffect(() => {
@@ -144,10 +167,12 @@ const AIWorkspace: React.FC = () => {
           return;
       }
 
-      // Normal Chat flow
-      // In real app: const response = await AIService.chat(text);
-      const response = aiWorkspaceData.generatedResponse;
-      streamResponse(response);
+      try {
+          const response = await AIService.chat(text, documentData?.id);
+          streamResponse(response);
+      } catch (e) {
+          streamResponse("I'm sorry, I'm having trouble connecting to the server.");
+      }
   };
 
   const streamResponse = (fullText: string) => {
@@ -172,7 +197,7 @@ const AIWorkspace: React.FC = () => {
   const handleGenerateTest = async (config = testConfig) => {
       setIsGenerating(true);
       try {
-          const questions = await AIService.generateQuiz(config);
+          const questions = await AIService.generateQuiz({ ...config, materialId: documentData?.id });
           setTestQuestions(questions);
           addToast("Test generated successfully", "success");
       } catch (e: any) {
@@ -183,8 +208,6 @@ const AIWorkspace: React.FC = () => {
   };
 
   const handleRegenerateQuestion = async (id: string) => {
-      // Optimistic UI: Show loading state on specific card? 
-      // For now, just a toast and a placeholder update
       addToast("Regenerating question...", "info");
       
       try {
@@ -211,12 +234,22 @@ const AIWorkspace: React.FC = () => {
             />
         )}
 
-        {/* Left: Document Viewer (Static for now) */}
+        {/* Left: Document Viewer */}
         <div ref={containerRef} className="hidden md:block w-1/2 border-r border-border bg-[#0a0c10] overflow-y-auto p-12 custom-scrollbar">
-            <div className="bg-white rounded shadow-2xl p-12 opacity-90 text-slate-800 min-h-[800px] selection:bg-primary/30 selection:text-primary-900">
-                <h1 className="text-2xl font-bold mb-6 border-b border-slate-200 pb-4">{aiWorkspaceData.document.title}</h1>
-                <p className="whitespace-pre-wrap leading-relaxed">{aiWorkspaceData.document.content}</p>
-            </div>
+            {isLoadingDoc ? (
+                 <div className="flex h-full items-center justify-center">
+                    <span className="material-symbols-outlined animate-spin text-4xl text-primary">sync</span>
+                 </div>
+            ) : documentData ? (
+                <div className="bg-white rounded shadow-2xl p-12 opacity-90 text-slate-800 min-h-[800px] selection:bg-primary/30 selection:text-primary-900">
+                    <h1 className="text-2xl font-bold mb-6 border-b border-slate-200 pb-4">{documentData.title}</h1>
+                    <p className="whitespace-pre-wrap leading-relaxed">{documentData.content}</p>
+                </div>
+            ) : (
+                <div className="flex h-full items-center justify-center text-slate-500">
+                    Document not found
+                </div>
+            )}
         </div>
 
         {/* Right: AI Interface */}

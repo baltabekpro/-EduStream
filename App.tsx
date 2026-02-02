@@ -12,6 +12,7 @@ import { ToastProvider } from './components/Toast';
 import { CourseProvider } from './context/CourseContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { UserProvider } from './context/UserContext';
 
 // Компонент защиты маршрутов
 const ProtectedRoute = () => {
@@ -75,6 +76,7 @@ const App: React.FC = () => {
         <SettingsProvider>
             <ToastProvider>
             <CourseProvider>
+              <UserProvider>
                 <HashRouter>
                 <Routes>
                     <Route path="/login" element={<Login />} />
@@ -93,6 +95,7 @@ const App: React.FC = () => {
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
                 </HashRouter>
+              </UserProvider>
             </CourseProvider>
             </ToastProvider>
         </SettingsProvider>

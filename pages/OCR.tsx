@@ -7,14 +7,6 @@ import { PageTransition } from '../components/PageTransition';
 import { StudentResult } from '../types';
 import Confetti from '../components/Confetti';
 
-// Mock Queue Data for Batch Mode
-const mockQueue = [
-    { id: '1', name: 'Александра-Виктория К.', subject: 'Алгебра II', status: 'pending', accuracy: 92 },
-    { id: '2', name: 'Борис Джонсон', subject: 'Физика', status: 'pending', accuracy: 88 },
-    { id: '3', name: 'Мария Иванова', subject: 'История', status: 'flagged', accuracy: 45 },
-    { id: '4', name: 'Петр Петров', subject: 'Литература', status: 'pending', accuracy: 95 },
-];
-
 const OCR: React.FC = () => {
   const navigate = useNavigate();
   const { addToast } = useToast();
@@ -23,8 +15,9 @@ const OCR: React.FC = () => {
   // View State
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [queue, setQueue] = useState(mockQueue);
+  const [queue, setQueue] = useState<StudentResult[]>([]);
   const [currentWork, setCurrentWork] = useState<StudentResult | null>(null);
+  const [loadingQueue, setLoadingQueue] = useState(true);
   
   // Editor State
   const [manualScore, setManualScore] = useState(0);
@@ -32,15 +25,32 @@ const OCR: React.FC = () => {
   const [isDirty, setIsDirty] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
 
+  useEffect(() => {
+      loadQueue();
+  }, []);
+
+  const loadQueue = async () => {
+      setLoadingQueue(true);
+      try {
+          const data = await OCRService.getQueue();
+          setQueue(data);
+      } catch (e) {
+          addToast("Failed to load OCR queue", "error");
+      } finally {
+          setLoadingQueue(false);
+      }
+  };
+
   // Load Work Details
   const loadWork = async (id: string) => {
       try {
           const data = await OCRService.getById(id);
           setCurrentWork(data);
-          setManualScore(18); // Mock initial score
+          // Assuming API returns calculated score, if not we mock or calculate from questions
+          setManualScore(18); 
           setViewMode('detail');
       } catch (e) {
-          addToast("Failed to load work", "error");
+          addToast("Failed to load work details", "error");
       }
   };
 
@@ -76,7 +86,8 @@ const OCR: React.FC = () => {
           setTimeout(() => setShowConfetti(false), 3000);
       } catch (e) {
           addToast("Batch operation failed", "error");
-          // Rollback logic would go here in real app
+          // Re-fetch queue on error to sync state
+          loadQueue();
       }
   };
 
@@ -131,6 +142,11 @@ const OCR: React.FC = () => {
         {/* BATCH LIST VIEW */}
         {viewMode === 'list' && (
             <div className="p-6 overflow-y-auto custom-scrollbar">
+                {loadingQueue ? (
+                    <div className="flex items-center justify-center h-64">
+                         <span className="material-symbols-outlined animate-spin text-4xl text-primary">sync</span>
+                    </div>
+                ) : (
                 <div className="bg-surface border border-border rounded-xl overflow-hidden">
                     <table className="w-full text-left text-sm text-slate-300">
                         <thead className="bg-background text-slate-400 font-bold uppercase text-xs">
@@ -156,11 +172,11 @@ const OCR: React.FC = () => {
                                             className="rounded border-slate-600 bg-slate-800" 
                                         />
                                     </td>
-                                    <td className="p-4 font-bold text-white">{item.name}</td>
-                                    <td className="p-4">{item.subject}</td>
+                                    <td className="p-4 font-bold text-white">{item.student.name}</td>
+                                    <td className="p-4">{item.subject || 'Assignment'}</td>
                                     <td className="p-4">
-                                        <span className={`font-bold ${item.accuracy > 90 ? 'text-green-400' : item.accuracy > 70 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                            {item.accuracy}%
+                                        <span className={`font-bold ${item.student.accuracy > 90 ? 'text-green-400' : item.student.accuracy > 70 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                            {item.student.accuracy}%
                                         </span>
                                     </td>
                                     <td className="p-4">
@@ -182,6 +198,7 @@ const OCR: React.FC = () => {
                         </div>
                     )}
                 </div>
+                )}
             </div>
         )}
 

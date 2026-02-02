@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
-import { currentUser } from '../data/mockData';
 import { DashboardService } from '../lib/api';
 import { DashboardData } from '../types';
 import { useCourse } from '../context/CourseContext';
 import { useToast } from '../components/Toast';
 import { useLanguage } from '../context/LanguageContext';
+import { useUser } from '../context/UserContext';
 import Confetti from '../components/Confetti';
 import { PageTransition } from '../components/PageTransition';
 
@@ -94,6 +94,7 @@ const Dashboard: React.FC = () => {
   const { addToast } = useToast();
   const { selectedCourse } = useCourse();
   const { t } = useLanguage();
+  const { user } = useUser();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -241,7 +242,7 @@ const Dashboard: React.FC = () => {
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 animate-fade-in">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">{t('dash.welcome')}, {currentUser.firstName}</h1>
+          <h1 className="text-3xl font-bold text-white tracking-tight">{t('dash.welcome')}, {user?.firstName}</h1>
           <p className="text-slate-400 mt-1">
              Активный курс: <span className="text-primary font-bold">{selectedCourse === '9A' ? 'Математика 9 «А»' : 'Геометрия 10 «Б»'}</span>
           </p>
