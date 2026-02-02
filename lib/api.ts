@@ -19,19 +19,24 @@ export class ApiError extends Error {
     }
 }
 
+interface CustomRequestInit extends RequestInit {
+    skipAuth?: boolean;
+}
+
 // Helper to handle requests with auth headers
-async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+async function request<T>(endpoint: string, options: CustomRequestInit = {}): Promise<T> {
+    const { skipAuth, ...fetchOptions } = options;
     const token = localStorage.getItem('token');
     
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        ...options.headers as any, // Cast to any to merge properly
+        ...((token && !skipAuth) ? { 'Authorization': `Bearer ${token}` } : {}),
+        ...fetchOptions.headers as any, // Cast to any to merge properly
     };
 
     try {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            ...options,
+            ...fetchOptions,
             headers,
         });
 
@@ -68,6 +73,7 @@ export const AuthService = {
         return request<{ token: string, user: User }>('/auth/login', {
             method: 'POST',
             body: JSON.stringify({ email, password }),
+            skipAuth: true
         });
     },
 
@@ -76,6 +82,7 @@ export const AuthService = {
         return request('/auth/register', {
             method: 'POST',
             body: JSON.stringify(data),
+            skipAuth: true
         });
     },
 
