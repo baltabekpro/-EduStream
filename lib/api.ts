@@ -108,15 +108,24 @@ export const AuthService = {
 
 export const DashboardService = {
     async getOverview(courseId: string): Promise<DashboardData> {
-        return request<DashboardData>(`/dashboard/overview?courseId=${courseId}`);
+        const response = await request<any>(`/dashboard/overview?courseId=${courseId}`);
+        // Sanitize response to guarantee arrays and prevent map errors
+        return {
+            pieChart: Array.isArray(response.pieChart) ? response.pieChart : [],
+            needsReview: Array.isArray(response.needsReview) ? response.needsReview : [],
+            recentActivity: Array.isArray(response.recentActivity) ? response.recentActivity : []
+        };
     }
 };
 
 export const OCRService = {
     async getQueue(): Promise<StudentResult[]> {
-        // Assuming there is an endpoint for the list, otherwise reusing dashboard logic or similar
-        // For now, mapping to a hypothetical endpoint
-        return request<StudentResult[]>('/ocr/queue');
+        const response = await request<any>('/ocr/queue');
+        // Handle various response shapes (array vs wrapped object)
+        if (Array.isArray(response)) return response;
+        if (response.items && Array.isArray(response.items)) return response.items;
+        if (response.data && Array.isArray(response.data)) return response.data;
+        return [];
     },
 
     async getById(id: string): Promise<StudentResult> {
@@ -190,7 +199,14 @@ export const AnalyticsService = {
             return analyticsCache[courseId];
         }
 
-        const data = await request<AnalyticsData>(`/analytics/performance?courseId=${courseId}`);
+        const response = await request<any>(`/analytics/performance?courseId=${courseId}`);
+        // Sanitize data
+        const data: AnalyticsData = {
+            performance: Array.isArray(response.performance) ? response.performance : [],
+            topics: Array.isArray(response.topics) ? response.topics : [],
+            students: Array.isArray(response.students) ? response.students : []
+        };
+
         analyticsCache[courseId] = data; 
         return data;
     },

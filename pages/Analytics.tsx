@@ -26,12 +26,12 @@ const Analytics: React.FC = () => {
 
   // Optimization: Memoize computations for charts/lists
   const sortedStudents = useMemo(() => {
-      if (!data) return [];
+      if (!data || !Array.isArray(data.students)) return [];
       return [...data.students].sort((a, b) => b.progress - a.progress);
   }, [data]);
 
   const averageScore = useMemo(() => {
-      if (!data || data.students.length === 0) return 0;
+      if (!data || !Array.isArray(data.students) || data.students.length === 0) return 0;
       return (data.students.reduce((acc, s) => acc + s.progress, 0) / data.students.length).toFixed(1);
   }, [data]);
 
@@ -93,7 +93,7 @@ const Analytics: React.FC = () => {
 
         {/* Heatmap Topics */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {data.topics.map((topic, idx) => (
+            {data.topics?.map((topic, idx) => (
                 <div 
                     key={idx} 
                     onClick={() => handleTopicClick(topic)}

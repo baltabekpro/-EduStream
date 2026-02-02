@@ -50,44 +50,49 @@ const DashboardSkeleton = () => (
     </div>
 );
 
-const PerformanceChart = React.memo(({ data, selectedCourse, title, avgLabel }: any) => (
-    <div className="bg-surface border border-border rounded-2xl p-6 flex flex-col items-center justify-center relative shadow-sm h-[320px]">
-        <div className="relative" style={{ width: '12rem', height: '12rem' }}>
-            <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                    <Pie
-                        data={data}
-                        innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={5}
-                        dataKey="value"
-                        stroke="none"
-                    >
-                        {data.map((entry: any, index: number) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                    </Pie>
-                </PieChart>
-            </ResponsiveContainer>
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-4xl font-black text-white">{selectedCourse === '9A' ? '84%' : '76%'}</span>
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mt-1">{avgLabel}</span>
+const PerformanceChart = React.memo(({ data, selectedCourse, title, avgLabel }: any) => {
+    // Safety check: ensure data is an array
+    const chartData = Array.isArray(data) ? data : [];
+
+    return (
+        <div className="bg-surface border border-border rounded-2xl p-6 flex flex-col items-center justify-center relative shadow-sm h-[320px]">
+            <div className="relative" style={{ width: '12rem', height: '12rem' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie
+                            data={chartData}
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                            stroke="none"
+                        >
+                            {chartData.map((entry: any, index: number) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                        </Pie>
+                    </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-4xl font-black text-white">{selectedCourse === '9A' ? '84%' : '76%'}</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mt-1">{avgLabel}</span>
+                </div>
+            </div>
+
+            <div className="w-full mt-6 space-y-3">
+                {chartData.map((item: any) => (
+                    <div key={item.name} className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                            <div className="size-2 rounded-full" style={{ backgroundColor: item.color }}></div>
+                            <span className="text-slate-300">{item.name}</span>
+                        </div>
+                        <span className="font-bold text-white">{item.value}%</span>
+                    </div>
+                ))}
             </div>
         </div>
-
-        <div className="w-full mt-6 space-y-3">
-            {data.map((item: any) => (
-                <div key={item.name} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                        <div className="size-2 rounded-full" style={{ backgroundColor: item.color }}></div>
-                        <span className="text-slate-300">{item.name}</span>
-                    </div>
-                    <span className="font-bold text-white">{item.value}%</span>
-                </div>
-            ))}
-        </div>
-    </div>
-));
+    );
+});
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -115,15 +120,18 @@ const Dashboard: React.FC = () => {
         });
   }, [selectedCourse]);
 
+  // Destructure with default empty arrays to prevent mapping on undefined
+  const { pieChart = [], needsReview = [], recentActivity = [] } = data || {};
+
   const filteredActivity = useMemo(() => {
-      if (!data) return [];
-      if (!searchQuery) return data.recentActivity;
+      if (!recentActivity) return []; // Extra safety
+      if (!searchQuery) return recentActivity;
       const lowerQuery = searchQuery.toLowerCase();
-      return data.recentActivity.filter((item) => 
+      return recentActivity.filter((item) => 
           item.title.toLowerCase().includes(lowerQuery) || 
           item.source.toLowerCase().includes(lowerQuery)
       );
-  }, [data, searchQuery]);
+  }, [recentActivity, searchQuery]);
 
   const handleNavigate = (type: string, id: number | string) => {
       if (type === 'ocr' || type === 'quiz') {
@@ -197,8 +205,6 @@ const Dashboard: React.FC = () => {
           </div>
       );
   }
-
-  const { pieChart, needsReview } = data;
 
   const templates = [
       { 
