@@ -7,6 +7,7 @@ import Analytics from './pages/Analytics';
 import AIWorkspace from './pages/AIWorkspace';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import { ToastProvider } from './components/Toast';
 import { CourseProvider } from './context/CourseContext';
 import { SettingsProvider } from './context/SettingsContext';
@@ -77,6 +78,7 @@ const App: React.FC = () => {
                 <HashRouter>
                 <Routes>
                     <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
                     
                     <Route element={<ProtectedRoute />}>
                     <Route element={<Layout />}>

@@ -3,6 +3,7 @@ import {
     AnalyticsData, 
     StudentResult, 
     User, 
+    UserRegister,
     QuizConfig, 
     Question, 
     SmartActionRequest 
@@ -39,6 +40,8 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
             try {
                 const errorBody = await response.json();
                 if (errorBody.message) errorMessage = errorBody.message;
+                // Handle standard validation errors usually returned as detail
+                if (errorBody.detail) errorMessage = typeof errorBody.detail === 'string' ? errorBody.detail : JSON.stringify(errorBody.detail);
             } catch (e) {
                 // Response was not JSON
             }
@@ -65,6 +68,14 @@ export const AuthService = {
         return request<{ token: string, user: User }>('/auth/login', {
             method: 'POST',
             body: JSON.stringify({ email, password }),
+        });
+    },
+
+    async register(data: UserRegister): Promise<{ token: string, user: User } | User> {
+        // Returns created user (or token+user if auto-login logic exists on backend)
+        return request('/auth/register', {
+            method: 'POST',
+            body: JSON.stringify(data),
         });
     },
 

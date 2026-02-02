@@ -95,6 +95,15 @@ const translations: Translations = {
         'settings.reset': 'Сбросить данные к демо-версии',
         'settings.save': 'Сохранить',
         'settings.cancel': 'Отмена',
+
+        'auth.register': 'Регистрация',
+        'auth.createAccount': 'Создать аккаунт',
+        'auth.firstName': 'Имя',
+        'auth.lastName': 'Фамилия',
+        'auth.password': 'Пароль',
+        'auth.alreadyHaveAccount': 'Уже есть аккаунт?',
+        'auth.login': 'Войти',
+        'auth.join': 'Присоединиться',
     },
     en: {
         'nav.dashboard': 'Dashboard',
@@ -182,6 +191,15 @@ const translations: Translations = {
         'settings.reset': 'Reset to Demo Data',
         'settings.save': 'Save',
         'settings.cancel': 'Cancel',
+
+        'auth.register': 'Registration',
+        'auth.createAccount': 'Create Account',
+        'auth.firstName': 'First Name',
+        'auth.lastName': 'Last Name',
+        'auth.password': 'Password',
+        'auth.alreadyHaveAccount': 'Already have an account?',
+        'auth.login': 'Log in',
+        'auth.join': 'Join',
     }
 };
 

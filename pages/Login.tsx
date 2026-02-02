@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { AuthService } from '../lib/api';
 
@@ -65,7 +65,7 @@ const Login: React.FC = () => {
       </header>
 
       <main className="flex-1 flex items-center justify-center p-6 z-10">
-        <div className="w-full max-w-[420px] bg-surface/50 backdrop-blur-xl border border-border rounded-2xl p-8 shadow-2xl">
+        <div className="w-full max-w-[420px] bg-surface/50 backdrop-blur-xl border border-border rounded-2xl p-8 shadow-2xl animate-fade-in">
           <div className="flex flex-col items-center mb-8">
             <div className="size-12 bg-primary/20 rounded-xl flex items-center justify-center mb-4 text-primary">
                 <span className="material-symbols-outlined text-3xl">lock</span>
@@ -142,7 +142,7 @@ const Login: React.FC = () => {
 
           <div className="mt-8 pt-6 border-t border-border/50 text-center space-y-4">
             <p className="text-xs text-slate-500">
-                Нет аккаунта? <a href="#" className="text-primary hover:underline">Создать аккаунт</a>
+                Нет аккаунта? <Link to="/register" className="text-primary hover:underline">Создать аккаунт</Link>
             </p>
             <div className="flex items-center justify-center gap-2 text-slate-600 text-xs">
                 <span className="material-symbols-outlined text-xs">shield</span>
