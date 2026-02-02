@@ -7,7 +7,8 @@ import {
     QuizConfig, 
     Question, 
     SmartActionRequest,
-    Material
+    Material,
+    Course
 } from '../types';
 
 const API_BASE_URL = 'https://104.214.169.12/api/v1';
@@ -103,6 +104,13 @@ export const AuthService = {
             method: 'PATCH',
             body: JSON.stringify(data),
         });
+    }
+};
+
+export const CourseService = {
+    async getAll(): Promise<Course[]> {
+        const response = await request<any>('/courses');
+        return Array.isArray(response) ? response : [];
     }
 };
 

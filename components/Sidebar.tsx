@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCourse, CourseType } from '../context/CourseContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useUser } from '../context/UserContext';
+import { CourseService } from '../lib/api';
+import { Course } from '../types';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -15,6 +17,30 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { selectedCourse, setCourse } = useCourse();
   const { t, language, setLanguage } = useLanguage();
   const { user } = useUser();
+  
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
+
+  useEffect(() => {
+      const fetchCourses = async () => {
+          try {
+              const data = await CourseService.getAll();
+              setCourses(data);
+              // Auto-select first course if none selected or current is invalid
+              if (data.length > 0) {
+                  const currentExists = data.find(c => c.id === selectedCourse);
+                  if (!selectedCourse || !currentExists) {
+                      setCourse(data[0].id);
+                  }
+              }
+          } catch (error) {
+              console.error("Failed to fetch courses", error);
+          } finally {
+              setLoadingCourses(false);
+          }
+      };
+      fetchCourses();
+  }, []);
 
   const menuItems = [
     { icon: 'dashboard', label: t('nav.dashboard'), path: '/dashboard' },
@@ -73,10 +99,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 <select 
                     value={selectedCourse}
                     onChange={(e) => setCourse(e.target.value as CourseType)}
-                    className="w-full bg-surface/50 border border-border text-white text-sm rounded-lg py-2 pl-3 pr-8 appearance-none focus:outline-none focus:border-primary hover:bg-surface transition-colors cursor-pointer"
+                    disabled={loadingCourses}
+                    className="w-full bg-surface/50 border border-border text-white text-sm rounded-lg py-2 pl-3 pr-8 appearance-none focus:outline-none focus:border-primary hover:bg-surface transition-colors cursor-pointer disabled:opacity-50"
                 >
-                    <option value="9A">Математика 9 «А»</option>
-                    <option value="10B">Геометрия 10 «Б»</option>
+                    {loadingCourses ? (
+                        <option>Загрузка...</option>
+                    ) : courses.length > 0 ? (
+                        courses.map(course => (
+                            <option key={course.id} value={course.id}>{course.title}</option>
+                        ))
+                    ) : (
+                        <option value="" disabled>Нет курсов</option>
+                    )}
                 </select>
                 <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-sm">unfold_more</span>
             </div>

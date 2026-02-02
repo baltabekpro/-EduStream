@@ -15,12 +15,20 @@ const Analytics: React.FC = () => {
   const [selectedTopic, setSelectedTopic] = useState<AnalyticsTopic | null>(null);
 
   useEffect(() => {
+    if (!selectedCourse) {
+        return;
+    }
+
     setLoading(true);
     // Uses Service Layer with Caching
     AnalyticsService.getPerformance(selectedCourse)
         .then(res => {
             setData(res);
             setLoading(false);
+        })
+        .catch(err => {
+            setLoading(false);
+            console.error(err);
         });
   }, [selectedCourse]);
 
@@ -38,6 +46,15 @@ const Analytics: React.FC = () => {
   const handleTopicClick = (topic: AnalyticsTopic) => {
       setSelectedTopic(topic);
   };
+
+  // Wait for course selection
+  if (!selectedCourse) {
+      return (
+          <div className="flex items-center justify-center h-full">
+              <span className="material-symbols-outlined animate-spin text-4xl text-primary">sync</span>
+          </div>
+      );
+  }
 
   if (loading || !data) {
       return (

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from 'react';
 
-export type CourseType = '9A' | '10B';
+export type CourseType = string;
 
 interface CourseContextType {
   selectedCourse: CourseType;
@@ -18,7 +18,8 @@ export const useCourse = () => {
 };
 
 export const CourseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [selectedCourse, setCourse] = useState<CourseType>('9A');
+  // Initialize with empty string, Sidebar will fetch and select the first one
+  const [selectedCourse, setCourse] = useState<CourseType>(''); 
 
   return (
     <CourseContext.Provider value={{ selectedCourse, setCourse }}>

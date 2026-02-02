@@ -26,6 +26,11 @@ export interface UserRegister {
     lastName: string;
 }
 
+export interface Course {
+    id: string;
+    title: string;
+}
+
 // --- Dashboard ---
 
 export interface DashboardData {

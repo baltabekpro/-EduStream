@@ -74,7 +74,7 @@ const PerformanceChart = React.memo(({ data, selectedCourse, title, avgLabel }: 
                     </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-4xl font-black text-white">{selectedCourse === '9A' ? '84%' : '76%'}</span>
+                    <span className="text-4xl font-black text-white">{selectedCourse && chartData.length > 0 ? '84%' : '0%'}</span>
                     <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mt-1">{avgLabel}</span>
                 </div>
             </div>
@@ -108,6 +108,11 @@ const Dashboard: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    // If no course selected yet, wait.
+    if (!selectedCourse) {
+        return;
+    }
+
     setLoading(true);
     DashboardService.getOverview(selectedCourse)
         .then(res => {
@@ -198,6 +203,15 @@ const Dashboard: React.FC = () => {
       }, 1500);
   };
 
+  // Wait for Course to be selected
+  if (!selectedCourse) {
+      return (
+          <div className="p-8 max-w-[1600px] mx-auto h-full flex items-center justify-center">
+              <span className="material-symbols-outlined animate-spin text-4xl text-primary">sync</span>
+          </div>
+      );
+  }
+
   if (loading || !data) {
       return (
           <div className="p-8 max-w-[1600px] mx-auto h-full overflow-y-auto custom-scrollbar">
@@ -250,7 +264,7 @@ const Dashboard: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-white tracking-tight">{t('dash.welcome')}, {user?.firstName}</h1>
           <p className="text-slate-400 mt-1">
-             Активный курс: <span className="text-primary font-bold">{selectedCourse === '9A' ? 'Математика 9 «А»' : 'Геометрия 10 «Б»'}</span>
+             Активный курс: <span className="text-primary font-bold">{selectedCourse}</span>
           </p>
         </div>
         <div className="flex gap-3">
