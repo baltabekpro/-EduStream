@@ -23,22 +23,23 @@ const SmartActionMenu: React.FC<{
     y: number; 
     onAction: (action: SmartActionRequest['action']) => void;
     onClose: () => void;
-}> = ({ x, y, onAction, onClose }) => (
+    t: (key: string) => string;
+}> = ({ x, y, onAction, onClose, t }) => (
     <div 
         className="fixed z-50 bg-surface border border-border rounded-xl shadow-2xl p-1 animate-fade-in flex flex-col min-w-[160px]"
         style={{ top: y, left: x }}
     >
         <div className="px-3 py-2 border-b border-border/50 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-            AI Actions
+            {t('ai.actions')}
         </div>
         <button onClick={() => onAction('explain')} className="flex items-center gap-2 px-3 py-2 hover:bg-white/5 text-left text-sm text-white rounded-lg transition-colors">
-            <span className="material-symbols-outlined text-sm text-primary">lightbulb</span> Explain
+            <span className="material-symbols-outlined text-sm text-primary">lightbulb</span> {t('ai.action.explain')}
         </button>
         <button onClick={() => onAction('simplify')} className="flex items-center gap-2 px-3 py-2 hover:bg-white/5 text-left text-sm text-white rounded-lg transition-colors">
-            <span className="material-symbols-outlined text-sm text-green-400">child_care</span> Simplify
+            <span className="material-symbols-outlined text-sm text-green-400">child_care</span> {t('ai.action.simplify')}
         </button>
         <button onClick={() => onAction('translate')} className="flex items-center gap-2 px-3 py-2 hover:bg-white/5 text-left text-sm text-white rounded-lg transition-colors">
-            <span className="material-symbols-outlined text-sm text-purple-400">translate</span> Translate
+            <span className="material-symbols-outlined text-sm text-purple-400">translate</span> {t('ai.action.translate')}
         </button>
     </div>
 );
@@ -139,7 +140,7 @@ const AIWorkspace: React.FC = () => {
       if (text.toLowerCase().includes('тест') || text.toLowerCase().includes('quiz')) {
           setActiveTab('test-builder');
           handleGenerateTest();
-          streamResponse("Переключаюсь в режим конструктора тестов...");
+          streamResponse(t('ai.generating')); // Using translated "Generating..." or "Switching to..."
           return;
       }
 
@@ -206,6 +207,7 @@ const AIWorkspace: React.FC = () => {
                 y={selection.y} 
                 onAction={handleSmartAction}
                 onClose={() => setSelection(null)}
+                t={t}
             />
         )}
 
@@ -222,10 +224,10 @@ const AIWorkspace: React.FC = () => {
              <div className="px-6 border-b border-border bg-surface/30 backdrop-blur-md flex-none z-10">
                 <div className="flex gap-8 overflow-x-auto custom-scrollbar">
                     <button onClick={() => setActiveTab('canvas')} className={`border-b-2 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-colors ${activeTab === 'canvas' ? 'border-primary text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}>
-                        <span className="material-symbols-outlined text-lg">auto_awesome</span> AI Canvas
+                        <span className="material-symbols-outlined text-lg">auto_awesome</span> {t('ai.tab.canvas')}
                     </button>
                     <button onClick={() => setActiveTab('test-builder')} className={`border-b-2 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-colors ${activeTab === 'test-builder' ? 'border-primary text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}>
-                        <span className="material-symbols-outlined text-lg">quiz</span> Test Builder
+                        <span className="material-symbols-outlined text-lg">quiz</span> {t('ai.tab.builder')}
                     </button>
                 </div>
              </div>
@@ -257,19 +259,19 @@ const AIWorkspace: React.FC = () => {
                          {/* Config Panel */}
                          <div className="bg-surface border border-border rounded-2xl p-6 grid grid-cols-3 gap-4">
                              <div>
-                                 <label className="text-xs font-bold text-slate-400">DIFFICULTY</label>
+                                 <label className="text-xs font-bold text-slate-400">{t('ai.difficulty')}</label>
                                  <select 
                                      value={testConfig.difficulty}
                                      onChange={(e) => setTestConfig({...testConfig, difficulty: e.target.value as any})}
                                      className="w-full bg-background border border-border rounded-lg p-2 text-white mt-1 text-sm"
                                  >
-                                     <option value="easy">Easy</option>
-                                     <option value="medium">Medium</option>
-                                     <option value="hard">Hard</option>
+                                     <option value="easy">{t('ai.diff.easy')}</option>
+                                     <option value="medium">{t('ai.diff.medium')}</option>
+                                     <option value="hard">{t('ai.diff.hard')}</option>
                                  </select>
                              </div>
                              <div>
-                                 <label className="text-xs font-bold text-slate-400">COUNT: {testConfig.count}</label>
+                                 <label className="text-xs font-bold text-slate-400">{t('ai.count')}: {testConfig.count}</label>
                                  <input 
                                     type="range" min="1" max="20"
                                     value={testConfig.count}
@@ -282,7 +284,7 @@ const AIWorkspace: React.FC = () => {
                                 disabled={isGenerating}
                                 className="col-span-1 bg-primary text-white rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-primary-hover disabled:opacity-50"
                              >
-                                 {isGenerating ? 'Generating...' : 'Generate'}
+                                 {isGenerating ? t('ai.generating') : t('ai.generate')}
                              </button>
                          </div>
 
@@ -304,7 +306,7 @@ const AIWorkspace: React.FC = () => {
                                              ))}
                                          </ul>
                                          <div className="mt-3 p-2 bg-background/50 rounded text-xs text-slate-400 italic">
-                                             <span className="font-bold not-italic text-slate-300">Explanation:</span> {q.explanation}
+                                             <span className="font-bold not-italic text-slate-300">{t('ai.explanation')}:</span> {q.explanation}
                                          </div>
                                      </div>
                                  </div>
@@ -320,7 +322,7 @@ const AIWorkspace: React.FC = () => {
                     <form onSubmit={handleSendMessage} className="relative flex items-center bg-surface border border-border rounded-xl shadow-2xl">
                         <input 
                             className="w-full bg-transparent border-none text-white focus:ring-0 py-4 px-4 placeholder-slate-500 outline-none" 
-                            placeholder="Ask about the document..."
+                            placeholder={t('ai.placeholder')}
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
                             disabled={isGenerating}

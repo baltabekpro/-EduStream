@@ -3,9 +3,11 @@ import { AnalyticsService } from '../lib/api';
 import { useCourse } from '../context/CourseContext';
 import { AnalyticsData, AnalyticsTopic } from '../types';
 import { PageTransition } from '../components/PageTransition';
+import { useLanguage } from '../context/LanguageContext';
 
 const Analytics: React.FC = () => {
   const { selectedCourse } = useCourse();
+  const { t } = useLanguage();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -51,13 +53,13 @@ const Analytics: React.FC = () => {
           <PageTransition>
               <div className="p-8 h-full overflow-y-auto">
                   <button onClick={() => setSelectedTopic(null)} className="flex items-center gap-2 text-slate-400 hover:text-white mb-6 transition-colors">
-                      <span className="material-symbols-outlined">arrow_back</span> Back to Overview
+                      <span className="material-symbols-outlined">arrow_back</span> {t('analytics.back')}
                   </button>
                   <h2 className="text-3xl font-black text-white mb-2">{selectedTopic.name}</h2>
                   <div className="text-6xl font-black text-primary mb-8">{selectedTopic.score}%</div>
                   
                   <div className="bg-surface border border-border rounded-2xl p-6">
-                      <h3 className="font-bold text-white mb-4">Student Breakdown</h3>
+                      <h3 className="font-bold text-white mb-4">{t('analytics.breakdown')}</h3>
                       <div className="space-y-2">
                           {data.students.map(s => (
                               <div key={s.id} className="flex justify-between items-center p-3 hover:bg-white/5 rounded-lg">
@@ -80,12 +82,12 @@ const Analytics: React.FC = () => {
     <div className="h-full bg-background overflow-y-auto custom-scrollbar p-6 md:p-8 space-y-8 pb-32">
         <div className="flex justify-between items-end">
             <div>
-                <h2 className="text-3xl font-black text-white">Class Analytics</h2>
-                <p className="text-slate-400">Deep dive into {selectedCourse} performance</p>
+                <h2 className="text-3xl font-black text-white">{t('analytics.title')}</h2>
+                <p className="text-slate-400">{t('analytics.subtitle')} {selectedCourse}</p>
             </div>
             <div className="text-right">
                 <div className="text-4xl font-black text-white">{averageScore}%</div>
-                <div className="text-xs font-bold text-slate-500 uppercase">Class Average</div>
+                <div className="text-xs font-bold text-slate-500 uppercase">{t('analytics.average')}</div>
             </div>
         </div>
 
@@ -110,7 +112,7 @@ const Analytics: React.FC = () => {
 
         {/* Optimized Student List */}
         <div className="bg-surface border border-border rounded-2xl p-6">
-            <h3 className="text-xl font-bold text-white mb-6">Leaderboard</h3>
+            <h3 className="text-xl font-bold text-white mb-6">{t('analytics.leaderboard')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {sortedStudents.map((student, i) => (
                     <div key={student.id} className="flex items-center gap-4 p-4 border border-border rounded-xl hover:bg-white/5 transition-colors">

@@ -81,7 +81,7 @@ const Settings: React.FC = () => {
              <div className="border-b border-border pb-6 flex justify-between items-center">
                 <div>
                     <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">{t('settings.title')}</h1>
-                    <p className="text-slate-400 mt-1">Manage profile and preferences</p>
+                    <p className="text-slate-400 mt-1">{t('settings.subtitle')}</p>
                 </div>
                 <button 
                     onClick={handleLogout}
@@ -106,16 +106,16 @@ const Settings: React.FC = () => {
                         <div className="flex-1 space-y-4 w-full">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Name</label>
+                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('settings.name')}</label>
                                     <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary transition-colors" />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Surname</label>
+                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('settings.surname')}</label>
                                     <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary transition-colors" />
                                 </div>
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Email</label>
+                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('settings.email')}</label>
                                 <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary transition-colors" />
                             </div>
                         </div>
@@ -135,7 +135,7 @@ const Settings: React.FC = () => {
                                     <span className="material-symbols-outlined">mail</span>
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold text-white">Email Reports</p>
+                                    <p className="text-sm font-bold text-white">{t('settings.emailReports')}</p>
                                 </div>
                             </div>
                             <div className={`w-10 h-5 rounded-full relative transition-colors ${settings.notifications.reports ? 'bg-primary' : 'bg-slate-700'}`}>
@@ -149,7 +149,7 @@ const Settings: React.FC = () => {
                                     <span className="material-symbols-outlined">translate</span>
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold text-white">Language / Язык</p>
+                                    <p className="text-sm font-bold text-white">{t('settings.language')}</p>
                                 </div>
                             </div>
                             <div className="flex gap-2">
@@ -163,7 +163,7 @@ const Settings: React.FC = () => {
                  {/* Demo Zone */}
                  <div className="bg-surface border border-red-500/20 rounded-xl p-6">
                     <h2 className="text-lg font-bold text-red-400 mb-2">{t('settings.demo')}</h2>
-                    <p className="text-sm text-slate-400 mb-4">Resetting will clear all local changes and restore mock data.</p>
+                    <p className="text-sm text-slate-400 mb-4">{t('settings.demoDesc')}</p>
                     <button onClick={handleResetDemo} className="px-4 py-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg text-sm font-bold hover:bg-red-500/20">
                         {t('settings.reset')}
                     </button>

@@ -107,22 +107,22 @@ const OCR: React.FC = () => {
             
             {viewMode === 'list' ? (
                  <div className="flex gap-3">
-                     <span className="text-sm text-slate-400 self-center">{selectedIds.size} selected</span>
+                     <span className="text-sm text-slate-400 self-center">{selectedIds.size} {t('ocr.selected')}</span>
                      <button 
                         onClick={handleBatchApprove}
                         disabled={selectedIds.size === 0}
                         className="px-4 py-2 bg-primary text-white rounded-lg font-bold text-sm disabled:opacity-50 hover:bg-primary-hover transition-colors"
                      >
-                         Approve Selected
+                         {t('ocr.approveSelected')}
                      </button>
                  </div>
             ) : (
                 <div className="flex gap-2">
                     <button onClick={() => setViewMode('list')} className="px-4 py-2 border border-border text-slate-300 rounded-lg text-sm font-bold hover:bg-white/5">
-                        Close
+                        {t('ocr.close')}
                     </button>
                     <button onClick={handleSave} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-hover">
-                        Save Changes
+                        {t('ocr.saveChanges')}
                     </button>
                 </div>
             )}
@@ -138,11 +138,11 @@ const OCR: React.FC = () => {
                                 <th className="p-4 w-12">
                                     <input type="checkbox" checked={selectedIds.size === queue.length && queue.length > 0} onChange={toggleAll} className="rounded border-slate-600 bg-slate-800" />
                                 </th>
-                                <th className="p-4">Student</th>
-                                <th className="p-4">Subject</th>
-                                <th className="p-4">Accuracy</th>
-                                <th className="p-4">Status</th>
-                                <th className="p-4 text-right">Actions</th>
+                                <th className="p-4">{t('ocr.th.student')}</th>
+                                <th className="p-4">{t('ocr.th.subject')}</th>
+                                <th className="p-4">{t('ocr.th.accuracy')}</th>
+                                <th className="p-4">{t('ocr.th.status')}</th>
+                                <th className="p-4 text-right">{t('ocr.th.actions')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
@@ -169,7 +169,7 @@ const OCR: React.FC = () => {
                                         </span>
                                     </td>
                                     <td className="p-4 text-right">
-                                        <button onClick={() => loadWork(item.id)} className="text-primary hover:underline font-bold">Review</button>
+                                        <button onClick={() => loadWork(item.id)} className="text-primary hover:underline font-bold">{t('ocr.review')}</button>
                                     </td>
                                 </tr>
                             ))}
@@ -178,7 +178,7 @@ const OCR: React.FC = () => {
                     {queue.length === 0 && (
                         <div className="p-12 text-center text-slate-500">
                             <span className="material-symbols-outlined text-4xl mb-2">check_circle</span>
-                            <p>All caught up! No works pending.</p>
+                            <p>{t('ocr.caughtUp')}</p>
                         </div>
                     )}
                 </div>
@@ -209,7 +209,7 @@ const OCR: React.FC = () => {
                              <div className="flex justify-between">
                                  <span className="text-xs font-bold text-primary uppercase">{q.label}</span>
                                  <span className={`text-xs font-bold ${q.confidence === 'Low' ? 'text-yellow-500' : 'text-green-500'}`}>
-                                     {q.confidence === 'Low' ? 'Low Confidence' : 'High Confidence'}
+                                     {q.confidence === 'Low' ? t('ocr.conf.low') : t('ocr.conf.high')}
                                  </span>
                              </div>
                              <div className="p-4 bg-background border border-border rounded-lg text-white font-mono text-sm leading-relaxed" contentEditable suppressContentEditableWarning>
@@ -218,7 +218,7 @@ const OCR: React.FC = () => {
                         </div>
                     ))}
                     <div className="pt-6 border-t border-border">
-                        <label className="text-sm font-bold text-white block mb-2">Grade</label>
+                        <label className="text-sm font-bold text-white block mb-2">{t('ocr.grade')}</label>
                         <input 
                             type="number" 
                             value={manualScore} 

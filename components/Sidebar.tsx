@@ -62,7 +62,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               </div>
               <div className="flex flex-col">
                 <h1 className="text-base font-bold leading-tight text-white">EduStream</h1>
-                <p className="text-slate-400 text-xs">Teacher Tools</p>
+                <p className="text-slate-400 text-xs">{t('nav.tools')}</p>
               </div>
             </div>
             
@@ -113,12 +113,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <div className="absolute top-0 right-0 p-1 opacity-20 group-hover:opacity-40 transition-opacity">
                 <span className="material-symbols-outlined text-4xl">timer</span>
             </div>
-            <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Твой вклад</div>
+            <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">{t('nav.saved').replace('сэкономлено с ИИ', 'Твой вклад').replace('saved with AI', 'Your Impact')}</div>
             <div className="text-lg font-bold text-white flex items-center gap-1">
                 <span className="material-symbols-outlined text-yellow-400 text-xl filled-icon">bolt</span> 
-                12.5 ч
+                12.5 h
             </div>
-            <p className="text-[10px] text-slate-500">сэкономлено с ИИ</p>
+            <p className="text-[10px] text-slate-500">{t('nav.saved')}</p>
           </div>
 
           <button 
@@ -152,7 +152,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             </div>
             <div className="overflow-hidden">
                <p className="text-xs font-bold text-white truncate">{currentUser.firstName} {currentUser.lastName}</p>
-               <p className="text-[10px] text-slate-400 truncate">{currentUser.role}</p>
+               <p className="text-xs text-slate-400 truncate">{currentUser.role}</p>
             </div>
           </div>
         </div>
