@@ -9,7 +9,7 @@ import {
     SmartActionRequest 
 } from '../types';
 
-const API_BASE_URL = 'http://104.214.169.12:8000/api/v1';
+const API_BASE_URL = 'https://104.214.169.12/api/v1';
 
 // Custom Error Class
 export class ApiError extends Error {
