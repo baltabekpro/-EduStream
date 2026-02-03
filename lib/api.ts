@@ -11,7 +11,8 @@ import {
     Course
 } from '../types';
 
-const API_BASE_URL = 'https://104.214.169.12/api/v1';
+// Use relative path to leverage Vercel/Vite proxies
+const API_BASE_URL = '/api/v1';
 
 // Custom Error Class
 export class ApiError extends Error {
@@ -109,7 +110,8 @@ export const AuthService = {
 
 export const CourseService = {
     async getAll(): Promise<Course[]> {
-        const response = await request<any>('/courses');
+        // Added trailing slash to avoid 307 Redirect to HTTP
+        const response = await request<any>('/courses/');
         return Array.isArray(response) ? response : [];
     }
 };
