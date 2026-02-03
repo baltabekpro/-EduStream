@@ -107,17 +107,20 @@ const AIWorkspace: React.FC = () => {
                  type: 'ai', 
                  text: `I've analyzed the document "${doc.title}". I'm ready to answer questions or generate a test.` 
              }]);
+
+             // Check for template config after document is loaded
+             if (location.state?.templateConfig) {
+                 setActiveTab('test-builder');
+                 setTestConfig(location.state.templateConfig);
+                 // Pass doc.id explicitly to avoid stale state issues
+                 handleGenerateTest(location.state.templateConfig, doc.id);
+             }
+
          } catch (e) {
              addToast("Failed to load document", "error");
              setDocumentData({ id: 'err', title: 'Error', content: 'Failed to load content.' });
          } finally {
              setIsLoadingDoc(false);
-         }
-
-         if (location.state?.templateConfig) {
-             setActiveTab('test-builder');
-             setTestConfig(location.state.templateConfig);
-             handleGenerateTest(location.state.templateConfig);
          }
      };
 
@@ -217,11 +220,13 @@ const AIWorkspace: React.FC = () => {
       }, 30);
   };
 
-  const handleGenerateTest = async (config = testConfig) => {
+  const handleGenerateTest = async (config = testConfig, overrideMaterialId?: string) => {
       setIsGenerating(true);
       try {
-          // If documentData is error or null, we shouldn't attempt generation with valid materialId
-          const matId = documentData && documentData.id !== 'err' ? documentData.id : undefined;
+          // Use override if provided (during init), otherwise use state
+          // Ensure we don't use 'err' id
+          const currentStateId = documentData && documentData.id !== 'err' ? documentData.id : undefined;
+          const matId = overrideMaterialId || currentStateId;
           
           if (!matId) {
              throw new Error("No valid material selected");
