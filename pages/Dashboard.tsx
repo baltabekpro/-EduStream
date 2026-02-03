@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
-import { DashboardService } from '../lib/api';
+import { DashboardService, AIService } from '../lib/api';
 import { DashboardData } from '../types';
 import { useCourse } from '../context/CourseContext';
 import { useToast } from '../components/Toast';
@@ -154,44 +154,59 @@ const Dashboard: React.FC = () => {
       fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
-      if (files && files.length > 0) {
-          const newItems: UploadItem[] = Array.from(files).map(file => ({
-              id: Math.random().toString(36).substr(2, 9),
-              name: file.name,
-              progress: 0,
-              status: 'uploading'
-          }));
-          
-          setUploadQueue(prev => [...prev, ...newItems]);
-          addToast(`Добавлено ${files.length} файлов в очередь`, "info");
-
-          newItems.forEach(item => {
-              const duration = 1500 + Math.random() * 2000;
-              const interval = 100;
-              const step = 100 / (duration / interval);
-              
-              const timer = setInterval(() => {
-                  setUploadQueue(prev => prev.map(q => {
-                      if (q.id === item.id) {
-                          const newProgress = Math.min(100, q.progress + step);
-                          if (newProgress === 100) {
-                              clearInterval(timer);
-                              return { ...q, progress: 100, status: 'completed' };
-                          }
-                          return { ...q, progress: newProgress };
-                      }
-                      return q;
-                  }));
-              }, interval);
-          });
-          
-          setTimeout(() => {
-              setUploadQueue(prev => prev.filter(item => item.status !== 'completed'));
-              addToast("Все файлы успешно загружены", "success");
-          }, 6000);
+      if (!files || files.length === 0) return;
+      if (!selectedCourse) {
+          addToast("Please select a course first", 'error'); 
+          return;
       }
+
+      // Create queue items
+      const newItems: UploadItem[] = Array.from(files).map(file => ({
+          id: Math.random().toString(36).substr(2, 9),
+          name: file.name,
+          progress: 0,
+          status: 'uploading'
+      }));
+      setUploadQueue(prev => [...prev, ...newItems]);
+
+      // Process uploads one by one (or parallel)
+      for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const item = newItems[i];
+          
+          try {
+              // We can keep a fake progress interval just for visual feedback 
+              // since basic fetch doesn't support upload progress events easily
+              const progressInterval = setInterval(() => {
+                  setUploadQueue(prev => prev.map(q => 
+                      q.id === item.id && q.progress < 90 ? { ...q, progress: q.progress + 10 } : q
+                  ));
+              }, 200);
+
+              await AIService.uploadMaterial(file, selectedCourse);
+              
+              clearInterval(progressInterval);
+              setUploadQueue(prev => prev.map(q => 
+                  q.id === item.id ? { ...q, progress: 100, status: 'completed' } : q
+              ));
+              addToast(`${file.name} uploaded`, "success");
+          } catch (error) {
+              setUploadQueue(prev => prev.map(q => 
+                  q.id === item.id ? { ...q, status: 'error', progress: 0 } : q
+              ));
+              addToast(`Failed to upload ${file.name}`, "error");
+          }
+      }
+      
+      // Clear completed items after delay
+      setTimeout(() => {
+          setUploadQueue(prev => prev.filter(item => item.status !== 'completed'));
+      }, 5000);
+      
+      // Clear input
+      if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleExport = () => {

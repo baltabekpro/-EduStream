@@ -74,9 +74,32 @@ const AIWorkspace: React.FC = () => {
   useEffect(() => {
      const init = async () => {
          try {
-             // In a real scenario, ID comes from route params or list.
-             // Here we fetch a default document for demo if no ID provided.
-             const docId = location.state?.docId || 'default-doc';
+             let docId = location.state?.docId;
+             
+             // If no docId provided, try to find the latest material
+             if (!docId) {
+                 try {
+                     const materials = await AIService.getMaterials();
+                     if (materials.length > 0) {
+                         // Use first available material
+                         docId = materials[0].id;
+                     }
+                 } catch (e) {
+                     console.warn("Failed to fetch materials list");
+                 }
+             }
+
+             if (!docId) {
+                 setIsLoadingDoc(false);
+                 setDocumentData(null);
+                 setMessages([{ 
+                    id: 1, 
+                    type: 'ai', 
+                    text: `Please upload a material in the Dashboard to get started.` 
+                 }]);
+                 return;
+             }
+
              const doc = await AIService.getDocument(docId);
              setDocumentData(doc);
              setMessages([{ 
@@ -197,7 +220,14 @@ const AIWorkspace: React.FC = () => {
   const handleGenerateTest = async (config = testConfig) => {
       setIsGenerating(true);
       try {
-          const questions = await AIService.generateQuiz({ ...config, materialId: documentData?.id });
+          // If documentData is error or null, we shouldn't attempt generation with valid materialId
+          const matId = documentData && documentData.id !== 'err' ? documentData.id : undefined;
+          
+          if (!matId) {
+             throw new Error("No valid material selected");
+          }
+
+          const questions = await AIService.generateQuiz({ ...config, materialId: matId });
           setTestQuestions(questions);
           addToast("Test generated successfully", "success");
       } catch (e: any) {
@@ -247,7 +277,7 @@ const AIWorkspace: React.FC = () => {
                 </div>
             ) : (
                 <div className="flex h-full items-center justify-center text-slate-500">
-                    Document not found
+                    Document not found. Upload a file to get started.
                 </div>
             )}
         </div>

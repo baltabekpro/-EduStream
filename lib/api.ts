@@ -158,6 +158,37 @@ export const OCRService = {
 };
 
 export const AIService = {
+    async getMaterials(): Promise<Material[]> {
+        const response = await request<any>('/materials');
+        return Array.isArray(response) ? response : [];
+    },
+
+    async uploadMaterial(file: File, courseId: string): Promise<void> {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('courseId', courseId);
+
+        const token = localStorage.getItem('token');
+        
+        // Use raw fetch to avoid setting Content-Type header manually (browser sets boundary)
+        const response = await fetch(`${API_BASE_URL}/materials`, {
+            method: 'POST',
+            headers: {
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            let errorMessage = 'Upload failed';
+            try {
+                const errorBody = await response.json();
+                if (errorBody.message) errorMessage = errorBody.message;
+            } catch {}
+            throw new ApiError(response.status, errorMessage);
+        }
+    },
+
     async getDocument(id: string): Promise<Material> {
         return request<Material>(`/materials/${id}`);
     },
