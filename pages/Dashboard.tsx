@@ -138,11 +138,14 @@ const Dashboard: React.FC = () => {
     setLoading(true);
     DashboardService.getOverview(selectedCourse.id)
         .then(res => {
-            setData(res);
+            setData(res || { pieChart: [], needsReview: [], recentActivity: [] });
             setLoading(false);
         })
         .catch(err => {
+            console.error('Dashboard load error:', err);
             addToast("Failed to load dashboard", "error");
+            // Set empty data instead of null to prevent infinite loading
+            setData({ pieChart: [], needsReview: [], recentActivity: [] });
             setLoading(false);
         });
   }, [selectedCourse]);
@@ -213,7 +216,8 @@ const Dashboard: React.FC = () => {
   };
 
   if (!selectedCourse) return <div className="p-8 max-w-[1600px] mx-auto h-full flex items-center justify-center"><span className="material-symbols-outlined animate-spin text-4xl text-primary">sync</span></div>;
-  if (loading || !data) return <div className="p-8 max-w-[1600px] mx-auto h-full overflow-y-auto custom-scrollbar"><DashboardSkeleton /></div>;
+  if (loading) return <div className="p-8 max-w-[1600px] mx-auto h-full overflow-y-auto custom-scrollbar"><DashboardSkeleton /></div>;
+  if (!data) return <div className="p-8 max-w-[1600px] mx-auto h-full flex items-center justify-center text-slate-400"><div className="text-center"><span className="material-symbols-outlined text-6xl mb-4">error_outline</span><p>Не удалось загрузить данные</p></div></div>;
 
   const templates = [
       { id: 1, title: 'Входное тестирование', desc: '15 вопросов', icon: 'login', color: 'blue', config: { type: 'mcq', count: 15, difficulty: 'medium' } },

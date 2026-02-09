@@ -16,19 +16,23 @@ const Analytics: React.FC = () => {
 
   useEffect(() => {
     if (!selectedCourse) {
+        setLoading(false);
+        setData(null);
         return;
     }
 
     setLoading(true);
     // Uses Service Layer with Caching
-    AnalyticsService.getPerformance(selectedCourse)
+    AnalyticsService.getPerformance(selectedCourse.id)
         .then(res => {
-            setData(res);
+            setData(res || { students: [], topics: [] });
             setLoading(false);
         })
         .catch(err => {
+            console.error('Analytics load error:', err);
+            // Set empty data instead of null
+            setData({ students: [], topics: [] });
             setLoading(false);
-            console.error(err);
         });
   }, [selectedCourse]);
 
@@ -50,16 +54,31 @@ const Analytics: React.FC = () => {
   // Wait for course selection
   if (!selectedCourse) {
       return (
+          <div className="flex items-center justify-center h-full text-slate-400">
+              <div className="text-center">
+                  <span className="material-symbols-outlined text-6xl mb-4">bar_chart</span>
+                  <p>Выберите курс для просмотра аналитики</p>
+              </div>
+          </div>
+      );
+  }
+
+  if (loading) {
+      return (
           <div className="flex items-center justify-center h-full">
               <span className="material-symbols-outlined animate-spin text-4xl text-primary">sync</span>
           </div>
       );
   }
 
-  if (loading || !data) {
+  if (!data || !data.students || data.students.length === 0) {
       return (
-          <div className="flex items-center justify-center h-full">
-              <span className="material-symbols-outlined animate-spin text-4xl text-primary">sync</span>
+          <div className="flex items-center justify-center h-full text-slate-400">
+              <div className="text-center">
+                  <span className="material-symbols-outlined text-6xl mb-4">insights</span>
+                  <p>Нет данных для отображения</p>
+                  <p className="text-sm mt-2">Загрузите материалы и создайте тесты</p>
+              </div>
           </div>
       );
   }
