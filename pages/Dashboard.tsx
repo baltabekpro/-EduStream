@@ -117,7 +117,7 @@ const StatCard = ({ title, value, icon, color, subtext }: any) => (
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { addToast } = useToast();
-  const { selectedCourse } = useCourse();
+  const { selectedCourse, loading: loadingCourses } = useCourse();
   const { t } = useLanguage();
   const { user } = useUser();
   const [data, setData] = useState<DashboardData | null>(null);
@@ -215,7 +215,41 @@ const Dashboard: React.FC = () => {
       }, 1500);
   };
 
-  if (!selectedCourse) return <div className="p-8 max-w-[1600px] mx-auto h-full flex items-center justify-center"><span className="material-symbols-outlined animate-spin text-4xl text-primary">sync</span></div>;
+  if (loadingCourses) {
+      return (
+          <div className="p-8 max-w-[1600px] mx-auto h-full flex items-center justify-center">
+              <span className="material-symbols-outlined animate-spin text-4xl text-primary">sync</span>
+          </div>
+      );
+  }
+  
+  if (!selectedCourse) {
+      return (
+          <PageTransition>
+          <div className="p-8 max-w-[1600px] mx-auto h-full flex items-center justify-center">
+              <div className="text-center space-y-6">
+                  <div className="bg-surface/50 backdrop-blur border border-border rounded-2xl p-12 max-w-md mx-auto">
+                      <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">school</span>
+                      <h2 className="text-2xl font-bold text-white mb-2">Создайте свой первый курс</h2>
+                      <p className="text-slate-400 mb-6">Начните работу с платформой, создав курс для ваших студентов</p>
+                      <button
+                          onClick={() => setShowCreateCourseModal(true)}
+                          className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-hover transition-all mx-auto"
+                      >
+                          <span className="material-symbols-outlined">add</span>
+                          Создать курс
+                      </button>
+                  </div>
+              </div>
+              <CreateCourseModal 
+                  isOpen={showCreateCourseModal} 
+                  onClose={() => setShowCreateCourseModal(false)} 
+              />
+          </div>
+          </PageTransition>
+      );
+  }
+  
   if (loading) return <div className="p-8 max-w-[1600px] mx-auto h-full overflow-y-auto custom-scrollbar"><DashboardSkeleton /></div>;
   if (!data) return <div className="p-8 max-w-[1600px] mx-auto h-full flex items-center justify-center text-slate-400"><div className="text-center"><span className="material-symbols-outlined text-6xl mb-4">error_outline</span><p>Не удалось загрузить данные</p></div></div>;
 
