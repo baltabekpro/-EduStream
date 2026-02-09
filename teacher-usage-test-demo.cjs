@@ -10,7 +10,7 @@
 const https = require('https');
 
 // ==================== Configuration ====================
-const OPENROUTER_API_KEY = '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';
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || 'YOUR_API_KEY_HERE';
 const OPENROUTER_MODEL = 'mistralai/mistral-small-3.1-24b-instruct:free';
 
 // ==================== Helper Functions ====================

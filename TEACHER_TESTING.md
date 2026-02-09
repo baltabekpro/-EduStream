@@ -56,7 +56,23 @@ node teacher-usage-test-demo.cjs
 - API URL: `https://94.131.85.176/api/v1`
 - OpenRouter Model: `mistralai/mistral-small-3.1-24b-instruct:free`
 
+**ВАЖНО**: Для использования OpenRouter AI необходимо установить API ключ:
+
+```bash
+export OPENROUTER_API_KEY="your-api-key-here"
+node teacher-usage-test.cjs
+```
+
 Вы можете изменить эти настройки через переменные окружения:
+
+```bash
+export API_BASE_URL="https://your-api-url.com/api/v1"
+export FRONTEND_URL="https://your-frontend-url.com"
+export ALLOW_INSECURE_SSL="true"  # Только для разработки!
+node teacher-usage-test.cjs
+```
+
+**Безопасность**: Никогда не коммитьте API ключи в репозиторий!
 
 ```bash
 export API_BASE_URL="https://your-api-url.com/api/v1"

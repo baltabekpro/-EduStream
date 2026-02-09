@@ -11,10 +11,11 @@ const https = require('https');
 const http = require('http');
 
 // ==================== Configuration ====================
-const OPENROUTER_API_KEY = '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';
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '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';
 const OPENROUTER_MODEL = 'mistralai/mistral-small-3.1-24b-instruct:free';
 const API_BASE_URL = process.env.API_BASE_URL || 'https://94.131.85.176/api/v1';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const ALLOW_INSECURE_SSL = process.env.ALLOW_INSECURE_SSL === 'true';
 
 // ==================== Helper Functions ====================
 
@@ -97,8 +98,8 @@ async function makeRequest(endpoint, method = 'GET', body = null, token = null) 
         'Content-Type': 'application/json',
         ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       },
-      // For self-signed certificates in development
-      rejectUnauthorized: false
+      // For self-signed certificates in development only
+      rejectUnauthorized: !ALLOW_INSECURE_SSL
     };
 
     if (body) {
