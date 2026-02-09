@@ -18,7 +18,15 @@ import * as https from 'https';
 import * as http from 'http';
 
 // ==================== Configuration ====================
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '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';
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+if (!OPENROUTER_API_KEY) {
+  console.error('❌ ERROR: OPENROUTER_API_KEY environment variable is not set!');
+  console.error('   Please set it before running tests:');
+  console.error('   export OPENROUTER_API_KEY="your-api-key-here"');
+  console.error('   Get your key from: https://openrouter.ai/');
+  process.exit(1);
+}
+
 const OPENROUTER_MODEL = 'mistralai/mistral-small-3.1-24b-instruct:free';
 const API_BASE_URL = process.env.API_BASE_URL || 'https://94.131.85.176/api/v1';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
@@ -735,8 +743,14 @@ async function runAllTests() {
     return;
   }
 
-  // Extract token and continue with authenticated tests
+  // Extract token and validate before continuing
   const token = authResult.apiResponse?.token || '';
+  
+  if (!token) {
+    console.log('\n⚠️  No authentication token received. Cannot proceed with authenticated tests.');
+    generateFinalReport(results, analyses);
+    return;
+  }
 
   let courseId = '';
 

@@ -94,9 +94,13 @@
 ## 🤖 Интеграция с OpenRouter AI
 
 ### Конфигурация:
-```javascript
-const OPENROUTER_API_KEY = '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';
-const OPENROUTER_MODEL = 'mistralai/mistral-small-3.1-24b-instruct:free';
+```bash
+# Set environment variable (REQUIRED)
+export OPENROUTER_API_KEY="your-api-key-here"
+
+# Get FREE API key from: https://openrouter.ai/keys
+# Free tier available!
+# Model: mistralai/mistral-small-3.1-24b-instruct:free
 ```
 
 ### Функционал AI анализа:
