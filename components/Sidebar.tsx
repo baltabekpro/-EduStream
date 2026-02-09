@@ -76,10 +76,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                         const course = courses.find(c => c.id === e.target.value);
                         selectCourse(course || null);
                     }}
-                    disabled={loading}
+                    disabled={loadingCourses}
                     className="w-full bg-surface/50 border border-border text-white text-sm rounded-xl py-3 pl-4 pr-10 appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary hover:bg-surface hover:border-slate-500 transition-all cursor-pointer disabled:opacity-50 font-medium shadow-sm"
                 >
-                    {loading ? (
+                    {loadingCourses ? (
                         <option>Загрузка...</option>
                     ) : courses.length > 0 ? (
                         courses.map(course => (
