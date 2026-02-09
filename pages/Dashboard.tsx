@@ -135,8 +135,8 @@ const Dashboard: React.FC = () => {
         setData(null);
         return;
     }
-    setLoading(true);.id
-    DashboardService.getOverview(selectedCourse)
+    setLoading(true);
+    DashboardService.getOverview(selectedCourse.id)
         .then(res => {
             setData(res);
             setLoading(false);
