@@ -119,7 +119,7 @@ const Analytics: React.FC = () => {
         <div className="flex justify-between items-end">
             <div>
                 <h2 className="text-3xl font-black text-white">{t('analytics.title')}</h2>
-                <p className="text-slate-400">{t('analytics.subtitle')} {selectedCourse}</p>
+                <p className="text-slate-400">{t('analytics.subtitle')} <span className="text-white font-bold">{selectedCourse.title}</span></p>
             </div>
             <div className="text-right">
                 <div className="text-4xl font-black text-white">{averageScore}%</div>
