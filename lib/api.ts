@@ -162,7 +162,7 @@ export const OCRService = {
 
 export const AIService = {
     async getMaterials(): Promise<Material[]> {
-        const response = await request<any>('/materials');
+        const response = await request<any>('/materials/'); // Added trailing slash to avoid 307 Redirect
         return Array.isArray(response) ? response : [];
     },
 
@@ -174,7 +174,7 @@ export const AIService = {
         const token = localStorage.getItem('token');
         
         // Use raw fetch to avoid setting Content-Type header manually (browser sets boundary)
-        const response = await fetch(`${API_BASE_URL}/materials`, {
+        const response = await fetch(`${API_BASE_URL}/materials/`, { // Added trailing slash to avoid 307 Redirect
             method: 'POST',
             headers: {
                 ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
