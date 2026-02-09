@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useCourse, CourseType } from '../context/CourseContext';
+import { useCourse } from '../context/CourseContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useUser } from '../context/UserContext';
-import { CourseService } from '../lib/api';
-import { Course } from '../types';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -14,32 +12,9 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { selectedCourse, setCourse } = useCourse();
+  const { courses, selectedCourse, selectCourse, loading: loadingCourses } = useCourse();
   const { t, language, setLanguage } = useLanguage();
   const { user } = useUser();
-  
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loadingCourses, setLoadingCourses] = useState(true);
-
-  useEffect(() => {
-      const fetchCourses = async () => {
-          try {
-              const data = await CourseService.getAll();
-              setCourses(data);
-              if (data.length > 0) {
-                  const currentExists = data.find(c => c.id === selectedCourse);
-                  if (!selectedCourse || !currentExists) {
-                      setCourse(data[0].id);
-                  }
-              }
-          } catch (error) {
-              console.error("Failed to fetch courses", error);
-          } finally {
-              setLoadingCourses(false);
-          }
-      };
-      fetchCourses();
-  }, []);
 
   const menuItems = [
     { icon: 'dashboard', label: t('nav.dashboard'), path: '/dashboard' },
@@ -119,8 +94,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
             {/* Close button for mobile */}
             <button onClick={onClose} className="md:hidden absolute top-5 right-5 text-slate-400 hover:text-white transition-colors">
-              <span className="material-symbols-outlined text-2xl">close</span>
-            </button>
+              <span className="material-s?.id || ''}
+                    onChange={(e) => {
+                        const course = courses.find(c => c.id === e.target.value);
+                        selectCourse(course || null);
+                    }
           </div>
 
           <nav className="flex flex-col gap-1.5">

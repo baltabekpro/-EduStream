@@ -29,6 +29,31 @@ export interface UserRegister {
 export interface Course {
     id: string;
     title: string;
+    description?: string;
+    color?: string;
+    icon?: string;
+    materialsCount: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CourseCreate {
+    title: string;
+    description?: string;
+    color?: string;
+    icon?: string;
+}
+
+export interface CourseUpdate {
+    title?: string;
+    description?: string;
+    color?: string;
+    icon?: string;
+}
+
+export interface MaterialUpdate {
+    title?: string;
+    course_id?: string;
 }
 
 // --- Dashboard ---

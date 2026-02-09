@@ -9,6 +9,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useUser } from '../context/UserContext';
 import Confetti from '../components/Confetti';
 import { PageTransition } from '../components/PageTransition';
+import { CreateCourseModal } from '../components/CreateCourseModal';
 
 interface UploadItem {
     id: string;
@@ -124,6 +125,7 @@ const Dashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showConfetti, setShowConfetti] = useState(false);
   const [uploadQueue, setUploadQueue] = useState<UploadItem[]>([]);
+  const [showCreateCourseModal, setShowCreateCourseModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -133,7 +135,7 @@ const Dashboard: React.FC = () => {
         setData(null);
         return;
     }
-    setLoading(true);
+    setLoading(true);.id
     DashboardService.getOverview(selectedCourse)
         .then(res => {
             setData(res);
@@ -188,7 +190,7 @@ const Dashboard: React.FC = () => {
               const progressInterval = setInterval(() => {
                   setUploadQueue(prev => prev.map(q => q.id === item.id && q.progress < 90 ? { ...q, progress: q.progress + 10 } : q));
               }, 200);
-              await AIService.uploadMaterial(file, selectedCourse);
+              await AIService.uploadMaterial(file, selectedCourse.id);
               clearInterval(progressInterval);
               setUploadQueue(prev => prev.map(q => q.id === item.id ? { ...q, progress: 100, status: 'completed' } : q));
               addToast(`${file.name} uploaded`, "success");
@@ -233,24 +235,46 @@ const Dashboard: React.FC = () => {
               {t('dash.welcome')}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{user?.firstName}</span>
           </h1>
           <p className="text-slate-400 font-medium">
-             Активный курс: <span className="text-white font-bold bg-white/10 px-2 py-0.5 rounded ml-1">{selectedCourse}</span>
+             Активный курс: {selectedCourse ? (
+               <span className="text-white font-bold bg-white/10 px-2 py-0.5 rounded ml-1">{selectedCourse.title}</span>
+             ) : (
+               <button
+                 onClick={() => setShowCreateCourseModal(true)}
+                 className="text-primary font-bold underline ml-1 hover:text-primary-hover"
+               >
+                 Создать курс
+               </button>
+             )}
           </p>
         </div>
         <div className="flex gap-3">
-          <button 
-            onClick={handleUploadClick}
-            className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-hover hover:shadow-primary/40 transition-all active:scale-95 group"
+          {!selectedCourse && (
+            <button
+              onClick={() => setShowCreateCourseModal(true)}
+              className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-hover hover:shadow-primary/40 transition-all active:scale-95 group"
             >
-            <span className="material-symbols-outlined group-hover:rotate-12 transition-transform">upload_file</span>
-            {t('dash.upload')}
-          </button>
-          <button 
-            className="flex items-center gap-2 px-5 py-3 bg-surface border border-border text-white rounded-xl font-bold hover:bg-surface-lighter transition-all active:scale-95 group"
-            onClick={() => navigate('/ocr')}
-          >
-            <span className="material-symbols-outlined group-hover:text-green-400 transition-colors">assignment_turned_in</span>
-            {t('dash.check')}
-          </button>
+              <span className="material-symbols-outlined">add</span>
+              Создать курс
+            </button>
+          )}
+          {selectedCourse && (
+            <>
+              <button 
+                onClick={handleUploadClick}
+                className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-hover hover:shadow-primary/40 transition-all active:scale-95 group"
+                >
+                <span className="material-symbols-outlined group-hover:rotate-12 transition-transform">upload_file</span>
+                {t('dash.upload')}
+              </button>
+              <button 
+                className="flex items-center gap-2 px-5 py-3 bg-surface border border-border text-white rounded-xl font-bold hover:bg-surface-lighter transition-all active:scale-95 group"
+                onClick={() => navigate('/ocr')}
+              >
+                <span className="material-symbols-outlined group-hover:text-green-400 transition-colors">assignment_turned_in</span>
+                {t('dash.check')}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -437,6 +461,12 @@ const Dashboard: React.FC = () => {
             </div>
         </div>
       </div>
+      
+      {/* Create Course Modal */}
+      <CreateCourseModal 
+        isOpen={showCreateCourseModal} 
+        onClose={() => setShowCreateCourseModal(false)} 
+      />
     </div>
     </PageTransition>
   );

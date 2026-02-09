@@ -111,9 +111,33 @@ export const AuthService = {
 
 export const CourseService = {
     async getAll(): Promise<Course[]> {
-        // Added trailing slash to avoid 307 Redirect to HTTP
+        // Added trailing slash to avoid 307 Redirect
         const response = await request<any>('/courses/');
         return Array.isArray(response) ? response : [];
+    },
+
+    async getById(id: string): Promise<Course> {
+        return request<Course>(`/courses/${id}`);
+    },
+
+    async create(data: CourseCreate): Promise<Course> {
+        return request<Course>('/courses/', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    },
+
+    async update(id: string, data: CourseUpdate): Promise<Course> {
+        return request<Course>(`/courses/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        });
+    },
+
+    async delete(id: string): Promise<void> {
+        await request(`/courses/${id}`, {
+            method: 'DELETE',
+        });
     }
 };
 
@@ -228,6 +252,21 @@ export const AIService = {
         return request<Question>('/ai/regenerate-block', {
             method: 'POST',
             body: JSON.stringify({ blockId, instruction: context }),
+        });
+    }
+};
+
+export const MaterialService = {
+    async update(id: string, data: MaterialUpdate): Promise<Material> {
+        return request<Material>(`/materials/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data),
+        });
+    },
+
+    async delete(id: string): Promise<void> {
+        await request(`/materials/${id}`, {
+            method: 'DELETE',
         });
     }
 };
