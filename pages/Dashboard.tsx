@@ -127,7 +127,12 @@ const Dashboard: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!selectedCourse) return;
+    if (!selectedCourse) {
+        // No course selected - stop loading and show empty state
+        setLoading(false);
+        setData(null);
+        return;
+    }
     setLoading(true);
     DashboardService.getOverview(selectedCourse)
         .then(res => {
