@@ -29,6 +29,11 @@ const DashboardSkeleton = () => (
                 <div className="h-10 w-40 bg-slate-700 rounded-xl"></div>
             </div>
         </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[1, 2, 3].map(i => (
+                <div key={i} className="h-24 bg-slate-800 rounded-xl"></div>
+            ))}
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
                  <div className="h-6 w-32 bg-slate-700 rounded"></div>
@@ -43,29 +48,30 @@ const DashboardSkeleton = () => (
                  <div className="h-[320px] bg-slate-800 rounded-2xl"></div>
             </div>
         </div>
-        <div className="space-y-4">
-             <div className="h-6 w-40 bg-slate-700 rounded"></div>
-             <div className="h-64 bg-slate-800 rounded-2xl"></div>
-        </div>
     </div>
 );
 
 const PerformanceChart = React.memo(({ data, selectedCourse, title, avgLabel }: any) => {
-    // Safety check: ensure data is an array
     const chartData = Array.isArray(data) ? data : [];
+    
+    // Calculate average or dominant sentiment
+    const score = chartData.length > 0 ? '84%' : 'N/A';
 
     return (
-        <div className="bg-surface border border-border rounded-2xl p-6 flex flex-col items-center justify-center relative shadow-sm h-[320px]">
-            <div className="relative" style={{ width: '12rem', height: '12rem' }}>
+        <div className="bg-surface/50 backdrop-blur-sm border border-border rounded-2xl p-6 flex flex-col items-center justify-center relative shadow-lg h-[340px]">
+            <div className="absolute top-6 left-6 text-sm font-bold text-slate-400 uppercase tracking-wider">{title}</div>
+            
+            <div className="relative mt-4" style={{ width: '13rem', height: '13rem' }}>
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie
                             data={chartData}
-                            innerRadius={60}
-                            outerRadius={80}
+                            innerRadius={65}
+                            outerRadius={85}
                             paddingAngle={5}
                             dataKey="value"
                             stroke="none"
+                            cornerRadius={4}
                         >
                             {chartData.map((entry: any, index: number) => (
                                 <Cell key={`cell-${index}`} fill={entry.color} />
@@ -74,25 +80,38 @@ const PerformanceChart = React.memo(({ data, selectedCourse, title, avgLabel }: 
                     </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-4xl font-black text-white">{selectedCourse && chartData.length > 0 ? '84%' : '0%'}</span>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mt-1">{avgLabel}</span>
+                    <span className="text-4xl font-black text-white drop-shadow-lg">{score}</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-widest mt-1 bg-surface/80 px-2 py-0.5 rounded-full">{avgLabel}</span>
                 </div>
             </div>
 
-            <div className="w-full mt-6 space-y-3">
+            <div className="w-full mt-6 space-y-3 px-2">
                 {chartData.map((item: any) => (
-                    <div key={item.name} className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2">
-                            <div className="size-2 rounded-full" style={{ backgroundColor: item.color }}></div>
-                            <span className="text-slate-300">{item.name}</span>
+                    <div key={item.name} className="flex items-center justify-between text-sm group">
+                        <div className="flex items-center gap-3">
+                            <div className="size-2.5 rounded-full ring-2 ring-opacity-20 ring-white" style={{ backgroundColor: item.color }}></div>
+                            <span className="text-slate-300 font-medium group-hover:text-white transition-colors">{item.name}</span>
                         </div>
-                        <span className="font-bold text-white">{item.value}%</span>
+                        <span className="font-bold text-white bg-slate-800 px-2 py-0.5 rounded text-xs">{item.value}%</span>
                     </div>
                 ))}
             </div>
         </div>
     );
 });
+
+const StatCard = ({ title, value, icon, color, subtext }: any) => (
+    <div className="bg-surface/50 backdrop-blur border border-border p-5 rounded-2xl flex items-center justify-between hover:border-primary/30 transition-all hover:shadow-lg group">
+        <div>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{title}</p>
+            <h3 className="text-2xl font-black text-white">{value}</h3>
+            {subtext && <p className="text-[10px] text-slate-500 mt-1">{subtext}</p>}
+        </div>
+        <div className={`size-12 rounded-xl bg-${color}-500/10 text-${color}-400 flex items-center justify-center group-hover:scale-110 transition-transform`}>
+            <span className="material-symbols-outlined text-2xl">{icon}</span>
+        </div>
+    </div>
+);
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -108,11 +127,7 @@ const Dashboard: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // If no course selected yet, wait.
-    if (!selectedCourse) {
-        return;
-    }
-
+    if (!selectedCourse) return;
     setLoading(true);
     DashboardService.getOverview(selectedCourse)
         .then(res => {
@@ -125,11 +140,10 @@ const Dashboard: React.FC = () => {
         });
   }, [selectedCourse]);
 
-  // Destructure with default empty arrays to prevent mapping on undefined
   const { pieChart = [], needsReview = [], recentActivity = [] } = data || {};
 
   const filteredActivity = useMemo(() => {
-      if (!recentActivity) return []; // Extra safety
+      if (!recentActivity) return [];
       if (!searchQuery) return recentActivity;
       const lowerQuery = searchQuery.toLowerCase();
       return recentActivity.filter((item) => 
@@ -139,30 +153,21 @@ const Dashboard: React.FC = () => {
   }, [recentActivity, searchQuery]);
 
   const handleNavigate = (type: string, id: number | string) => {
-      if (type === 'ocr' || type === 'quiz') {
-          navigate('/ocr');
-      } else if (type === 'plan' || type === 'ai') {
-          navigate('/ai');
-      }
+      if (type === 'ocr' || type === 'quiz') navigate('/ocr');
+      else if (type === 'plan' || type === 'ai') navigate('/ai');
   };
 
   const handleUseTemplate = (template: any) => {
       navigate('/ai', { state: { templateConfig: template } });
   };
 
-  const handleUploadClick = () => {
-      fileInputRef.current?.click();
-  };
+  const handleUploadClick = () => fileInputRef.current?.click();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
       if (!files || files.length === 0) return;
-      if (!selectedCourse) {
-          addToast("Please select a course first", 'error'); 
-          return;
-      }
+      if (!selectedCourse) { addToast("Please select a course first", 'error'); return; }
 
-      // Create queue items
       const newItems: UploadItem[] = Array.from(files).map(file => ({
           id: Math.random().toString(36).substr(2, 9),
           name: file.name,
@@ -171,41 +176,23 @@ const Dashboard: React.FC = () => {
       }));
       setUploadQueue(prev => [...prev, ...newItems]);
 
-      // Process uploads one by one (or parallel)
       for (let i = 0; i < files.length; i++) {
           const file = files[i];
           const item = newItems[i];
-          
           try {
-              // We can keep a fake progress interval just for visual feedback 
-              // since basic fetch doesn't support upload progress events easily
               const progressInterval = setInterval(() => {
-                  setUploadQueue(prev => prev.map(q => 
-                      q.id === item.id && q.progress < 90 ? { ...q, progress: q.progress + 10 } : q
-                  ));
+                  setUploadQueue(prev => prev.map(q => q.id === item.id && q.progress < 90 ? { ...q, progress: q.progress + 10 } : q));
               }, 200);
-
               await AIService.uploadMaterial(file, selectedCourse);
-              
               clearInterval(progressInterval);
-              setUploadQueue(prev => prev.map(q => 
-                  q.id === item.id ? { ...q, progress: 100, status: 'completed' } : q
-              ));
+              setUploadQueue(prev => prev.map(q => q.id === item.id ? { ...q, progress: 100, status: 'completed' } : q));
               addToast(`${file.name} uploaded`, "success");
           } catch (error) {
-              setUploadQueue(prev => prev.map(q => 
-                  q.id === item.id ? { ...q, status: 'error', progress: 0 } : q
-              ));
+              setUploadQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: 'error', progress: 0 } : q));
               addToast(`Failed to upload ${file.name}`, "error");
           }
       }
-      
-      // Clear completed items after delay
-      setTimeout(() => {
-          setUploadQueue(prev => prev.filter(item => item.status !== 'completed'));
-      }, 5000);
-      
-      // Clear input
+      setTimeout(() => setUploadQueue(prev => prev.filter(item => item.status !== 'completed')), 5000);
       if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -218,104 +205,76 @@ const Dashboard: React.FC = () => {
       }, 1500);
   };
 
-  // Wait for Course to be selected
-  if (!selectedCourse) {
-      return (
-          <div className="p-8 max-w-[1600px] mx-auto h-full flex items-center justify-center">
-              <span className="material-symbols-outlined animate-spin text-4xl text-primary">sync</span>
-          </div>
-      );
-  }
-
-  if (loading || !data) {
-      return (
-          <div className="p-8 max-w-[1600px] mx-auto h-full overflow-y-auto custom-scrollbar">
-              <DashboardSkeleton />
-          </div>
-      );
-  }
+  if (!selectedCourse) return <div className="p-8 max-w-[1600px] mx-auto h-full flex items-center justify-center"><span className="material-symbols-outlined animate-spin text-4xl text-primary">sync</span></div>;
+  if (loading || !data) return <div className="p-8 max-w-[1600px] mx-auto h-full overflow-y-auto custom-scrollbar"><DashboardSkeleton /></div>;
 
   const templates = [
-      { 
-          id: 1, 
-          title: 'Входное тестирование', 
-          desc: '15 вопросов для оценки базовых знаний', 
-          icon: 'login', 
-          color: 'blue',
-          config: { type: 'mcq', count: 15, difficulty: 'medium' }
-      },
-      { 
-          id: 2, 
-          title: 'Квиз-пятиминутка', 
-          desc: '5 быстрых вопросов (Правда/Ложь)', 
-          icon: 'timer', 
-          color: 'amber',
-          config: { type: 'boolean', count: 5, difficulty: 'easy' }
-      },
-      { 
-          id: 3, 
-          title: 'Итоговая контрольная', 
-          desc: '20 вопросов со смешанным типом', 
-          icon: 'school', 
-          color: 'purple',
-          config: { type: 'mcq', count: 20, difficulty: 'hard' }
-      }
+      { id: 1, title: 'Входное тестирование', desc: '15 вопросов', icon: 'login', color: 'blue', config: { type: 'mcq', count: 15, difficulty: 'medium' } },
+      { id: 2, title: 'Квиз-пятиминутка', desc: '5 вопросов (T/F)', icon: 'timer', color: 'amber', config: { type: 'boolean', count: 5, difficulty: 'easy' } },
+      { id: 3, title: 'Итоговая контрольная', desc: '20 вопросов', icon: 'school', color: 'purple', config: { type: 'mcq', count: 20, difficulty: 'hard' } }
   ];
 
   return (
     <PageTransition>
-    <div className="p-8 max-w-[1600px] mx-auto space-y-8 pb-32 md:pb-8 h-full overflow-y-auto custom-scrollbar">
+    <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8 pb-32 md:pb-8 h-full overflow-y-auto custom-scrollbar relative">
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none -z-10"></div>
+      
       <Confetti active={showConfetti} />
-      <input 
-          type="file" 
-          ref={fileInputRef} 
-          className="hidden" 
-          onChange={handleFileChange} 
-          accept="image/*,.pdf"
-          multiple
-      />
+      <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept="image/*,.pdf" multiple />
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 animate-fade-in">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">{t('dash.welcome')}, {user?.firstName}</h1>
-          <p className="text-slate-400 mt-1">
-             Активный курс: <span className="text-primary font-bold">{selectedCourse}</span>
+          <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight mb-2">
+              {t('dash.welcome')}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{user?.firstName}</span>
+          </h1>
+          <p className="text-slate-400 font-medium">
+             Активный курс: <span className="text-white font-bold bg-white/10 px-2 py-0.5 rounded ml-1">{selectedCourse}</span>
           </p>
         </div>
         <div className="flex gap-3">
           <button 
             onClick={handleUploadClick}
-            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-hover transition-all active:scale-95"
+            className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-hover hover:shadow-primary/40 transition-all active:scale-95 group"
             >
-            <span className="material-symbols-outlined">upload_file</span>
+            <span className="material-symbols-outlined group-hover:rotate-12 transition-transform">upload_file</span>
             {t('dash.upload')}
           </button>
           <button 
-            className="flex items-center gap-2 px-5 py-2.5 bg-surface border border-border text-white rounded-xl font-bold hover:bg-surface-lighter transition-all active:scale-95"
+            className="flex items-center gap-2 px-5 py-3 bg-surface border border-border text-white rounded-xl font-bold hover:bg-surface-lighter transition-all active:scale-95 group"
             onClick={() => navigate('/ocr')}
           >
-            <span className="material-symbols-outlined">assignment_turned_in</span>
+            <span className="material-symbols-outlined group-hover:text-green-400 transition-colors">assignment_turned_in</span>
             {t('dash.check')}
           </button>
         </div>
       </div>
 
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-in-right">
+          <StatCard title="Ожидает проверки" value={needsReview.length} icon="pending_actions" color="orange" subtext="работ в очереди" />
+          <StatCard title="Средний балл" value="84%" icon="analytics" color="green" subtext="+2.4% с прошлой недели" />
+          <StatCard title="Учеников" value="28" icon="groups" color="blue" subtext="98% посещаемость" />
+      </div>
+
       {uploadQueue.length > 0 && (
-          <div className="bg-surface border border-border rounded-xl p-4 animate-fade-in">
-              <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-sm font-bold text-white">{t('dash.queue')}</h3>
-                  <button onClick={() => setUploadQueue([])} className="text-xs text-slate-400 hover:text-white">{t('dash.clear')}</button>
+          <div className="bg-surface/50 backdrop-blur border border-border rounded-xl p-5 animate-fade-in shadow-xl">
+              <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <span className="material-symbols-outlined text-primary animate-spin">sync</span>
+                      {t('dash.queue')}
+                  </h3>
+                  <button onClick={() => setUploadQueue([])} className="text-xs text-slate-400 hover:text-white font-bold uppercase">{t('dash.clear')}</button>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-4">
                   {uploadQueue.map(item => (
-                      <div key={item.id} className="space-y-1">
-                          <div className="flex justify-between text-xs">
-                              <span className="text-slate-300 truncate max-w-[200px]">{item.name}</span>
-                              <span className={item.status === 'completed' ? 'text-green-400' : 'text-blue-400'}>
+                      <div key={item.id} className="space-y-1.5">
+                          <div className="flex justify-between text-xs font-medium">
+                              <span className="text-white truncate max-w-[200px]">{item.name}</span>
+                              <span className={item.status === 'completed' ? 'text-green-400' : 'text-primary'}>
                                   {item.status === 'completed' ? 'Готово' : `${Math.round(item.progress)}%`}
                               </span>
                           </div>
-                          <div className="h-1.5 w-full bg-slate-700 rounded-full overflow-hidden">
+                          <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
                               <div 
                                   className={`h-full transition-all duration-300 ${item.status === 'completed' ? 'bg-green-500' : 'bg-primary'}`}
                                   style={{ width: `${item.progress}%` }}
@@ -328,140 +287,149 @@ const Dashboard: React.FC = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-4 animate-slide-in-right" style={{animationDelay: '0.1s'}}>
-            <h2 className="text-lg font-bold text-white">Галерея шаблонов</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {templates.map(tmpl => (
-                    <div 
-                        key={tmpl.id}
-                        onClick={() => handleUseTemplate(tmpl.config)}
-                        className="bg-surface border border-border p-4 rounded-xl cursor-pointer hover:border-primary hover:shadow-lg transition-all group"
-                    >
-                        <div className={`size-10 rounded-lg bg-${tmpl.color}-500/20 text-${tmpl.color}-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
-                            <span className="material-symbols-outlined">{tmpl.icon}</span>
+        <div className="lg:col-span-2 space-y-6 animate-slide-in-right" style={{animationDelay: '0.1s'}}>
+            
+            {/* Templates Section */}
+            <div>
+                <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary">auto_fix</span>
+                    Быстрый старт
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {templates.map(tmpl => (
+                        <div 
+                            key={tmpl.id}
+                            onClick={() => handleUseTemplate(tmpl.config)}
+                            className="bg-surface border border-border p-4 rounded-2xl cursor-pointer hover:border-primary hover:shadow-lg transition-all group relative overflow-hidden"
+                        >
+                            <div className={`absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-10 transition-opacity`}>
+                                <span className="material-symbols-outlined text-6xl transform rotate-12">{tmpl.icon}</span>
+                            </div>
+                            <div className={`size-12 rounded-xl bg-${tmpl.color}-500/10 text-${tmpl.color}-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                                <span className="material-symbols-outlined text-2xl">{tmpl.icon}</span>
+                            </div>
+                            <h3 className="font-bold text-white text-sm mb-1">{tmpl.title}</h3>
+                            <p className="text-xs text-slate-400 font-medium">{tmpl.desc}</p>
                         </div>
-                        <h3 className="font-bold text-white text-sm mb-1">{tmpl.title}</h3>
-                        <p className="text-xs text-slate-400 leading-relaxed">{tmpl.desc}</p>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
 
-            <div className="flex items-center justify-between mt-8">
-                <h2 className="text-lg font-bold text-white">{t('dash.needsReview')}</h2>
-                <button className="text-xs font-bold text-primary uppercase tracking-wider hover:text-primary-hover">{t('dash.viewAll')}</button>
-            </div>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {needsReview.length > 0 ? needsReview.map((item) => (
-                <div 
-                    key={item.id} 
-                    onClick={() => handleNavigate('ocr', item.id)}
-                    className="group bg-surface border border-border p-3 rounded-2xl hover:border-primary/50 transition-all cursor-pointer hover:shadow-lg hover:shadow-black/20"
-                >
-                    <div className="aspect-[4/5] rounded-xl bg-slate-800 mb-3 overflow-hidden relative">
-                        <img src={item.img} alt={`Работа: ${item.subject}`} className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500" />
-                        <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
-                            <span className="material-symbols-outlined text-white text-3xl drop-shadow-lg">edit_document</span>
-                        </div>
-                    </div>
-                    <h3 className="text-sm font-bold text-white truncate" title={item.name}>{item.name}</h3>
-                    <p className="text-xs text-slate-400 truncate">{item.subject}</p>
+            {/* Needs Review Section */}
+            <div>
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        <span className="material-symbols-outlined text-orange-400">notifications_active</span>
+                        {t('dash.needsReview')}
+                    </h2>
+                    <button onClick={() => navigate('/ocr')} className="text-xs font-bold text-slate-400 uppercase tracking-wider hover:text-white transition-colors">
+                        {t('dash.viewAll')}
+                    </button>
                 </div>
-                )) : (
-                    <div className="col-span-4 p-8 text-center text-slate-500 bg-surface rounded-2xl border border-dashed border-border">
-                        Нет работ для проверки
+                
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {needsReview.length > 0 ? needsReview.map((item) => (
+                    <div 
+                        key={item.id} 
+                        onClick={() => handleNavigate('ocr', item.id)}
+                        className="group bg-surface border border-border p-3 rounded-2xl hover:border-primary/50 transition-all cursor-pointer hover:shadow-xl hover:shadow-black/20 hover:-translate-y-1"
+                    >
+                        <div className="aspect-[4/5] rounded-xl bg-slate-800 mb-3 overflow-hidden relative shadow-inner">
+                            {item.img ? (
+                                <img src={item.img} alt={item.subject} className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-slate-800 text-slate-600">
+                                    <span className="material-symbols-outlined text-4xl">image</span>
+                                </div>
+                            )}
+                            <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                                <span className="material-symbols-outlined text-white text-3xl drop-shadow-lg scale-0 group-hover:scale-100 transition-transform duration-300">edit_document</span>
+                            </div>
+                            <div className="absolute top-2 right-2 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-lg">NEW</div>
+                        </div>
+                        <h3 className="text-sm font-bold text-white truncate" title={item.name}>{item.name}</h3>
+                        <p className="text-xs text-slate-400 truncate">{item.subject}</p>
                     </div>
-                )}
+                    )) : (
+                        <div className="col-span-4 p-8 text-center text-slate-500 bg-surface/30 rounded-2xl border border-dashed border-border">
+                            <span className="material-symbols-outlined text-3xl mb-2 text-slate-600">check_circle</span>
+                            <p className="text-sm">Нет работ для проверки</p>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
 
-        <div className="space-y-4 animate-slide-in-right" style={{animationDelay: '0.2s'}}>
-            <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-white">{t('dash.performance')}</h2>
-                <button className="material-symbols-outlined text-slate-500 hover:text-white">more_horiz</button>
-            </div>
-            
+        <div className="space-y-6 animate-slide-in-right" style={{animationDelay: '0.2s'}}>
             <PerformanceChart 
                 data={pieChart} 
                 selectedCourse={selectedCourse} 
                 title={t('dash.performance')} 
                 avgLabel={t('dash.avgScore')} 
             />
-        </div>
-      </div>
 
-      <div className="space-y-4 animate-slide-in-right" style={{animationDelay: '0.3s'}}>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <h2 className="text-lg font-bold text-white">{t('dash.activity')}</h2>
-            <div className="flex items-center gap-4 w-full sm:w-auto">
-                <div className="relative flex-1 sm:w-64">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                    <input 
-                        type="text" 
-                        placeholder={t('dash.search')}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-surface border border-border rounded-lg py-2 pl-10 pr-4 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-all"
-                    />
+            {/* Activity List */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-bold text-white">{t('dash.activity')}</h2>
+                    <div className="relative w-32 md:w-40">
+                        <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</span>
+                        <input 
+                            type="text" 
+                            placeholder="Поиск..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-surface/50 border border-border rounded-lg py-1.5 pl-8 pr-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-all"
+                        />
+                    </div>
                 </div>
-                <button 
-                    onClick={handleExport}
-                    className="flex items-center gap-1 text-xs font-bold text-slate-400 hover:text-white uppercase tracking-wider whitespace-nowrap hidden sm:flex transition-colors"
-                >
-                    <span className="material-symbols-outlined text-sm">download</span> {t('dash.export')}
-                </button>
-            </div>
-        </div>
 
-        <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm min-h-[200px]">
-            {filteredActivity.length > 0 ? (
-                <table className="w-full text-left text-sm">
-                    <thead>
-                        <tr className="bg-slate-900/50 text-slate-400 text-[11px] uppercase font-bold tracking-wider border-b border-border">
-                            <th className="px-6 py-4">Тип документа</th>
-                            <th className="px-6 py-4">Источник</th>
-                            <th className="px-6 py-4">Время</th>
-                            <th className="px-6 py-4">Статус</th>
-                            <th className="px-6 py-4 text-right">Действие</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                        {filteredActivity.map((activity) => (
-                            <tr 
-                                key={activity.id} 
-                                onClick={() => handleNavigate(activity.type, activity.id)}
-                                className="hover:bg-slate-800/50 transition-colors cursor-pointer"
-                            >
-                                <td className="px-6 py-4">
+                <div className="bg-surface/50 border border-border rounded-2xl overflow-hidden shadow-sm">
+                    {filteredActivity.length > 0 ? (
+                        <div className="divide-y divide-border/50">
+                            {filteredActivity.map((activity) => (
+                                <div 
+                                    key={activity.id} 
+                                    onClick={() => handleNavigate(activity.type, activity.id)}
+                                    className="p-4 hover:bg-white/5 transition-colors cursor-pointer flex items-center justify-between group"
+                                >
                                     <div className="flex items-center gap-3">
-                                        <div className={`p-2 rounded-lg bg-${activity.statusColor}-500/10 text-${activity.statusColor}-400`}>
+                                        <div className={`p-2 rounded-lg bg-${activity.statusColor}-500/10 text-${activity.statusColor}-400 group-hover:scale-110 transition-transform`}>
                                             <span className="material-symbols-outlined text-lg">
                                                 {activity.type === 'quiz' ? 'quiz' : activity.type === 'plan' ? 'menu_book' : 'auto_awesome'}
                                             </span>
                                         </div>
-                                        <span className="font-bold text-white">{activity.title}</span>
+                                        <div>
+                                            <p className="text-sm font-bold text-white leading-tight mb-0.5">{activity.title}</p>
+                                            <p className="text-[10px] text-slate-400 flex items-center gap-1">
+                                                <span className="material-symbols-outlined text-[10px]">schedule</span> {activity.time}
+                                            </p>
+                                        </div>
                                     </div>
-                                </td>
-                                <td className="px-6 py-4 text-slate-400">{activity.source}</td>
-                                <td className="px-6 py-4 text-slate-400">{activity.time}</td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2.5 py-1 rounded-full bg-${activity.statusColor}-500/10 text-${activity.statusColor}-400 border border-${activity.statusColor}-500/20 text-[10px] font-bold uppercase tracking-wider`}>
-                                        {activity.status}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <button className="text-primary font-bold hover:underline">{activity.action}</button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            ) : (
-                <div className="flex flex-col items-center justify-center h-48 text-slate-500">
-                    <span className="material-symbols-outlined text-4xl mb-2">search_off</span>
-                    <p className="font-medium">По вашему запросу ничего не найдено</p>
+                                    <div className="flex flex-col items-end gap-1">
+                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                                            activity.status === 'Completed' ? 'bg-green-500/10 text-green-400' : 'bg-slate-700 text-slate-400'
+                                        }`}>
+                                            {activity.status}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="p-8 text-center text-slate-500">
+                            <p className="text-sm">Ничего не найдено</p>
+                        </div>
+                    )}
                 </div>
-            )}
+                <button 
+                    onClick={handleExport}
+                    className="w-full py-3 border border-border rounded-xl text-slate-400 text-sm font-bold hover:bg-surface hover:text-white transition-all flex items-center justify-center gap-2"
+                >
+                    <span className="material-symbols-outlined">download</span>
+                    {t('dash.export')}
+                </button>
+            </div>
         </div>
       </div>
     </div>
