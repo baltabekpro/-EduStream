@@ -71,12 +71,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             {/* Course Selector */}
             <div className="relative group">
                 <select 
-                    value={selectedCourse}
-                    onChange={(e) => setCourse(e.target.value as CourseType)}
-                    disabled={loadingCourses}
+                    value={selectedCourse?.id || ''}
+                    onChange={(e) => {
+                        const course = courses.find(c => c.id === e.target.value);
+                        selectCourse(course || null);
+                    }}
+                    disabled={loading}
                     className="w-full bg-surface/50 border border-border text-white text-sm rounded-xl py-3 pl-4 pr-10 appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary hover:bg-surface hover:border-slate-500 transition-all cursor-pointer disabled:opacity-50 font-medium shadow-sm"
                 >
-                    {loadingCourses ? (
+                    {loading ? (
                         <option>Загрузка...</option>
                     ) : courses.length > 0 ? (
                         courses.map(course => (
@@ -94,11 +97,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
             {/* Close button for mobile */}
             <button onClick={onClose} className="md:hidden absolute top-5 right-5 text-slate-400 hover:text-white transition-colors">
-              <span className="material-s?.id || ''}
-                    onChange={(e) => {
-                        const course = courses.find(c => c.id === e.target.value);
-                        selectCourse(course || null);
-                    }
+              <span className="material-symbols-outlined">close</span>
+            </button>
           </div>
 
           <nav className="flex flex-col gap-1.5">
