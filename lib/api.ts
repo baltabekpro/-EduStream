@@ -221,11 +221,11 @@ export const AIService = {
     },
 
     async chat(message: string, materialId?: string): Promise<string> {
-        const response = await request<{ text: string }>('/ai/chat', {
+        const response = await request<{ response?: string; text?: string }>('/ai/chat', {
             method: 'POST',
             body: JSON.stringify({ message, materialId })
         });
-        return response.text;
+        return response.response || response.text || 'No response';
     },
 
     async generateQuiz(config: QuizConfig): Promise<Question[]> {
@@ -241,11 +241,11 @@ export const AIService = {
     },
 
     async performSmartAction(req: SmartActionRequest): Promise<string> {
-        const response = await request<{ result: string }>('/ai/smart-action', {
+        const response = await request<{ response?: string; result?: string }>('/ai/smart-action', {
             method: 'POST',
             body: JSON.stringify(req),
         });
-        return response.result;
+        return response.response || response.result || 'Action completed';
     },
 
     async regenerateBlock(blockId: string, context: string): Promise<Question> {
