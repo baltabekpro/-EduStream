@@ -95,7 +95,7 @@ const AIWorkspace: React.FC = () => {
                  setMessages([{ 
                     id: 1, 
                     type: 'ai', 
-                    text: `Please upload a material in the Dashboard to get started.` 
+                    text: `Пожалуйста, загрузите материал на странице Дашборда, чтобы начать работу.` 
                  }]);
                  return;
              }
@@ -105,7 +105,7 @@ const AIWorkspace: React.FC = () => {
              setMessages([{ 
                  id: 1, 
                  type: 'ai', 
-                 text: `I've analyzed the document "${doc.title}". I'm ready to answer questions or generate a test.` 
+                 text: `Я проанализировал документ "**${doc.title}**". Готов ответить на вопросы или создать тест.` 
              }]);
 
              // Check for template config after document is loaded
@@ -307,7 +307,7 @@ const AIWorkspace: React.FC = () => {
                 </div>
              </div>
 
-             <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 pb-24 scroll-smooth custom-scrollbar">
+             <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 pb-32 md:pb-36 scroll-smooth custom-scrollbar">
                  {activeTab === 'canvas' && (
                      <>
                         {messages.map((msg) => (
@@ -318,7 +318,20 @@ const AIWorkspace: React.FC = () => {
                                             <span className="material-symbols-outlined text-sm">smart_toy</span> EduBot
                                         </div>
                                     )}
-                                    <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{msg.text}</p>
+                                    <div className="text-sm leading-relaxed break-words prose prose-invert prose-sm max-w-none" 
+                                         dangerouslySetInnerHTML={{
+                                            __html: msg.text
+                                                .split('\n\n')
+                                                .map(paragraph => {
+                                                    let formatted = paragraph
+                                                        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-white">$1</strong>')
+                                                        .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
+                                                        .replace(/\n/g, '<br>');
+                                                    return `<p class="mb-3 last:mb-0">${formatted}</p>`;
+                                                })
+                                                .join('')
+                                         }}
+                                    />
                                     {msg.isTyping && (
                                         <span className="inline-block w-2 h-4 ml-1 bg-current animate-pulse align-middle">|</span>
                                     )}
