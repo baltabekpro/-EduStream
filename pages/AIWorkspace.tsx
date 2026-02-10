@@ -168,10 +168,11 @@ const AIWorkspace: React.FC = () => {
 
       try {
           const result = await AIService.performSmartAction({ text, action });
-          // Stream the result
-          streamResponse(result);
+          // Stream the result - ensure it's a string
+          streamResponse(result || "Action completed");
       } catch (e) {
           addToast("Failed to perform smart action", "error");
+          streamResponse("Failed to perform action. Please try again.");
           setIsGenerating(false);
       }
   };
@@ -195,13 +196,19 @@ const AIWorkspace: React.FC = () => {
 
       try {
           const response = await AIService.chat(text, documentData?.id);
-          streamResponse(response);
+          streamResponse(response || "Message received");
       } catch (e) {
+          console.error("Chat error:", e);
           streamResponse("I'm sorry, I'm having trouble connecting to the server.");
       }
   };
 
   const streamResponse = (fullText: string) => {
+      // Safety check: ensure we have a valid string
+      if (!fullText || typeof fullText !== 'string') {
+          fullText = "Error: Invalid response from server";
+      }
+      
       const aiMsgId = Date.now() + 1;
       setMessages(prev => [...prev, { id: aiMsgId, type: 'ai', text: '', isTyping: true }]);
 
