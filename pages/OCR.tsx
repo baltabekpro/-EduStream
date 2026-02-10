@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { PageTransition } from '../components/PageTransition';
 import { StudentResult } from '../types';
+import { incrementTimeSaved } from '../lib/timeSaved';
 import Confetti from '../components/Confetti';
 
 const OCR: React.FC = () => {
@@ -22,8 +23,23 @@ const OCR: React.FC = () => {
   const [zoom, setZoom] = useState(100);
   const [isDirty, setIsDirty] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
 
   useEffect(() => { loadQueue(); }, []);
+
+  // Warn before leaving with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty && viewMode === 'detail') {
+        e.preventDefault();
+        e.returnValue = 'У вас есть несохраненные изменения. Вы уверены, что хотите покинуть страницу?';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty, viewMode]);
 
   const loadQueue = async () => {
       setLoadingQueue(true);
@@ -66,6 +82,7 @@ const OCR: React.FC = () => {
       try {
           await OCRService.batchApprove(ids);
           setShowConfetti(true);
+          incrementTimeSaved('worksChecked', count);
           addToast(`Successfully graded ${count} works`, "success");
           setTimeout(() => setShowConfetti(false), 3000);
       } catch (e) {
@@ -74,12 +91,29 @@ const OCR: React.FC = () => {
       }
   };
   
+  const handleCloseDetail = () => {
+      if (isDirty) {
+          setShowUnsavedModal(true);
+      } else {
+          setViewMode('list');
+          setIsDirty(false);
+      }
+  };
+  
+  const handleForceClose = () => {
+      setShowUnsavedModal(false);
+      setViewMode('list');
+      setIsDirty(false);
+  };
+  
   const handleSave = async () => {
       if (!currentWork) return;
       try {
           await OCRService.updateResult(currentWork.id, { questions: currentWork.questions });
+          incrementTimeSaved('worksChecked', 1);
           addToast("Changes saved", "success");
           setIsDirty(false);
+          setShowUnsavedModal(false);
       } catch (e) { addToast("Save failed", "error"); }
   };
 
@@ -129,7 +163,7 @@ const OCR: React.FC = () => {
                  </div>
             ) : (
                 <div className="flex gap-3">
-                    <button onClick={() => setViewMode('list')} className="px-4 py-2 border border-border text-slate-300 rounded-xl text-sm font-bold hover:bg-white/5 hover:text-white transition-colors">
+                    <button onClick={handleCloseDetail} className="px-4 py-2 border border-border text-slate-300 rounded-xl text-sm font-bold hover:bg-white/5 hover:text-white transition-colors">
                         {t('ocr.close')}
                     </button>
                     <button onClick={handleSave} className="flex items-center gap-2 px-5 py-2 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-500 shadow-lg shadow-green-900/20 transition-all active:scale-95">
@@ -307,6 +341,44 @@ const OCR: React.FC = () => {
                                  Top 10%
                              </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        )}
+        
+        {/* Unsaved Changes Modal */}
+        {showUnsavedModal && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowUnsavedModal(false)}></div>
+                <div className="relative bg-surface border border-border rounded-2xl w-full max-w-md p-6 shadow-2xl animate-fade-in">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="bg-yellow-500/10 p-2 rounded-lg">
+                            <span className="material-symbols-outlined text-yellow-500">warning</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-white">Несохраненные изменения</h3>
+                    </div>
+                    <p className="text-slate-400 mb-6">
+                        У вас есть несохраненные изменения. Если вы закроете сейчас, они будут потеряны.
+                    </p>
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={() => setShowUnsavedModal(false)}
+                            className="flex-1 px-4 py-2 border border-border text-slate-300 rounded-xl font-bold hover:bg-white/5 hover:text-white transition-colors"
+                        >
+                            Отмена
+                        </button>
+                        <button 
+                            onClick={handleSave}
+                            className="flex-1 px-4 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover transition-colors"
+                        >
+                            Сохранить
+                        </button>
+                        <button 
+                            onClick={handleForceClose}
+                            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-500 transition-colors"
+                        >
+                            Не сохранять
+                        </button>
                     </div>
                 </div>
             </div>

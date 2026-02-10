@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCourse } from '../context/CourseContext';
 import { useLanguage } from '../context/LanguageContext';
+import { getTimeSavedHours } from '../lib/timeSaved';
 import { useUser } from '../context/UserContext';
 
 interface SidebarProps {
@@ -20,9 +21,28 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { icon: 'dashboard', label: t('nav.dashboard'), path: '/dashboard' },
     { icon: 'document_scanner', label: t('nav.ocr'), path: '/ocr' },
     { icon: 'auto_awesome', label: t('nav.ai'), path: '/ai' },
+    { icon: 'library_books', label: t('nav.library'), path: '/library' },
     { icon: 'bar_chart', label: t('nav.analytics'), path: '/analytics' },
     { icon: 'settings', label: t('nav.settings'), path: '/settings' },
   ];
+
+  const [courseSearch, setCourseSearch] = useState('');
+  const [timeSavedHours, setTimeSavedHours] = useState(0);
+
+  useEffect(() => {
+    const updateTimeSaved = () => {
+      setTimeSavedHours(getTimeSavedHours());
+    };
+
+    updateTimeSaved();
+    window.addEventListener('storage', updateTimeSaved);
+    window.addEventListener('timeSavedUpdated', updateTimeSaved as EventListener);
+
+    return () => {
+      window.removeEventListener('storage', updateTimeSaved);
+      window.removeEventListener('timeSavedUpdated', updateTimeSaved as EventListener);
+    };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
@@ -35,9 +55,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     onClose(); 
   };
 
-  const toggleLanguage = () => {
+    const toggleLanguage = () => {
       setLanguage(language === 'ru' ? 'en' : 'ru');
   };
+
+    const filteredCourses = courses.filter(course =>
+      course.title.toLowerCase().includes(courseSearch.trim().toLowerCase())
+    );
 
   return (
     <>
@@ -70,10 +94,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             
             {/* Course Selector */}
             <div className="relative group" data-onboarding="course-selector">
+              <div className="mb-2">
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+                  <input
+                    value={courseSearch}
+                    onChange={(e) => setCourseSearch(e.target.value)}
+                    placeholder="Поиск курса..."
+                    className="w-full bg-surface/30 border border-border text-white text-xs rounded-lg py-2 pl-8 pr-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-slate-500"
+                  />
+                </div>
+              </div>
                 <select 
                     value={selectedCourse?.id || ''}
                     onChange={(e) => {
-                        const course = courses.find(c => c.id === e.target.value);
+                  const course = courses.find(c => c.id === e.target.value);
                         selectCourse(course || null);
                     }}
                     disabled={loadingCourses}
@@ -81,8 +116,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 >
                     {loadingCourses ? (
                         <option>Загрузка...</option>
-                    ) : courses.length > 0 ? (
-                        courses.map(course => (
+                ) : filteredCourses.length > 0 ? (
+                  filteredCourses.map(course => (
                             <option key={course.id} value={course.id}>{course.title}</option>
                         ))
                     ) : (
@@ -141,7 +176,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 <div className="text-[10px] text-primary-300 uppercase font-bold tracking-widest mb-1.5">{t('nav.saved').replace('сэкономлено с ИИ', 'Твой вклад').replace('saved with AI', 'Impact')}</div>
                 <div className="text-2xl font-black text-white flex items-center gap-1.5 mb-0.5">
                     <span className="material-symbols-outlined text-yellow-400 text-2xl filled-icon drop-shadow-lg animate-pulse-slow">bolt</span> 
-                    12.5 h
+                  {timeSavedHours.toFixed(1)} h
                 </div>
                 <p className="text-[10px] text-slate-400 font-medium">{t('nav.saved')}</p>
             </div>

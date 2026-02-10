@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import OCR from './pages/OCR';
 import Analytics from './pages/Analytics';
 import AIWorkspace from './pages/AIWorkspace';
+import Library from './pages/Library';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -27,9 +28,10 @@ const Layout: React.FC = () => {
   const getPageTitle = (path: string) => {
     switch (path) {
       case '/dashboard': return 'Дашборд';
-      case '/ocr': return 'OCR Проверка';
+      case '/ocr': return 'Проверка работ';
       case '/analytics': return 'Аналитика';
       case '/ai': return 'AI Ассистент';
+      case '/library': return 'Библиотека тестов';
       case '/settings': return 'Настройки';
       default: return 'EduStream';
     }
@@ -88,6 +90,7 @@ const App: React.FC = () => {
                         <Route path="/ocr" element={<OCR />} />
                         <Route path="/analytics" element={<Analytics />} />
                         <Route path="/ai" element={<AIWorkspace />} />
+                        <Route path="/library" element={<Library />} />
                         <Route path="/settings" element={<Settings />} />
                     </Route>
                     </Route>

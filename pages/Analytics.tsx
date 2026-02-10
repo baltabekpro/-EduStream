@@ -51,6 +51,15 @@ const Analytics: React.FC = () => {
       setSelectedTopic(topic);
   };
 
+  const handleExportPDF = () => {
+      addToast("Подготовка PDF...", "info");
+      // Wait a bit for toast to show
+      setTimeout(() => {
+          window.print();
+          addToast("Отчет готов к печати", "success");
+      }, 500);
+  };
+
   // Wait for course selection
   if (!selectedCourse) {
       return (
@@ -121,9 +130,18 @@ const Analytics: React.FC = () => {
                 <h2 className="text-3xl font-black text-white">{t('analytics.title')}</h2>
                 <p className="text-slate-400">{t('analytics.subtitle')} <span className="text-white font-bold">{selectedCourse.title}</span></p>
             </div>
-            <div className="text-right">
-                <div className="text-4xl font-black text-white">{averageScore}%</div>
-                <div className="text-xs font-bold text-slate-500 uppercase">{t('analytics.average')}</div>
+            <div className="flex items-end gap-4">
+                <button
+                    onClick={handleExportPDF}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all active:scale-95 print:hidden"
+                >
+                    <span className="material-symbols-outlined text-lg">picture_as_pdf</span>
+                    Экспорт PDF
+                </button>
+                <div className="text-right">
+                    <div className="text-4xl font-black text-white">{averageScore}%</div>
+                    <div className="text-xs font-bold text-slate-500 uppercase">{t('analytics.average')}</div>
+                </div>
             </div>
         </div>
 

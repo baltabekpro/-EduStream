@@ -11,6 +11,7 @@ import Confetti from '../components/Confetti';
 import { PageTransition } from '../components/PageTransition';
 import { CreateCourseModal } from '../components/CreateCourseModal';
 import Onboarding from '../components/Onboarding';
+import { incrementTimeSaved } from '../lib/timeSaved';
 
 interface UploadItem {
     id: string;
@@ -202,6 +203,7 @@ const Dashboard: React.FC = () => {
       }));
       setUploadQueue(prev => [...prev, ...newItems]);
 
+      let successCount = 0;
       for (let i = 0; i < files.length; i++) {
           const file = files[i];
           const item = newItems[i];
@@ -212,12 +214,26 @@ const Dashboard: React.FC = () => {
               await AIService.uploadMaterial(file, selectedCourse.id);
               clearInterval(progressInterval);
               setUploadQueue(prev => prev.map(q => q.id === item.id ? { ...q, progress: 100, status: 'completed' } : q));
-              addToast(`${file.name} uploaded`, "success");
+              successCount++;
           } catch (error) {
               setUploadQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: 'error', progress: 0 } : q));
               addToast(`Failed to upload ${file.name}`, "error");
           }
       }
+      
+      // Show success notification with action button
+      if (successCount > 0) {
+          incrementTimeSaved('materialsUploaded', successCount);
+          addToast(
+              `${successCount} ${successCount === 1 ? 'файл загружен' : 'файла загружено'} успешно!`,
+              "success",
+              {
+                  label: "Создать тест",
+                  onClick: () => navigate('/ai')
+              }
+          );
+      }
+      
       setTimeout(() => setUploadQueue(prev => prev.filter(item => item.status !== 'completed')), 5000);
       if (fileInputRef.current) fileInputRef.current.value = '';
   };

@@ -3,14 +3,20 @@ import { useSettings } from '../context/SettingsContext';
 
 type ToastType = 'success' | 'info' | 'error';
 
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 interface Toast {
   id: number;
   message: string;
   type: ToastType;
+  action?: ToastAction;
 }
 
 interface ToastContextType {
-  addToast: (message: string, type?: ToastType) => void;
+  addToast: (message: string, type?: ToastType, action?: ToastAction) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -27,7 +33,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [toasts, setToasts] = useState<Toast[]>([]);
   const { settings } = useSettings();
 
-  const addToast = useCallback((message: string, type: ToastType = 'success') => {
+  const addToast = useCallback((message: string, type: ToastType = 'success', action?: ToastAction) => {
     // Проверка настроек перед показом
     if (type === 'error' && !settings.notifications.errors) return;
     if (type === 'info' && !settings.notifications.reports) return; // Info используем для отчетов/статусов
@@ -35,10 +41,10 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // LowPerformance логика обычно реализуется на уровне вызова addToast в компоненте Analytics
 
     const id = Date.now();
-    setToasts((prev) => [...prev, { id, message, type }]);
+    setToasts((prev) => [...prev, { id, message, type, action }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 3000);
+    }, action ? 5000 : 3000); // Больше времени если есть кнопка
   }, [settings]);
 
   return (
@@ -58,7 +64,18 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             <span className="material-symbols-outlined">
               {toast.type === 'success' ? 'check_circle' : toast.type === 'error' ? 'error' : 'info'}
             </span>
-            <span className="text-sm font-medium text-white">{toast.message}</span>
+            <span className="text-sm font-medium text-white flex-1">{toast.message}</span>
+            {toast.action && (
+              <button
+                onClick={() => {
+                  toast.action!.onClick();
+                  setToasts((prev) => prev.filter((t) => t.id !== toast.id));
+                }}
+                className="ml-2 px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary-hover transition-colors"
+              >
+                {toast.action.label}
+              </button>
+            )}
           </div>
         ))}
       </div>

@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { AIService } from '../lib/api';
 import { useLanguage } from '../context/LanguageContext';
 import { PageTransition } from '../components/PageTransition';
 import ShareModal from '../components/ShareModal';
+import { incrementTimeSaved } from '../lib/timeSaved';
+import { loadAISession, saveAISession, clearAISession } from '../lib/aiSessionStorage';
+import { getSavedQuiz, saveQuizToLibrary } from '../lib/quizLibrary';
 import { Question, QuizConfig, SmartActionRequest, Material } from '../types';
 
 interface Message {
@@ -48,6 +51,7 @@ const AIWorkspace: React.FC = () => {
   const { addToast } = useToast();
   const { t } = useLanguage();
   const location = useLocation();
+    const navigate = useNavigate();
   
   // State
   const [inputValue, setInputValue] = useState('');
@@ -72,6 +76,26 @@ const AIWorkspace: React.FC = () => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const resetSessionState = (docTitle?: string) => {
+      setActiveTab('canvas');
+      setInputValue('');
+      setIsGenerating(false);
+      setSelection(null);
+      setTestQuestions([]);
+      setTestConfig({
+          difficulty: 'medium',
+          count: 5,
+          type: 'mcq'
+      });
+      setMessages([{
+          id: 1,
+          type: 'ai',
+          text: docTitle
+              ? `Я проанализировал документ "**${docTitle}**". Готов ответить на вопросы или создать тест.`
+              : 'Пожалуйста, загрузите материал на странице Дашборда, чтобы начать работу.'
+      }]);
+  };
 
   // Load Initial Data
   useEffect(() => {
@@ -105,11 +129,28 @@ const AIWorkspace: React.FC = () => {
 
              const doc = await AIService.getDocument(docId);
              setDocumentData(doc);
-             setMessages([{ 
-                 id: 1, 
-                 type: 'ai', 
-                 text: `Я проанализировал документ "**${doc.title}**". Готов ответить на вопросы или создать тест.` 
-             }]);
+
+             const stored = loadAISession(doc.id);
+             if (stored) {
+                 setMessages(stored.messages.map(m => ({ ...m, isTyping: false })));
+                 setTestQuestions(Array.isArray(stored.testQuestions) ? stored.testQuestions : []);
+                 if (stored.testConfig) setTestConfig(stored.testConfig);
+             } else {
+                 resetSessionState(doc.title);
+             }
+
+             // If navigated from Library with a saved quiz, load it into the builder
+             if (location.state?.savedQuizId) {
+                 const saved = getSavedQuiz(location.state.savedQuizId);
+                 if (saved) {
+                     setActiveTab('test-builder');
+                     setTestConfig(saved.config);
+                     setTestQuestions(saved.questions);
+                     addToast('Тест загружен из библиотеки', 'success');
+                 } else {
+                     addToast('Не удалось найти тест в библиотеке', 'error');
+                 }
+             }
 
              // Check for template config after document is loaded
              if (location.state?.templateConfig) {
@@ -129,6 +170,26 @@ const AIWorkspace: React.FC = () => {
 
      init();
   }, [location.state]);
+
+  // Persist session locally per document (avoid excessive writes while streaming)
+  useEffect(() => {
+      if (!documentData || documentData.id === 'err') return;
+      if (isGenerating) return;
+
+      const docId = documentData.id;
+      const timeout = window.setTimeout(() => {
+          const storedMessages = messages
+              .filter(m => !m.isTyping)
+              .map(m => ({ id: m.id, type: m.type, text: m.text }));
+          saveAISession(docId, {
+              messages: storedMessages,
+              testQuestions,
+              testConfig,
+          });
+      }, 500);
+
+      return () => window.clearTimeout(timeout);
+  }, [documentData?.id, isGenerating, messages, testQuestions, testConfig]);
 
   // Scroll to bottom
   useEffect(() => {
@@ -244,6 +305,7 @@ const AIWorkspace: React.FC = () => {
 
           const questions = await AIService.generateQuiz({ ...config, materialId: matId });
           setTestQuestions(questions);
+          incrementTimeSaved('quizzesGenerated', 1);
           addToast("Test generated successfully", "success");
       } catch (e: any) {
           addToast(e.message || "Error generating quiz", "error");
@@ -300,12 +362,29 @@ const AIWorkspace: React.FC = () => {
         {/* Right: AI Interface */}
         <div className="w-full md:w-1/2 flex flex-col h-full bg-background relative">
              <div className="px-6 border-b border-border bg-surface/30 backdrop-blur-md flex-none z-10">
-                <div className="flex gap-8 overflow-x-auto custom-scrollbar">
+                <div className="flex items-center gap-8 overflow-x-auto custom-scrollbar">
                     <button onClick={() => setActiveTab('canvas')} className={`border-b-2 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-colors ${activeTab === 'canvas' ? 'border-primary text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}>
                         <span className="material-symbols-outlined text-lg">auto_awesome</span> {t('ai.tab.canvas')}
                     </button>
                     <button onClick={() => setActiveTab('test-builder')} className={`border-b-2 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-colors ${activeTab === 'test-builder' ? 'border-primary text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}>
                         <span className="material-symbols-outlined text-lg">quiz</span> {t('ai.tab.builder')}
+                    </button>
+
+                    <div className="flex-1" />
+
+                    <button
+                        type="button"
+                        onClick={() => {
+                            if (!documentData || documentData.id === 'err') return;
+                            clearAISession(documentData.id);
+                            resetSessionState(documentData.title);
+                            addToast('Начата новая сессия (локальная история очищена)', 'success');
+                        }}
+                        className="flex items-center gap-2 px-3 py-2 my-2 bg-surface border border-border text-slate-300 rounded-lg text-xs font-bold hover:bg-white/5 hover:text-white transition-colors whitespace-nowrap"
+                        title="Очистить локальную историю чата и тестов"
+                    >
+                        <span className="material-symbols-outlined text-sm">restart_alt</span>
+                        Новая сессия
                     </button>
                 </div>
              </div>
@@ -414,8 +493,23 @@ const AIWorkspace: React.FC = () => {
                                  <div className="grid grid-cols-2 gap-3">
                                      <button 
                                          onClick={() => {
+                                             if (!documentData || documentData.id === 'err') {
+                                                 addToast('Сначала выберите материал', 'error');
+                                                 return;
+                                             }
+                                             if (testQuestions.length === 0) return;
+
+                                             saveQuizToLibrary({
+                                                 materialId: documentData.id,
+                                                 materialTitle: documentData.title,
+                                                 config: testConfig,
+                                                 questions: testQuestions,
+                                             });
                                              setShowSaveSuccess(true);
-                                             addToast("Тест сохранен в библиотеку", "success");
+                                             addToast('Тест сохранён в библиотеку', 'success', {
+                                                 label: 'Открыть библиотеку',
+                                                 onClick: () => navigate('/library'),
+                                             });
                                              setTimeout(() => setShowSaveSuccess(false), 3000);
                                          }}
                                          className="flex items-center justify-center gap-2 px-4 py-3 bg-surface border border-border text-white rounded-xl font-bold hover:bg-white/5 transition-all group"
