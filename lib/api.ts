@@ -45,6 +45,19 @@ async function request<T>(endpoint: string, options: CustomRequestInit = {}): Pr
         });
 
         if (!response.ok) {
+            // Handle 401 Unauthorized - clear token and redirect to login
+            if (response.status === 401 && !skipAuth) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('isLoggedIn');
+                
+                // Small delay to show any pending toasts
+                setTimeout(() => {
+                    window.location.href = '/#/login';
+                }, 100);
+                
+                throw new ApiError(401, 'Сессия истекла. Пожалуйста, войдите снова.');
+            }
+            
             let errorMessage = `Request failed with status ${response.status}`;
             try {
                 const errorBody = await response.json();
