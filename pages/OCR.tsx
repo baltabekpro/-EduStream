@@ -96,19 +96,24 @@ const OCR: React.FC = () => {
         
         {/* Header */}
         <div className="px-6 py-4 border-b border-border bg-surface/80 backdrop-blur z-20 flex justify-between items-center shadow-sm">
-            <h1 className="text-xl font-bold text-white flex items-center gap-3">
+            <div className="flex items-center gap-3">
                 <div className="bg-primary/10 p-2 rounded-lg text-primary">
                     <span className="material-symbols-outlined">document_scanner</span>
                 </div>
                 {viewMode === 'list' ? (
-                    <span className="tracking-tight">{t('nav.ocr')}</span>
+                    <div className="flex flex-col">
+                        <h1 className="text-xl font-bold text-white tracking-tight">{t('nav.ocr')}</h1>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                            Система автоматически распознала текст с изображений. Проверьте точность и утвердите оценки.
+                        </p>
+                    </div>
                 ) : (
                     <div className="flex flex-col">
                         <span className="text-sm text-slate-400 font-medium uppercase tracking-wider">Reviewing</span>
-                        <span>{currentWork?.student.name}</span>
+                        <h1 className="text-xl font-bold text-white">{currentWork?.student.name}</h1>
                     </div>
                 )}
-            </h1>
+            </div>
             
             {viewMode === 'list' ? (
                  <div className="flex gap-4 items-center">

@@ -69,7 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             </div>
             
             {/* Course Selector */}
-            <div className="relative group">
+            <div className="relative group" data-onboarding="course-selector">
                 <select 
                     value={selectedCourse?.id || ''}
                     onChange={(e) => {
@@ -104,10 +104,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           <nav className="flex flex-col gap-1.5">
             {menuItems.map((item) => {
               const isActive = location.pathname === item.path;
+              const isAILink = item.path === '/ai';
               return (
                 <button
                   key={item.path}
                   onClick={() => handleNavigation(item.path)}
+                  data-onboarding={isAILink ? 'ai-link' : undefined}
                   className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group overflow-hidden ${
                     isActive
                       ? 'bg-primary text-white font-medium shadow-lg shadow-primary/20'

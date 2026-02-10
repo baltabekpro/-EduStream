@@ -11,7 +11,7 @@ type Translations = {
 const translations: Translations = {
     ru: {
         'nav.dashboard': 'Дашборд',
-        'nav.ocr': 'OCR Проверка',
+        'nav.ocr': 'Проверка работ',
         'nav.ai': 'AI Ассистент',
         'nav.analytics': 'Аналитика',
         'nav.settings': 'Настройки',
@@ -107,7 +107,7 @@ const translations: Translations = {
     },
     en: {
         'nav.dashboard': 'Dashboard',
-        'nav.ocr': 'OCR Grader',
+        'nav.ocr': 'Grade Works',
         'nav.ai': 'AI Assistant',
         'nav.analytics': 'Analytics',
         'nav.settings': 'Settings',

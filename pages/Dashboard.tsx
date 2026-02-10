@@ -10,6 +10,7 @@ import { useUser } from '../context/UserContext';
 import Confetti from '../components/Confetti';
 import { PageTransition } from '../components/PageTransition';
 import { CreateCourseModal } from '../components/CreateCourseModal';
+import Onboarding from '../components/Onboarding';
 
 interface UploadItem {
     id: string;
@@ -126,7 +127,22 @@ const Dashboard: React.FC = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [uploadQueue, setUploadQueue] = useState<UploadItem[]>([]);
   const [showCreateCourseModal, setShowCreateCourseModal] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Check if this is first visit
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+    if (!hasSeenOnboarding) {
+      // Wait a bit for page to load
+      setTimeout(() => setShowOnboarding(true), 1000);
+    }
+  }, []);
+
+  const handleCompleteOnboarding = () => {
+    setShowOnboarding(false);
+    localStorage.setItem('hasSeenOnboarding', 'true');
+  };
 
   useEffect(() => {
     if (!selectedCourse) {
@@ -299,6 +315,7 @@ const Dashboard: React.FC = () => {
             <>
               <button 
                 onClick={handleUploadClick}
+                data-onboarding="upload-button"
                 className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-hover hover:shadow-primary/40 transition-all active:scale-95 group"
                 >
                 <span className="material-symbols-outlined group-hover:rotate-12 transition-transform">upload_file</span>
@@ -504,6 +521,12 @@ const Dashboard: React.FC = () => {
       <CreateCourseModal 
         isOpen={showCreateCourseModal} 
         onClose={() => setShowCreateCourseModal(false)} 
+      />
+      
+      {/* Onboarding */}
+      <Onboarding 
+        isOpen={showOnboarding} 
+        onComplete={handleCompleteOnboarding} 
       />
     </div>
     </PageTransition>

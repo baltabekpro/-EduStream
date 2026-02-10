@@ -4,6 +4,7 @@ import { useToast } from '../components/Toast';
 import { AIService } from '../lib/api';
 import { useLanguage } from '../context/LanguageContext';
 import { PageTransition } from '../components/PageTransition';
+import ShareModal from '../components/ShareModal';
 import { Question, QuizConfig, SmartActionRequest, Material } from '../types';
 
 interface Message {
@@ -66,6 +67,8 @@ const AIWorkspace: React.FC = () => {
       count: 5,
       type: 'mcq'
   });
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -400,6 +403,55 @@ const AIWorkspace: React.FC = () => {
                                  </div>
                              </div>
                          ))}
+                         
+                         {/* Action Buttons after test generation */}
+                         {testQuestions.length > 0 && (
+                             <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 space-y-4 animate-fade-in">
+                                 <div className="flex items-center gap-2 text-primary text-sm font-bold uppercase tracking-wider">
+                                     <span className="material-symbols-outlined">check_circle</span>
+                                     Тест сгенерирован успешно ({testQuestions.length} {testQuestions.length === 1 ? 'вопрос' : testQuestions.length < 5 ? 'вопроса' : 'вопросов'})
+                                 </div>
+                                 <div className="grid grid-cols-2 gap-3">
+                                     <button 
+                                         onClick={() => {
+                                             setShowSaveSuccess(true);
+                                             addToast("Тест сохранен в библиотеку", "success");
+                                             setTimeout(() => setShowSaveSuccess(false), 3000);
+                                         }}
+                                         className="flex items-center justify-center gap-2 px-4 py-3 bg-surface border border-border text-white rounded-xl font-bold hover:bg-white/5 transition-all group"
+                                     >
+                                         <span className="material-symbols-outlined group-hover:scale-110 transition-transform">save</span>
+                                         Сохранить в библиотеку
+                                     </button>
+                                     <button 
+                                         onClick={() => setShowShareModal(true)}
+                                         className="flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all group"
+                                     >
+                                         <span className="material-symbols-outlined group-hover:scale-110 transition-transform">share</span>
+                                         Поделиться с учениками
+                                     </button>
+                                 </div>
+                                 <div className="grid grid-cols-2 gap-3">
+                                     <button 
+                                         onClick={() => addToast("Предпросмотр в разработке", "info")}
+                                         className="flex items-center justify-center gap-2 px-4 py-3 bg-surface border border-border text-slate-300 rounded-xl font-medium hover:bg-white/5 hover:text-white transition-all"
+                                     >
+                                         <span className="material-symbols-outlined text-sm">visibility</span>
+                                         Предпросмотр
+                                     </button>
+                                     <button 
+                                         onClick={() => {
+                                             setTestQuestions([]);
+                                             handleGenerateTest();
+                                         }}
+                                         className="flex items-center justify-center gap-2 px-4 py-3 bg-surface border border-border text-slate-300 rounded-xl font-medium hover:bg-white/5 hover:text-white transition-all"
+                                     >
+                                         <span className="material-symbols-outlined text-sm">refresh</span>
+                                         Сгенерировать заново
+                                     </button>
+                                 </div>
+                             </div>
+                         )}
                      </div>
                  )}
              </div>
@@ -423,6 +475,14 @@ const AIWorkspace: React.FC = () => {
              )}
         </div>
     </div>
+    
+    {/* Share Modal */}
+    <ShareModal 
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        resourceTitle={documentData?.title || "Тест"}
+        resourceType="quiz"
+    />
     </PageTransition>
   );
 };
