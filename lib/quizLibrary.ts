@@ -4,6 +4,7 @@ export type SavedQuiz = {
   id: string;
   materialId: string;
   materialTitle: string;
+  serverQuizId?: string;
   createdAt: string;
   config: QuizConfig;
   questions: Question[];
@@ -63,6 +64,17 @@ export const saveQuizToLibrary = (input: Omit<SavedQuiz, 'id' | 'createdAt'>): S
 export const deleteSavedQuiz = (id: string) => {
   const items = listSavedQuizzes();
   writeAll(items.filter(q => q.id !== id));
+  window.dispatchEvent(new Event('quizLibraryUpdated'));
+};
+
+export const setSavedQuizServerQuizId = (id: string, serverQuizId: string) => {
+  const items = listSavedQuizzes();
+  const next = items.map(item => (
+    item.id === id
+      ? { ...item, serverQuizId }
+      : item
+  ));
+  writeAll(next);
   window.dispatchEvent(new Event('quizLibraryUpdated'));
 };
 

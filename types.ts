@@ -121,6 +121,19 @@ export interface AISession {
     docId: string;
 }
 
+export interface AISessionDetail {
+    id: number;
+    title: string;
+    date: string;
+    docId?: string;
+    messages: Array<{
+        id: number;
+        type: 'user' | 'ai';
+        text: string;
+        createdAt?: string;
+    }>;
+}
+
 export interface Material {
     id: string;
     title: string;
@@ -147,6 +160,7 @@ export interface Question {
 export interface QuizPayload {
     id: string;
     materialId: string;
+    title?: string;
     createdAt: string;
     questions: Question[];
 }
@@ -178,6 +192,17 @@ export interface SharedQuizResult {
         correctAnswer: string;
         isCorrect: boolean;
     }>;
+}
+
+export interface TeacherQuizResult {
+    resultId: string;
+    quizId: string;
+    materialId: string;
+    materialTitle: string;
+    studentName: string;
+    score: number;
+    submittedAt: string;
+    totalQuestions: number;
 }
 
 export interface SmartActionRequest {

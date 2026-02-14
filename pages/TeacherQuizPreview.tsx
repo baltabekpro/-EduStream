@@ -12,6 +12,7 @@ const TeacherQuizPreview: React.FC = () => {
   const { addToast } = useToast();
 
   const [quiz, setQuiz] = useState<QuizPayload | null>(null);
+  const [quizTitle, setQuizTitle] = useState('');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -23,6 +24,7 @@ const TeacherQuizPreview: React.FC = () => {
       try {
         const data = await AIService.getQuizById(quizId);
         setQuiz(data);
+        setQuizTitle(data.title || 'Тест');
         setQuestions(data.questions || []);
       } catch (error: any) {
         addToast(error.message || 'Не удалось загрузить тест', 'error');
@@ -51,8 +53,9 @@ const TeacherQuizPreview: React.FC = () => {
     if (!quizId) return;
     setIsSaving(true);
     try {
-      const updated = await AIService.updateQuiz(quizId, questions);
+      const updated = await AIService.updateQuiz(quizId, questions, quizTitle);
       setQuiz(updated);
+      setQuizTitle(updated.title || quizTitle);
       setQuestions(updated.questions || []);
       addToast('Изменения сохранены', 'success');
     } catch (error: any) {
@@ -101,7 +104,23 @@ const TeacherQuizPreview: React.FC = () => {
             >
               Поделиться
             </button>
+            <button
+              onClick={() => navigate(`/quiz-results?quizId=${quizId || ''}`)}
+              className="px-4 py-2 bg-surface border border-border text-slate-300 rounded-xl font-bold hover:bg-white/5"
+            >
+              Результаты
+            </button>
           </div>
+        </div>
+
+        <div className="bg-surface border border-border rounded-2xl p-5">
+          <label className="block text-xs font-bold text-slate-400 mb-2">Название теста</label>
+          <input
+            value={quizTitle}
+            onChange={(e) => setQuizTitle(e.target.value)}
+            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white"
+            placeholder="Название теста"
+          />
         </div>
 
         <div className="space-y-4">
@@ -161,7 +180,7 @@ const TeacherQuizPreview: React.FC = () => {
         onClose={() => setShowShareModal(false)}
         resourceType="quiz"
         resourceId={quiz?.id}
-        resourceTitle="Тест"
+        resourceTitle={quizTitle || 'Тест'}
       />
     </PageTransition>
   );

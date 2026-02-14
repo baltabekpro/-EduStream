@@ -9,9 +9,15 @@ import {
     SmartActionRequest,
     Material,
     Course,
+    AISession,
+    AISessionDetail,
+    CourseCreate,
+    CourseUpdate,
+    MaterialUpdate,
     QuizPayload,
     SharedQuizPayload,
-    SharedQuizResult
+    SharedQuizResult,
+    TeacherQuizResult
 } from '../types';
 
 // Use environment variable or fallback to production URL
@@ -241,12 +247,24 @@ export const AIService = {
         return request<Material>(`/materials/${id}`);
     },
 
-    async chat(message: string, materialId?: string): Promise<string> {
-        const response = await request<{ response?: string; text?: string }>('/ai/chat', {
+    async chat(message: string, materialId?: string, sessionId?: number): Promise<{ response: string; sessionId?: number }> {
+        const response = await request<{ response?: string; text?: string; sessionId?: number }>('/ai/chat', {
             method: 'POST',
-            body: JSON.stringify({ message, materialId })
+            body: JSON.stringify({ message, materialId, sessionId })
         });
-        return response.response || response.text || 'No response';
+        return {
+            response: response.response || response.text || 'No response',
+            sessionId: response.sessionId,
+        };
+    },
+
+    async getSessions(): Promise<AISession[]> {
+        const response = await request<any>('/ai/sessions');
+        return Array.isArray(response) ? response : [];
+    },
+
+    async getSessionById(sessionId: number): Promise<AISessionDetail> {
+        return request<AISessionDetail>(`/ai/sessions/${sessionId}`);
     },
 
     async generateQuiz(config: QuizConfig): Promise<QuizPayload> {
@@ -289,10 +307,17 @@ export const AIService = {
         return request<QuizPayload>(`/ai/quizzes/${quizId}`);
     },
 
-    async updateQuiz(quizId: string, questions: Question[]): Promise<QuizPayload> {
+    async updateQuiz(quizId: string, questions: Question[], title?: string): Promise<QuizPayload> {
         return request<QuizPayload>(`/ai/quizzes/${quizId}`, {
             method: 'PUT',
-            body: JSON.stringify({ questions }),
+            body: JSON.stringify({ questions, title }),
+        });
+    },
+
+    async createQuizFromDraft(materialId: string, questions: Question[], title?: string): Promise<QuizPayload> {
+        return request<QuizPayload>('/ai/quizzes', {
+            method: 'POST',
+            body: JSON.stringify({ materialId, questions, title }),
         });
     },
 
@@ -337,6 +362,12 @@ export const ShareService = {
             skipAuth: true,
             body: JSON.stringify({ studentName, answers }),
         });
+    },
+
+    async getTeacherResults(quizId?: string): Promise<TeacherQuizResult[]> {
+        const query = quizId ? `?quizId=${encodeURIComponent(quizId)}` : '';
+        const response = await request<any>(`/share/quiz-results${query}`);
+        return Array.isArray(response) ? response : [];
     },
 };
 

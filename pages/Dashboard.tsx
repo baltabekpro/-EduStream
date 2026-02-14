@@ -297,7 +297,7 @@ const Dashboard: React.FC = () => {
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none -z-10"></div>
       
       <Confetti active={showConfetti} />
-      <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept="image/*,.pdf" multiple />
+    <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept="image/*,.pdf,.docx,.txt" multiple />
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 animate-fade-in">
         <div>

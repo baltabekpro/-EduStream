@@ -21,7 +21,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { icon: 'dashboard', label: t('nav.dashboard'), path: '/dashboard' },
     { icon: 'document_scanner', label: t('nav.ocr'), path: '/ocr' },
     { icon: 'auto_awesome', label: t('nav.ai'), path: '/ai' },
+    { icon: 'folder_open', label: t('nav.files'), path: '/materials-library' },
     { icon: 'library_books', label: t('nav.library'), path: '/library' },
+    { icon: 'task_alt', label: t('nav.results'), path: '/quiz-results' },
     { icon: 'bar_chart', label: t('nav.analytics'), path: '/analytics' },
     { icon: 'settings', label: t('nav.settings'), path: '/settings' },
   ];

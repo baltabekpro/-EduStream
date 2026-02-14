@@ -6,8 +6,10 @@ import OCR from './pages/OCR';
 import Analytics from './pages/Analytics';
 import AIWorkspace from './pages/AIWorkspace';
 import Library from './pages/Library';
+import MaterialsLibrary from './pages/MaterialsLibrary';
 import TeacherQuizPreview from './pages/TeacherQuizPreview';
 import SharedQuiz from './pages/SharedQuiz';
+import QuizResults from './pages/QuizResults';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -35,6 +37,8 @@ const Layout: React.FC = () => {
       case '/ocr': return 'Проверка работ';
       case '/analytics': return 'Аналитика';
       case '/ai': return 'AI Ассистент';
+      case '/materials-library': return 'Библиотека файлов';
+      case '/quiz-results': return 'Результаты тестов';
       case '/library': return 'Библиотека тестов';
       case '/settings': return 'Настройки';
       default: return 'EduStream';
@@ -94,7 +98,9 @@ const App: React.FC = () => {
                         <Route path="/ocr" element={<OCR />} />
                         <Route path="/analytics" element={<Analytics />} />
                         <Route path="/ai" element={<AIWorkspace />} />
+                        <Route path="/materials-library" element={<MaterialsLibrary />} />
                         <Route path="/quiz/:quizId" element={<TeacherQuizPreview />} />
+                        <Route path="/quiz-results" element={<QuizResults />} />
                         <Route path="/library" element={<Library />} />
                         <Route path="/settings" element={<Settings />} />
                     </Route>
