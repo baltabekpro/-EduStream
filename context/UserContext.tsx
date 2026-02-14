@@ -27,11 +27,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
             const userData = await AuthService.getCurrentUser();
             setUser(userData);
+            const normalizedRole = String(userData.role || '').toLowerCase();
+            localStorage.setItem('userRole', normalizedRole);
         } catch (error) {
             if (!(error instanceof ApiError && error.code === 401)) {
                 console.error("Failed to fetch user", error);
             }
             setUser(null);
+            localStorage.removeItem('userRole');
         } finally {
             setIsLoading(false);
         }

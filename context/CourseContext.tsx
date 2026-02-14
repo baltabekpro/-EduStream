@@ -28,6 +28,11 @@ export const CourseProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const getSelectionStorageKey = () => {
+    const token = localStorage.getItem('token') || 'guest';
+    return `selectedCourseId:${token.slice(0, 24)}`;
+  };
+
   // Load courses on mount
   const refreshCourses = useCallback(async () => {
     if (!localStorage.getItem('token')) {
@@ -41,28 +46,60 @@ export const CourseProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setLoading(true);
       const fetchedCourses = await CourseService.getAll();
       setCourses(fetchedCourses);
-      
-      // Auto-select first course if none selected and courses exist
-      if (!selectedCourse && fetchedCourses.length > 0) {
-        setSelectedCourse(fetchedCourses[0]);
-      }
-      // If selected course was deleted, clear selection
-      if (selectedCourse && !fetchedCourses.find(c => c.id === selectedCourse.id)) {
-        setSelectedCourse(fetchedCourses.length > 0 ? fetchedCourses[0] : null);
-      }
+
+      const storageKey = getSelectionStorageKey();
+      const storedCourseId = localStorage.getItem(storageKey);
+
+      setSelectedCourse((prevSelected) => {
+        if (!fetchedCourses.length) {
+          localStorage.removeItem(storageKey);
+          return null;
+        }
+
+        const byStored = storedCourseId
+          ? fetchedCourses.find((course) => course.id === storedCourseId)
+          : null;
+        if (byStored) return byStored;
+
+        if (prevSelected) {
+          const byPrev = fetchedCourses.find((course) => course.id === prevSelected.id);
+          if (byPrev) return byPrev;
+        }
+
+        return fetchedCourses[0];
+      });
     } catch (error) {
       if (!(error instanceof ApiError && error.code === 401)) {
         console.error('Failed to load courses:', error);
       }
       setCourses([]);
+      setSelectedCourse(null);
     } finally {
       setLoading(false);
     }
-  }, [selectedCourse]);
+  }, []);
 
   useEffect(() => {
     refreshCourses();
-  }, []);
+
+    const handleAuthChanged = () => {
+      refreshCourses();
+    };
+
+    window.addEventListener('authChanged', handleAuthChanged);
+    window.addEventListener('storage', handleAuthChanged);
+
+    return () => {
+      window.removeEventListener('authChanged', handleAuthChanged);
+      window.removeEventListener('storage', handleAuthChanged);
+    };
+  }, [refreshCourses]);
+
+  useEffect(() => {
+    if (!selectedCourse) return;
+    const storageKey = getSelectionStorageKey();
+    localStorage.setItem(storageKey, selectedCourse.id);
+  }, [selectedCourse?.id]);
 
   const selectCourse = useCallback((course: Course | null) => {
     setSelectedCourse(course);
@@ -88,13 +125,15 @@ export const CourseProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const deleteCourse = useCallback(async (id: string): Promise<void> => {
     await CourseService.delete(id);
-    setCourses(prev => prev.filter(c => c.id !== id));
-    // Clear selection if deleting selected course
-    if (selectedCourse?.id === id) {
-      const remaining = courses.filter(c => c.id !== id);
-      setSelectedCourse(remaining.length > 0 ? remaining[0] : null);
-    }
-  }, [courses, selectedCourse]);
+    setCourses(prev => {
+      const remaining = prev.filter(c => c.id !== id);
+      setSelectedCourse(current => {
+        if (!current || current.id !== id) return current;
+        return remaining.length > 0 ? remaining[0] : null;
+      });
+      return remaining;
+    });
+  }, []);
 
   return (
     <CourseContext.Provider value={{

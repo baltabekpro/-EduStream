@@ -4,10 +4,12 @@ import { useCourse } from '../context/CourseContext';
 import { AnalyticsData, AnalyticsTopic } from '../types';
 import { PageTransition } from '../components/PageTransition';
 import { useLanguage } from '../context/LanguageContext';
+import { useToast } from '../components/Toast';
 
 const Analytics: React.FC = () => {
   const { selectedCourse } = useCourse();
   const { t } = useLanguage();
+    const { addToast } = useToast();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -110,7 +112,7 @@ const Analytics: React.FC = () => {
                               <div key={s.id} className="flex justify-between items-center p-3 hover:bg-white/5 rounded-lg">
                                   <span className="text-slate-300 font-bold">{s.name}</span>
                                   <span className={`font-mono ${s.progress >= selectedTopic.score ? 'text-green-400' : 'text-red-400'}`}>
-                                      {Math.min(100, Math.round(s.progress * (Math.random() * 0.5 + 0.8)))}%
+                                      {Math.round(s.progress)}%
                                   </span>
                               </div>
                           ))}
@@ -122,6 +124,8 @@ const Analytics: React.FC = () => {
   }
 
   // DASHBOARD VIEW
+    const regularStudents = sortedStudents.filter((s) => s.status.startsWith('Постоянный')).length;
+
   return (
     <PageTransition>
     <div className="h-full bg-background overflow-y-auto custom-scrollbar p-6 md:p-8 space-y-8 pb-32">
@@ -142,6 +146,23 @@ const Analytics: React.FC = () => {
                     <div className="text-4xl font-black text-white">{averageScore}%</div>
                     <div className="text-xs font-bold text-slate-500 uppercase">{t('analytics.average')}</div>
                 </div>
+            </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-surface border border-border rounded-xl p-4">
+                <p className="text-xs text-slate-400 uppercase font-bold">Постоянные ученики</p>
+                <p className="text-2xl font-black text-white mt-1">{regularStudents}</p>
+                <p className="text-xs text-slate-500 mt-1">3+ выполненных теста в курсе</p>
+            </div>
+            <div className="bg-surface border border-border rounded-xl p-4">
+                <p className="text-xs text-slate-400 uppercase font-bold">Всего активных</p>
+                <p className="text-2xl font-black text-white mt-1">{sortedStudents.length}</p>
+                <p className="text-xs text-slate-500 mt-1">учеников с результатами</p>
+            </div>
+            <div className="bg-surface border border-border rounded-xl p-4">
+                <p className="text-xs text-slate-400 uppercase font-bold">Как стать постоянным</p>
+                <p className="text-sm text-slate-300 mt-1">Выполнять задания на сайте минимум 3 раза</p>
             </div>
         </div>
 

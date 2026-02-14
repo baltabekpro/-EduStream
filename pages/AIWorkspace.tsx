@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { AIService } from '../lib/api';
 import { useLanguage } from '../context/LanguageContext';
+import { useCourse } from '../context/CourseContext';
 import { PageTransition } from '../components/PageTransition';
 import ShareModal from '../components/ShareModal';
 import { incrementTimeSaved } from '../lib/timeSaved';
@@ -18,6 +19,7 @@ interface Message {
 }
 
 type TabType = 'canvas' | 'structure' | 'resources' | 'test-builder';
+const LAST_AI_SESSION_KEY = 'lastAiSessionId';
 
 // --- Components ---
 
@@ -50,6 +52,7 @@ const SmartActionMenu: React.FC<{
 const AIWorkspace: React.FC = () => {
   const { addToast } = useToast();
   const { t } = useLanguage();
+    const { selectedCourse } = useCourse();
   const location = useLocation();
     const navigate = useNavigate();
   
@@ -83,12 +86,14 @@ const AIWorkspace: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const loadServerSessions = async () => {
+  const loadServerSessions = async (): Promise<AISession[]> => {
       try {
           const data = await AIService.getSessions();
           setSessions(data);
+          return data;
       } catch {
           // non-blocking
+          return [];
       }
   };
 
@@ -119,6 +124,7 @@ const AIWorkspace: React.FC = () => {
           setIsLoadingDoc(true);
           const session = await AIService.getSessionById(sessionId);
           setActiveSessionId(session.id);
+          localStorage.setItem(LAST_AI_SESSION_KEY, String(session.id));
 
           if (session.docId) {
               try {
@@ -172,14 +178,21 @@ const AIWorkspace: React.FC = () => {
              let docId = location.state?.docId;
 
              try {
-                 const fetchedMaterials = await AIService.getMaterials();
+                 const fetchedMaterials = await AIService.getMaterials(selectedCourse?.id);
                  setMaterials(fetchedMaterials);
              } catch {
                  setMaterials([]);
              }
-             await loadServerSessions();
+             const fetchedSessions = await loadServerSessions();
+
+             const lastSessionId = Number(localStorage.getItem(LAST_AI_SESSION_KEY) || '');
+             const canRestoreLastSession = Number.isFinite(lastSessionId) && fetchedSessions.some(s => s.id === lastSessionId);
 
              if (!docId) {
+                 if (canRestoreLastSession) {
+                     await handleOpenServerSession(lastSessionId);
+                     return;
+                 }
                  setIsLoadingDoc(false);
                  setDocumentData(null);
                  setMessages([{ 
@@ -199,7 +212,12 @@ const AIWorkspace: React.FC = () => {
                  setTestQuestions(Array.isArray(stored.testQuestions) ? stored.testQuestions : []);
                  if (stored.testConfig) setTestConfig(stored.testConfig);
              } else {
-                 resetSessionState(doc.title);
+                 const latestForDoc = fetchedSessions.find((session) => session.docId === doc.id);
+                 if (latestForDoc) {
+                     await handleOpenServerSession(latestForDoc.id);
+                 } else {
+                     resetSessionState(doc.title);
+                 }
              }
 
              // If navigated from Library with a saved quiz, load it into the builder
@@ -226,15 +244,15 @@ const AIWorkspace: React.FC = () => {
              }
 
          } catch (e) {
-             addToast("Failed to load document", "error");
-             setDocumentData({ id: 'err', title: 'Error', content: 'Failed to load content.' });
+             addToast("Не удалось загрузить документ", "error");
+             setDocumentData({ id: 'err', title: 'Ошибка', content: 'Не удалось загрузить содержимое.' });
          } finally {
              setIsLoadingDoc(false);
          }
      };
 
      init();
-  }, [location.state]);
+    }, [location.state, selectedCourse?.id]);
 
   // Persist session locally per document (avoid excessive writes while streaming)
   useEffect(() => {
@@ -298,10 +316,10 @@ const AIWorkspace: React.FC = () => {
       try {
           const result = await AIService.performSmartAction({ text, action });
           // Stream the result - ensure it's a string
-          streamResponse(result || "Action completed");
+          streamResponse(result || "Действие выполнено");
       } catch (e) {
-          addToast("Failed to perform smart action", "error");
-          streamResponse("Failed to perform action. Please try again.");
+          addToast("Не удалось выполнить действие", "error");
+          streamResponse("Не удалось выполнить действие. Попробуйте ещё раз.");
           setIsGenerating(false);
       }
   };
@@ -327,19 +345,20 @@ const AIWorkspace: React.FC = () => {
           const result = await AIService.chat(text, documentData?.id, activeSessionId || undefined);
           if (result.sessionId) {
               setActiveSessionId(result.sessionId);
+              localStorage.setItem(LAST_AI_SESSION_KEY, String(result.sessionId));
               loadServerSessions();
           }
-          streamResponse(result.response || "Message received");
+          streamResponse(result.response || "Сообщение получено");
       } catch (e) {
           console.error("Chat error:", e);
-          streamResponse("I'm sorry, I'm having trouble connecting to the server.");
+          streamResponse("Не удалось подключиться к серверу. Попробуйте чуть позже.");
       }
   };
 
   const streamResponse = (fullText: string) => {
       // Safety check: ensure we have a valid string
       if (!fullText || typeof fullText !== 'string') {
-          fullText = "Error: Invalid response from server";
+          fullText = "Ошибка: некорректный ответ сервера";
       }
       
       const aiMsgId = Date.now() + 1;
@@ -369,30 +388,30 @@ const AIWorkspace: React.FC = () => {
           const matId = overrideMaterialId || currentStateId;
           
           if (!matId) {
-             throw new Error("No valid material selected");
+                 throw new Error("Не выбран корректный материал");
           }
 
           const quiz = await AIService.generateQuiz({ ...config, materialId: matId });
           setGeneratedQuizId(quiz.id || '');
           setTestQuestions(quiz.questions || []);
           incrementTimeSaved('quizzesGenerated', 1);
-          addToast("Test generated successfully", "success");
+          addToast("Тест успешно сгенерирован", "success");
       } catch (e: any) {
-          addToast(e.message || "Error generating quiz", "error");
+          addToast(e.message || "Ошибка при генерации теста", "error");
       } finally {
           setIsGenerating(false);
       }
   };
 
   const handleRegenerateQuestion = async (id: string) => {
-      addToast("Regenerating question...", "info");
+      addToast("Перегенерация вопроса...", "info");
       
       try {
           const newQ = await AIService.regenerateBlock(id, "context");
           setTestQuestions(prev => prev.map(q => q.id === id ? newQ : q));
-          addToast("Question updated", "success");
+          addToast("Вопрос обновлён", "success");
       } catch (e) {
-          addToast("Failed to update question", "error");
+          addToast("Не удалось обновить вопрос", "error");
       }
   };
 
@@ -491,61 +510,64 @@ const AIWorkspace: React.FC = () => {
         {/* Right: AI Interface */}
         <div className="w-full md:w-1/2 flex flex-col h-full bg-background relative">
              <div className="px-6 border-b border-border bg-surface/30 backdrop-blur-md flex-none z-10">
-                <div className="flex items-center gap-8 overflow-x-auto custom-scrollbar">
-                    <button onClick={() => setActiveTab('canvas')} className={`border-b-2 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-colors ${activeTab === 'canvas' ? 'border-primary text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}>
-                        <span className="material-symbols-outlined text-lg">auto_awesome</span> {t('ai.tab.canvas')}
-                    </button>
-                    <button onClick={() => setActiveTab('test-builder')} className={`border-b-2 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-colors ${activeTab === 'test-builder' ? 'border-primary text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}>
-                        <span className="material-symbols-outlined text-lg">quiz</span> {t('ai.tab.builder')}
-                    </button>
+                <div className="flex flex-col gap-2 py-2">
+                    <div className="flex items-center gap-4 overflow-x-auto custom-scrollbar">
+                        <button onClick={() => setActiveTab('canvas')} className={`border-b-2 py-2 text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-colors ${activeTab === 'canvas' ? 'border-primary text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}>
+                            <span className="material-symbols-outlined text-lg">auto_awesome</span> {t('ai.tab.canvas')}
+                        </button>
+                        <button onClick={() => setActiveTab('test-builder')} className={`border-b-2 py-2 text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-colors ${activeTab === 'test-builder' ? 'border-primary text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}>
+                            <span className="material-symbols-outlined text-lg">quiz</span> {t('ai.tab.builder')}
+                        </button>
+                    </div>
 
-                    <div className="flex-1" />
+                    <div className="flex flex-wrap items-center gap-2">
+                        <select
+                            value={documentData?.id || ''}
+                            onChange={(e) => {
+                                const nextId = e.target.value;
+                                if (nextId) handleSelectMaterial(nextId);
+                            }}
+                            className="bg-surface border border-border text-slate-200 rounded-lg px-3 py-2 text-xs flex-1 min-w-[160px]"
+                            title="Выбор материала"
+                        >
+                            <option value="">Выберите материал</option>
+                            {materials.map((material) => (
+                                <option key={material.id} value={material.id}>{material.title}</option>
+                            ))}
+                        </select>
 
-                    <select
-                        value={documentData?.id || ''}
-                        onChange={(e) => {
-                            const nextId = e.target.value;
-                            if (nextId) handleSelectMaterial(nextId);
-                        }}
-                        className="bg-surface border border-border text-slate-200 rounded-lg px-3 py-2 my-2 text-xs max-w-[220px]"
-                        title="Выбор материала"
-                    >
-                        <option value="">Выберите материал</option>
-                        {materials.map((material) => (
-                            <option key={material.id} value={material.id}>{material.title}</option>
-                        ))}
-                    </select>
+                        <select
+                            value={activeSessionId ?? ''}
+                            onChange={(e) => {
+                                const nextId = Number(e.target.value);
+                                if (nextId) handleOpenServerSession(nextId);
+                            }}
+                            className="bg-surface border border-border text-slate-200 rounded-lg px-3 py-2 text-xs flex-1 min-w-[160px]"
+                            title="История чатов"
+                        >
+                            <option value="">История чатов</option>
+                            {sessions.map((session) => (
+                                <option key={session.id} value={session.id}>{session.title}</option>
+                            ))}
+                        </select>
 
-                    <select
-                        value={activeSessionId ?? ''}
-                        onChange={(e) => {
-                            const nextId = Number(e.target.value);
-                            if (nextId) handleOpenServerSession(nextId);
-                        }}
-                        className="bg-surface border border-border text-slate-200 rounded-lg px-3 py-2 my-2 text-xs max-w-[220px]"
-                        title="История чатов"
-                    >
-                        <option value="">История чатов</option>
-                        {sessions.map((session) => (
-                            <option key={session.id} value={session.id}>{session.title}</option>
-                        ))}
-                    </select>
-
-                    <button
-                        type="button"
-                        onClick={() => {
-                            if (!documentData || documentData.id === 'err') return;
-                            clearAISession(documentData.id);
-                            setActiveSessionId(null);
-                            resetSessionState(documentData.title);
-                            addToast('Начата новая сессия', 'success');
-                        }}
-                        className="flex items-center gap-2 px-3 py-2 my-2 bg-surface border border-border text-slate-300 rounded-lg text-xs font-bold hover:bg-white/5 hover:text-white transition-colors whitespace-nowrap"
-                        title="Начать новую сессию"
-                    >
-                        <span className="material-symbols-outlined text-sm">restart_alt</span>
-                        Новая сессия
-                    </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (!documentData || documentData.id === 'err') return;
+                                clearAISession(documentData.id);
+                                localStorage.removeItem(LAST_AI_SESSION_KEY);
+                                setActiveSessionId(null);
+                                resetSessionState(documentData.title);
+                                addToast('Начата новая сессия', 'success');
+                            }}
+                            className="flex items-center justify-center gap-2 px-3 py-2 bg-surface border border-border text-slate-300 rounded-lg text-xs font-bold hover:bg-white/5 hover:text-white transition-colors whitespace-nowrap"
+                            title="Начать новую сессию"
+                        >
+                            <span className="material-symbols-outlined text-sm">restart_alt</span>
+                            Новая сессия
+                        </button>
+                    </div>
                 </div>
              </div>
 
@@ -727,6 +749,7 @@ const AIWorkspace: React.FC = () => {
                                              if (testQuestions.length === 0) return;
 
                                              saveQuizToLibrary({
+                                                 courseId: selectedCourse?.id,
                                                  materialId: documentData.id,
                                                  materialTitle: documentData.title,
                                                  serverQuizId: generatedQuizId || undefined,

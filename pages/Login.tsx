@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { AuthService } from '../lib/api';
@@ -9,12 +9,6 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (localStorage.getItem('isLoggedIn') === 'true') {
-        navigate('/dashboard');
-    }
-  }, [navigate]);
 
   const validateEmail = (email: string) => {
     return String(email)
@@ -40,11 +34,14 @@ const Login: React.FC = () => {
     setIsLoading(true);
     
     try {
-        const { token } = await AuthService.login(email, password);
+        const { token, user } = await AuthService.login(email, password);
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('token', token);
+        const normalizedRole = String(user.role || '').toLowerCase();
+        localStorage.setItem('userRole', normalizedRole);
+        window.dispatchEvent(new Event('authChanged'));
         addToast("Добро пожаловать!", "success");
-        navigate('/dashboard');
+        navigate(normalizedRole === 'student' ? '/student' : '/dashboard');
     } catch (error: any) {
         addToast(error.message || "Неверный логин или пароль", "error");
     } finally {

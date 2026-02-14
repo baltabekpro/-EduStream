@@ -17,7 +17,8 @@ import {
     QuizPayload,
     SharedQuizPayload,
     SharedQuizResult,
-    TeacherQuizResult
+    TeacherQuizResult,
+    StudentJournalResponse
 } from '../types';
 
 // Use environment variable or fallback to production URL
@@ -60,6 +61,7 @@ async function request<T>(endpoint: string, options: CustomRequestInit = {}): Pr
             if (response.status === 401 && !skipAuth) {
                 localStorage.removeItem('token');
                 localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('userRole');
 
                 if (!authRedirectScheduled) {
                     authRedirectScheduled = true;
@@ -175,7 +177,8 @@ export const DashboardService = {
         return {
             pieChart: Array.isArray(response.pieChart) ? response.pieChart : [],
             needsReview: Array.isArray(response.needsReview) ? response.needsReview : [],
-            recentActivity: Array.isArray(response.recentActivity) ? response.recentActivity : []
+            recentActivity: Array.isArray(response.recentActivity) ? response.recentActivity : [],
+            stats: response.stats || undefined
         };
     }
 };
@@ -212,8 +215,9 @@ export const OCRService = {
 };
 
 export const AIService = {
-    async getMaterials(): Promise<Material[]> {
-        const response = await request<any>('/materials/'); // Added trailing slash to avoid 307 Redirect
+    async getMaterials(courseId?: string): Promise<Material[]> {
+        const query = courseId ? `?courseId=${encodeURIComponent(courseId)}` : '';
+        const response = await request<any>(`/materials/${query}`);
         return Array.isArray(response) ? response : [];
     },
 
@@ -248,13 +252,13 @@ export const AIService = {
     },
 
     async chat(message: string, materialId?: string, sessionId?: number): Promise<{ response: string; sessionId?: number }> {
-        const response = await request<{ response?: string; text?: string; sessionId?: number }>('/ai/chat', {
+        const response = await request<{ response?: string; text?: string; sessionId?: number; session_id?: number }>('/ai/chat', {
             method: 'POST',
             body: JSON.stringify({ message, materialId, sessionId })
         });
         return {
             response: response.response || response.text || 'No response',
-            sessionId: response.sessionId,
+            sessionId: response.sessionId ?? response.session_id,
         };
     },
 
@@ -334,16 +338,23 @@ export const AIService = {
             method: 'POST',
             body: JSON.stringify({ blockId, instruction: context }),
         });
+    },
+
+    async generateAssignment(materialId: string, instruction?: string): Promise<{ materialId: string; title: string; assignmentText: string }> {
+        return request<{ materialId: string; title: string; assignmentText: string }>('/ai/generate-assignment', {
+            method: 'POST',
+            body: JSON.stringify({ materialId, instruction: instruction || '' }),
+        });
     }
 };
 
 export const ShareService = {
-    async create(resourceId: string, options?: { password?: string; viewOnly?: boolean; allowCopy?: boolean }): Promise<{ url: string }> {
+    async create(resourceId: string, options?: { password?: string; viewOnly?: boolean; allowCopy?: boolean; resourceType?: 'quiz' | 'material' }): Promise<{ url: string }> {
         return request<{ url: string }>('/share/create', {
             method: 'POST',
             body: JSON.stringify({
                 resourceId,
-                resourceType: 'quiz',
+                resourceType: options?.resourceType ?? 'quiz',
                 viewOnly: options?.viewOnly ?? true,
                 allowCopy: options?.allowCopy ?? false,
                 password: options?.password || null,
@@ -364,8 +375,38 @@ export const ShareService = {
         });
     },
 
-    async getTeacherResults(quizId?: string): Promise<TeacherQuizResult[]> {
-        const query = quizId ? `?quizId=${encodeURIComponent(quizId)}` : '';
+    async uploadAssignment(
+        shortCode: string,
+        studentName: string,
+        file?: File | null,
+        responseText?: string
+    ): Promise<{ submissionId: string; status: string; studentName: string; message: string }> {
+        const formData = new FormData();
+        formData.append('studentName', studentName);
+        if (file) {
+            formData.append('file', file);
+        }
+        if (responseText && responseText.trim()) {
+            formData.append('responseText', responseText.trim());
+        }
+
+        const response = await fetch(`${API_BASE_URL}/share/${shortCode}/upload`, {
+            method: 'POST',
+            body: formData,
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new ApiError(response.status, data?.detail || 'Upload failed');
+        }
+        return data;
+    },
+
+    async getTeacherResults(quizId?: string, courseId?: string): Promise<TeacherQuizResult[]> {
+        const params = new URLSearchParams();
+        if (quizId) params.set('quizId', quizId);
+        if (courseId) params.set('courseId', courseId);
+        const query = params.toString() ? `?${params.toString()}` : '';
         const response = await request<any>(`/share/quiz-results${query}`);
         return Array.isArray(response) ? response : [];
     },
@@ -405,6 +446,44 @@ export const AnalyticsService = {
 
         analyticsCache[courseId] = data; 
         return data;
+    },
+
+    async getStudentJournal(courseId: string): Promise<StudentJournalResponse> {
+        try {
+            const response = await request<any>(`/analytics/student-journal?courseId=${encodeURIComponent(courseId)}`);
+            return {
+                courseId: response.courseId || courseId,
+                totalStudents: Number(response.totalStudents || 0),
+                regularStudents: Number(response.regularStudents || 0),
+                averageScore: Number(response.averageScore || 0),
+                students: Array.isArray(response.students) ? response.students : []
+            };
+        } catch (error) {
+            if (error instanceof ApiError && error.code === 404) {
+                return {
+                    courseId,
+                    totalStudents: 0,
+                    regularStudents: 0,
+                    averageScore: 0,
+                    students: []
+                };
+            }
+            throw error;
+        }
+    },
+
+    async saveStudentComment(courseId: string, studentName: string, comment: string): Promise<void> {
+        try {
+            await request('/analytics/student-journal/comment', {
+                method: 'PATCH',
+                body: JSON.stringify({ courseId, studentName, comment }),
+            });
+        } catch (error) {
+            if (error instanceof ApiError && error.code === 404) {
+                return;
+            }
+            throw error;
+        }
     },
     
     clearCache() {

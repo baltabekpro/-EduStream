@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { DashboardService, AIService } from '../lib/api';
 import { DashboardData } from '../types';
 import { useCourse } from '../context/CourseContext';
@@ -54,23 +54,21 @@ const DashboardSkeleton = () => (
     </div>
 );
 
-const PerformanceChart = React.memo(({ data, selectedCourse, title, avgLabel }: any) => {
+const PerformanceChart = React.memo(({ data, title, avgLabel, score }: any) => {
     const chartData = Array.isArray(data) ? data : [];
-    
-    // Calculate average or dominant sentiment
-    const score = chartData.length > 0 ? '84%' : 'N/A';
+    const safeScore = Number.isFinite(score) ? `${Math.round(score)}%` : '0%';
 
     return (
-        <div className="bg-surface/50 backdrop-blur-sm border border-border rounded-2xl p-6 flex flex-col items-center justify-center relative shadow-lg h-[340px]">
+        <div className="bg-surface/50 backdrop-blur-sm border border-border rounded-2xl p-5 md:p-6 flex flex-col items-center justify-start relative shadow-lg min-h-[340px] overflow-hidden">
             <div className="absolute top-6 left-6 text-sm font-bold text-slate-400 uppercase tracking-wider">{title}</div>
             
-            <div className="relative mt-4" style={{ width: '13rem', height: '13rem' }}>
+            <div className="relative mt-8 w-full max-w-[200px] aspect-square">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie
                             data={chartData}
-                            innerRadius={65}
-                            outerRadius={85}
+                            innerRadius={52}
+                            outerRadius={74}
                             paddingAngle={5}
                             dataKey="value"
                             stroke="none"
@@ -83,7 +81,7 @@ const PerformanceChart = React.memo(({ data, selectedCourse, title, avgLabel }: 
                     </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-4xl font-black text-white drop-shadow-lg">{score}</span>
+                    <span className="text-3xl md:text-4xl font-black text-white drop-shadow-lg">{safeScore}</span>
                     <span className="text-[10px] uppercase font-bold text-slate-500 tracking-widest mt-1 bg-surface/80 px-2 py-0.5 rounded-full">{avgLabel}</span>
                 </div>
             </div>
@@ -118,6 +116,7 @@ const StatCard = ({ title, value, icon, color, subtext }: any) => (
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+    const location = useLocation() as { state?: { openCreateCourse?: boolean } };
   const { addToast } = useToast();
   const { selectedCourse, loading: loadingCourses } = useCourse();
   const { t } = useLanguage();
@@ -160,14 +159,25 @@ const Dashboard: React.FC = () => {
         })
         .catch(err => {
             console.error('Dashboard load error:', err);
-            addToast("Failed to load dashboard", "error");
+            addToast("Не удалось загрузить дашборд", "error");
             // Set empty data instead of null to prevent infinite loading
             setData({ pieChart: [], needsReview: [], recentActivity: [] });
             setLoading(false);
         });
   }, [selectedCourse]);
 
+    useEffect(() => {
+        if (location.state?.openCreateCourse) {
+            setShowCreateCourseModal(true);
+            navigate('/dashboard', { replace: true, state: {} });
+        }
+    }, [location.state, navigate]);
+
   const { pieChart = [], needsReview = [], recentActivity = [] } = data || {};
+    const averageScore = data?.stats?.averageScore ?? 0;
+    const studentsCount = data?.stats?.studentsCount ?? 0;
+    const needsReviewCount = data?.stats?.needsReviewCount ?? needsReview.length;
+    const submissionsCount = data?.stats?.submissionsCount ?? 0;
 
   const filteredActivity = useMemo(() => {
       if (!recentActivity) return [];
@@ -193,7 +203,7 @@ const Dashboard: React.FC = () => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
       if (!files || files.length === 0) return;
-      if (!selectedCourse) { addToast("Please select a course first", 'error'); return; }
+      if (!selectedCourse) { addToast("Сначала выберите курс", 'error'); return; }
 
       const newItems: UploadItem[] = Array.from(files).map(file => ({
           id: Math.random().toString(36).substr(2, 9),
@@ -217,7 +227,7 @@ const Dashboard: React.FC = () => {
               successCount++;
           } catch (error) {
               setUploadQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: 'error', progress: 0 } : q));
-              addToast(`Failed to upload ${file.name}`, "error");
+              addToast(`Не удалось загрузить файл ${file.name}`, "error");
           }
       }
       
@@ -317,16 +327,14 @@ const Dashboard: React.FC = () => {
              )}
           </p>
         </div>
-        <div className="flex gap-3">
-          {!selectedCourse && (
-            <button
-              onClick={() => setShowCreateCourseModal(true)}
-              className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-hover hover:shadow-primary/40 transition-all active:scale-95 group"
-            >
-              <span className="material-symbols-outlined">add</span>
-              Создать курс
-            </button>
-          )}
+                <div className="flex flex-wrap gap-3">
+                    <button
+                        onClick={() => setShowCreateCourseModal(true)}
+                        className="flex items-center gap-2 px-5 py-3 bg-surface border border-border text-white rounded-xl font-bold hover:bg-surface-lighter transition-all active:scale-95 group"
+                    >
+                        <span className="material-symbols-outlined">add</span>
+                        Создать курс
+                    </button>
           {selectedCourse && (
             <>
               <button 
@@ -351,9 +359,9 @@ const Dashboard: React.FC = () => {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-in-right">
-          <StatCard title="Ожидает проверки" value={needsReview.length} icon="pending_actions" color="orange" subtext="работ в очереди" />
-          <StatCard title="Средний балл" value="84%" icon="analytics" color="green" subtext="+2.4% с прошлой недели" />
-          <StatCard title="Учеников" value="28" icon="groups" color="blue" subtext="98% посещаемость" />
+          <StatCard title="Ожидает проверки" value={needsReviewCount} icon="pending_actions" color="orange" subtext="работ в очереди" />
+          <StatCard title="Средний балл" value={`${Math.round(averageScore)}%`} icon="analytics" color="green" subtext={`${submissionsCount} проверенных попыток`} />
+          <StatCard title="Учеников" value={studentsCount} icon="groups" color="blue" subtext="активны в этом курсе" />
       </div>
 
       {uploadQueue.length > 0 && (
@@ -463,9 +471,9 @@ const Dashboard: React.FC = () => {
         <div className="space-y-6 animate-slide-in-right" style={{animationDelay: '0.2s'}}>
             <PerformanceChart 
                 data={pieChart} 
-                selectedCourse={selectedCourse} 
                 title={t('dash.performance')} 
                 avgLabel={t('dash.avgScore')} 
+                score={averageScore}
             />
 
             {/* Activity List */}

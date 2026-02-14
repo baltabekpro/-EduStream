@@ -47,7 +47,7 @@ const OCR: React.FC = () => {
           const data = await OCRService.getQueue();
           setQueue(data);
       } catch (e) {
-          addToast("Failed to load OCR queue", "error");
+          addToast("Не удалось загрузить очередь OCR", "error");
       } finally {
           setLoadingQueue(false);
       }
@@ -59,7 +59,7 @@ const OCR: React.FC = () => {
           setCurrentWork(data);
           setManualScore(18); // Mock score
           setViewMode('detail');
-      } catch (e) { addToast("Failed to load work details", "error"); }
+      } catch (e) { addToast("Не удалось загрузить детали работы", "error"); }
   };
 
   const toggleSelection = (id: string) => {
@@ -83,10 +83,10 @@ const OCR: React.FC = () => {
           await OCRService.batchApprove(ids);
           setShowConfetti(true);
           incrementTimeSaved('worksChecked', count);
-          addToast(`Successfully graded ${count} works`, "success");
+          addToast(`Успешно проверено работ: ${count}`, "success");
           setTimeout(() => setShowConfetti(false), 3000);
       } catch (e) {
-          addToast("Batch operation failed", "error");
+          addToast("Пакетная операция не выполнена", "error");
           loadQueue();
       }
   };
@@ -111,10 +111,10 @@ const OCR: React.FC = () => {
       try {
           await OCRService.updateResult(currentWork.id, { questions: currentWork.questions });
           incrementTimeSaved('worksChecked', 1);
-          addToast("Changes saved", "success");
+          addToast("Изменения сохранены", "success");
           setIsDirty(false);
           setShowUnsavedModal(false);
-      } catch (e) { addToast("Save failed", "error"); }
+      } catch (e) { addToast("Не удалось сохранить", "error"); }
   };
 
   return (
@@ -143,7 +143,7 @@ const OCR: React.FC = () => {
                     </div>
                 ) : (
                     <div className="flex flex-col">
-                        <span className="text-sm text-slate-400 font-medium uppercase tracking-wider">Reviewing</span>
+                        <span className="text-sm text-slate-400 font-medium uppercase tracking-wider">ПРОВЕРКА</span>
                         <h1 className="text-xl font-bold text-white">{currentWork?.student.name}</h1>
                     </div>
                 )}
@@ -215,7 +215,7 @@ const OCR: React.FC = () => {
                                             <span className="font-bold text-white">{item.student.name}</span>
                                         </div>
                                     </td>
-                                    <td className="p-4 font-medium">{item.subject || 'Physics 101'}</td>
+                                    <td className="p-4 font-medium">{item.subject || 'Без предмета'}</td>
                                     <td className="p-4">
                                         <div className="flex items-center gap-2">
                                             <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
@@ -232,7 +232,7 @@ const OCR: React.FC = () => {
                                             ? 'bg-red-500/10 text-red-400 border-red-500/20' 
                                             : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
                                         }`}>
-                                            {item.status}
+                                            {item.status === 'flagged' ? 'требует внимания' : 'на проверке'}
                                         </span>
                                     </td>
                                     <td className="p-4 text-right">
@@ -265,7 +265,7 @@ const OCR: React.FC = () => {
                 <div className="w-1/2 bg-[#050505] relative flex items-center justify-center overflow-hidden border-r border-border group">
                      {/* Toolbar */}
                      <div className="absolute top-6 left-1/2 -translate-x-1/2 flex gap-1 z-10 bg-surface/90 backdrop-blur border border-border/50 rounded-xl p-1.5 shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                         <button onClick={() => setZoom(z => z + 10)} className="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors" title="Zoom In">
+                         <button onClick={() => setZoom(z => z + 10)} className="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors" title="Увеличить">
                              <span className="material-symbols-outlined text-xl">add</span>
                          </button>
                          <div className="w-px bg-border/50 my-1 mx-1"></div>
@@ -273,7 +273,7 @@ const OCR: React.FC = () => {
                              {zoom}%
                          </button>
                          <div className="w-px bg-border/50 my-1 mx-1"></div>
-                         <button onClick={() => setZoom(z => Math.max(10, z - 10))} className="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors" title="Zoom Out">
+                         <button onClick={() => setZoom(z => Math.max(10, z - 10))} className="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors" title="Уменьшить">
                              <span className="material-symbols-outlined text-xl">remove</span>
                          </button>
                      </div>
@@ -281,7 +281,7 @@ const OCR: React.FC = () => {
                         src={currentWork.image} 
                         className="transition-transform duration-200 shadow-2xl"
                         style={{ transform: `scale(${zoom / 100})`, maxWidth: '90%', maxHeight: '90vh' }} 
-                        alt="Student Scan" 
+                                alt="Скан работы ученика" 
                      />
                 </div>
                 
@@ -313,7 +313,7 @@ const OCR: React.FC = () => {
                                  {q.confidence === 'Low' && (
                                      <div className="mt-2 text-xs text-yellow-500/80 flex items-center gap-2">
                                          <span className="material-symbols-outlined text-sm">info</span>
-                                         Please verify the handwritten text above.
+                                         Проверьте, пожалуйста, рукописный текст выше.
                                      </div>
                                  )}
                             </div>
@@ -323,7 +323,7 @@ const OCR: React.FC = () => {
                     {/* Bottom Action Bar */}
                     <div className="p-6 border-t border-border bg-surface z-10 flex justify-between items-center shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
                         <div>
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Total Score</span>
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Итоговый балл</span>
                             <div className="flex items-center gap-2">
                                 <input 
                                     type="number" 
@@ -335,10 +335,10 @@ const OCR: React.FC = () => {
                             </div>
                         </div>
                         <div className="text-right">
-                             <p className="text-xs text-slate-500 mb-1">Student Progress</p>
+                             <p className="text-xs text-slate-500 mb-1">Прогресс ученика</p>
                              <div className="text-white font-bold text-lg flex items-center gap-2">
                                  <span className="material-symbols-outlined text-green-500">trending_up</span>
-                                 Top 10%
+                                 Топ 10%
                              </div>
                         </div>
                     </div>

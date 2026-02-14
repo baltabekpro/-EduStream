@@ -13,7 +13,8 @@ const Register: React.FC = () => {
       firstName: '',
       lastName: '',
       email: '',
-      password: ''
+      password: '',
+      role: 'teacher' as 'teacher' | 'student'
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -82,6 +83,29 @@ const Register: React.FC = () => {
           </div>
 
           <form onSubmit={handleRegister} className="space-y-4">
+            <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-300">Роль</label>
+                <div className="grid grid-cols-2 gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, role: 'teacher' }))}
+                        className={`rounded-lg border px-3 py-2 text-sm font-bold transition-colors ${formData.role === 'teacher' ? 'bg-primary/15 border-primary text-white' : 'bg-[#111827] border-border text-slate-300 hover:text-white'}`}
+                    >
+                        Учитель
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, role: 'student' }))}
+                        className={`rounded-lg border px-3 py-2 text-sm font-bold transition-colors ${formData.role === 'student' ? 'bg-primary/15 border-primary text-white' : 'bg-[#111827] border-border text-slate-300 hover:text-white'}`}
+                    >
+                        Ученик
+                    </button>
+                </div>
+                <p className="text-xs text-slate-500">
+                    {formData.role === 'teacher' ? 'Доступ к созданию курсов, материалов и проверке.' : 'Доступ к выполнению заданий и личному прогрессу.'}
+                </p>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-300">{t('auth.firstName')}</label>

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageTransition } from '../components/PageTransition';
 import { useToast } from '../components/Toast';
+import { useCourse } from '../context/CourseContext';
 import { deleteSavedQuiz, listSavedQuizzes, type SavedQuiz } from '../lib/quizLibrary';
 
 const formatDate = (iso: string) => {
@@ -15,6 +16,7 @@ const formatDate = (iso: string) => {
 const Library: React.FC = () => {
   const navigate = useNavigate();
   const { addToast } = useToast();
+  const { selectedCourse } = useCourse();
 
   const [items, setItems] = useState<SavedQuiz[]>([]);
 
@@ -31,7 +33,12 @@ const Library: React.FC = () => {
     };
   }, []);
 
-  const hasItems = useMemo(() => items.length > 0, [items.length]);
+  const filteredItems = useMemo(() => {
+    if (!selectedCourse) return [] as SavedQuiz[];
+    return items.filter(item => item.courseId === selectedCourse.id);
+  }, [items, selectedCourse?.id]);
+
+  const hasItems = filteredItems.length > 0;
 
   return (
     <PageTransition>
@@ -41,7 +48,7 @@ const Library: React.FC = () => {
             <div>
               <h1 className="text-2xl md:text-3xl font-black tracking-tight">Библиотека тестов</h1>
               <p className="text-slate-400 mt-1 text-sm">
-                Здесь хранятся тесты, которые вы сохранили из AI ассистента.
+                Тесты курса: {selectedCourse?.title || 'курс не выбран'}.
               </p>
             </div>
             <button
@@ -52,7 +59,12 @@ const Library: React.FC = () => {
             </button>
           </div>
 
-          {!hasItems ? (
+          {!selectedCourse ? (
+            <div className="bg-surface border border-border rounded-2xl p-8 text-center">
+              <p className="text-white font-bold">Выберите курс</p>
+              <p className="text-slate-400 text-sm mt-1">Сначала выберите курс в левом меню.</p>
+            </div>
+          ) : !hasItems ? (
             <div className="bg-surface border border-border rounded-2xl p-8 text-center">
               <div className="mx-auto size-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-4">
                 <span className="material-symbols-outlined text-3xl">library_books</span>
@@ -70,7 +82,7 @@ const Library: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {items.map((q) => (
+              {filteredItems.map((q) => (
                 <div
                   key={q.id}
                   className="bg-surface border border-border rounded-2xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4"

@@ -1,28 +1,77 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { HashRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
-import Dashboard from './pages/Dashboard';
-import OCR from './pages/OCR';
-import Analytics from './pages/Analytics';
-import AIWorkspace from './pages/AIWorkspace';
-import Library from './pages/Library';
-import MaterialsLibrary from './pages/MaterialsLibrary';
-import TeacherQuizPreview from './pages/TeacherQuizPreview';
-import SharedQuiz from './pages/SharedQuiz';
-import QuizResults from './pages/QuizResults';
-import Settings from './pages/Settings';
-import Login from './pages/Login';
-import Register from './pages/Register';
 import { ToastProvider } from './components/Toast';
 import { CourseProvider } from './context/CourseContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { UserProvider } from './context/UserContext';
+import { useUser } from './context/UserContext';
+
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const OCR = lazy(() => import('./pages/OCR'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+const AIWorkspace = lazy(() => import('./pages/AIWorkspace'));
+const Library = lazy(() => import('./pages/Library'));
+const MaterialsLibrary = lazy(() => import('./pages/MaterialsLibrary'));
+const TeacherQuizPreview = lazy(() => import('./pages/TeacherQuizPreview'));
+const Assignments = lazy(() => import('./pages/Assignments'));
+const SharedQuiz = lazy(() => import('./pages/SharedQuiz'));
+const QuizResults = lazy(() => import('./pages/QuizResults'));
+const Settings = lazy(() => import('./pages/Settings'));
+const StudentDashboard = lazy(() => import('./pages/StudentDashboard'));
+const StudentAssignments = lazy(() => import('./pages/StudentAssignments'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+
+const RouteLoader: React.FC = () => (
+  <div className="h-full min-h-screen flex items-center justify-center bg-background">
+    <span className="material-symbols-outlined animate-spin text-3xl text-primary">sync</span>
+  </div>
+);
 
 // Компонент защиты маршрутов
 const ProtectedRoute = () => {
-  const isAuthenticated = localStorage.getItem('isLoggedIn') === 'true';
+  const hasToken = Boolean(localStorage.getItem('token'));
+  const legacyFlag = localStorage.getItem('isLoggedIn') === 'true';
+  const isAuthenticated = hasToken || legacyFlag;
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+};
+
+const RoleRoute: React.FC<{ allowedRoles: Array<'teacher' | 'student' | 'admin'> }> = ({ allowedRoles }) => {
+  const { user, isLoading } = useUser();
+  const fallbackRole = localStorage.getItem('userRole');
+  const role = String(user?.role || fallbackRole || '').toLowerCase();
+
+  if (isLoading && !role) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <span className="material-symbols-outlined animate-spin text-3xl text-primary">sync</span>
+      </div>
+    );
+  }
+
+  if (!role || !allowedRoles.includes(role as 'teacher' | 'student' | 'admin')) {
+    return <Navigate to={role === 'student' ? '/student' : '/dashboard'} replace />;
+  }
+
+  return <Outlet />;
+};
+
+const HomeRedirect: React.FC = () => {
+  const { user, isLoading } = useUser();
+  const fallbackRole = localStorage.getItem('userRole');
+  const role = String(user?.role || fallbackRole || '').toLowerCase();
+
+  if (isLoading && !role) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <span className="material-symbols-outlined animate-spin text-3xl text-primary">sync</span>
+      </div>
+    );
+  }
+
+  return <Navigate to={role === 'student' ? '/student' : '/dashboard'} replace />;
 };
 
 const Layout: React.FC = () => {
@@ -33,7 +82,10 @@ const Layout: React.FC = () => {
     if (path.startsWith('/quiz/')) return 'Предпросмотр теста';
 
     switch (path) {
+      case '/student': return 'Мой кабинет';
+      case '/student-assignments': return 'Мои задания';
       case '/dashboard': return 'Дашборд';
+      case '/assignments': return 'Задания';
       case '/ocr': return 'Проверка работ';
       case '/analytics': return 'Аналитика';
       case '/ai': return 'AI Ассистент';
@@ -57,13 +109,13 @@ const Layout: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex h-screen bg-background text-white overflow-hidden font-sans flex-col md:flex-row">
+    <div className="flex h-[100dvh] bg-background text-white overflow-hidden font-sans flex-col md:flex-row">
       <div className="md:hidden flex items-center justify-between p-4 bg-surface border-b border-border z-30">
         <div className="flex items-center gap-3">
              <button onClick={() => setIsSidebarOpen(true)} className="text-slate-300">
                 <span className="material-symbols-outlined">menu</span>
              </button>
-             <h1 className="font-bold text-lg">{getPageTitle(location.pathname)}</h1>
+                 <h1 className="font-bold text-lg">{getPageTitle(location.pathname)}</h1>
         </div>
         <div 
             className="bg-center bg-no-repeat bg-cover rounded-full size-8 border border-slate-500"
@@ -88,28 +140,41 @@ const App: React.FC = () => {
             <CourseProvider>
               <UserProvider>
                 <HashRouter>
-                <Routes>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    
-                    <Route element={<ProtectedRoute />}>
-                    <Route element={<Layout />}>
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/ocr" element={<OCR />} />
-                        <Route path="/analytics" element={<Analytics />} />
-                        <Route path="/ai" element={<AIWorkspace />} />
-                        <Route path="/materials-library" element={<MaterialsLibrary />} />
-                        <Route path="/quiz/:quizId" element={<TeacherQuizPreview />} />
-                        <Route path="/quiz-results" element={<QuizResults />} />
-                        <Route path="/library" element={<Library />} />
-                        <Route path="/settings" element={<Settings />} />
-                    </Route>
-                    </Route>
+                <Suspense fallback={<RouteLoader />}>
+                  <Routes>
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
+                      
+                      <Route element={<ProtectedRoute />}>
+                      <Route element={<Layout />}>
+                        <Route element={<RoleRoute allowedRoles={['student']} />}>
+                          <Route path="/student" element={<StudentDashboard />} />
+                          <Route path="/student-assignments" element={<StudentAssignments />} />
+                        </Route>
 
-                      <Route path="/shared/:code" element={<SharedQuiz />} />
+                        <Route element={<RoleRoute allowedRoles={['teacher', 'admin']} />}>
+                          <Route path="/dashboard" element={<Dashboard />} />
+                          <Route path="/assignments" element={<Assignments />} />
+                          <Route path="/ocr" element={<OCR />} />
+                          <Route path="/analytics" element={<Analytics />} />
+                          <Route path="/ai" element={<AIWorkspace />} />
+                          <Route path="/materials-library" element={<MaterialsLibrary />} />
+                          <Route path="/quiz/:quizId" element={<TeacherQuizPreview />} />
+                          <Route path="/quiz-results" element={<QuizResults />} />
+                          <Route path="/library" element={<Library />} />
+                        </Route>
 
-                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                </Routes>
+                        <Route element={<RoleRoute allowedRoles={['teacher', 'student', 'admin']} />}>
+                          <Route path="/settings" element={<Settings />} />
+                        </Route>
+                      </Route>
+                      </Route>
+
+                        <Route path="/shared/:code" element={<SharedQuiz />} />
+
+                      <Route path="/" element={<HomeRedirect />} />
+                  </Routes>
+                </Suspense>
                 </HashRouter>
               </UserProvider>
             </CourseProvider>

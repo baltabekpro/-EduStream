@@ -6,7 +6,7 @@ export interface User {
     firstName: string;
     lastName: string;
     avatar: string;
-    role: string;
+    role: 'teacher' | 'student' | 'admin';
     settings: UserSettings;
 }
 
@@ -24,6 +24,7 @@ export interface UserRegister {
     password: string;
     firstName: string;
     lastName: string;
+    role: 'teacher' | 'student';
 }
 
 export interface Course {
@@ -54,6 +55,7 @@ export interface CourseUpdate {
 export interface MaterialUpdate {
     title?: string;
     course_id?: string;
+    summary?: string;
 }
 
 // --- Dashboard ---
@@ -62,6 +64,14 @@ export interface DashboardData {
     pieChart: PieChartItem[];
     needsReview: ReviewItem[];
     recentActivity: ActivityItem[];
+    stats?: DashboardStats;
+}
+
+export interface DashboardStats {
+    needsReviewCount: number;
+    averageScore: number;
+    studentsCount: number;
+    submissionsCount: number;
 }
 
 export interface PieChartItem {
@@ -138,6 +148,8 @@ export interface Material {
     id: string;
     title: string;
     content: string;
+    summary?: string;
+    courseId?: string;
     uploadDate?: string;
 }
 
@@ -166,18 +178,22 @@ export interface QuizPayload {
 }
 
 export interface SharedQuizPayload {
-    resourceType: 'quiz';
+    resourceType: 'quiz' | 'material';
     shortCode: string;
     title: string;
-    quizId: string;
+    quizId?: string;
     viewOnly: boolean;
     allowCopy: boolean;
-    questions: Array<{
+    questions?: Array<{
         id: string;
         type: 'mcq' | 'open' | 'boolean';
         text: string;
         options: string[];
     }>;
+    materialId?: string;
+    description?: string;
+    acceptUploads?: boolean;
+    acceptTextResponse?: boolean;
 }
 
 export interface SharedQuizResult {
@@ -203,6 +219,36 @@ export interface TeacherQuizResult {
     score: number;
     submittedAt: string;
     totalQuestions: number;
+}
+
+export interface StudentJournalHistoryItem {
+    resultId: string;
+    score: number;
+    submittedAt: string;
+    quizId: string;
+    quizTitle: string;
+    materialTitle: string;
+}
+
+export interface StudentJournalItem {
+    studentKey: string;
+    studentName: string;
+    attempts: number;
+    averageScore: number;
+    lastScore: number;
+    regular: boolean;
+    trend: 'up' | 'down' | 'neutral';
+    teacherComment: string;
+    weakTopics: string[];
+    history: StudentJournalHistoryItem[];
+}
+
+export interface StudentJournalResponse {
+    courseId: string;
+    totalStudents: number;
+    regularStudents: number;
+    averageScore: number;
+    students: StudentJournalItem[];
 }
 
 export interface SmartActionRequest {

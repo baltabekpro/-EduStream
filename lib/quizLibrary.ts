@@ -2,6 +2,7 @@ import type { Question, QuizConfig } from '../types';
 
 export type SavedQuiz = {
   id: string;
+  courseId?: string;
   materialId: string;
   materialTitle: string;
   serverQuizId?: string;
