@@ -287,6 +287,7 @@ const SharedQuiz: React.FC = () => {
                 accept=".pdf,.docx,.txt,.png,.jpg,.jpeg,.bmp,.tif,.tiff,.webp"
                 className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white"
               />
+              <p className="text-xs text-slate-400">Поддерживаются: PDF, DOCX, TXT и фото (PNG/JPG/BMP/TIFF/WEBP), до 10MB.</p>
               {assignmentFile && (
                 <p className="text-xs text-slate-400">Выбран файл: {assignmentFile.name}</p>
               )}
