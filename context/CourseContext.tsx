@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Course, CourseCreate, CourseUpdate } from '../types';
-import { CourseService } from '../lib/api';
+import { ApiError, CourseService } from '../lib/api';
 
 interface CourseContextType {
   courses: Course[];
@@ -30,6 +30,13 @@ export const CourseProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Load courses on mount
   const refreshCourses = useCallback(async () => {
+    if (!localStorage.getItem('token')) {
+      setCourses([]);
+      setSelectedCourse(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const fetchedCourses = await CourseService.getAll();
@@ -44,7 +51,9 @@ export const CourseProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setSelectedCourse(fetchedCourses.length > 0 ? fetchedCourses[0] : null);
       }
     } catch (error) {
-      console.error('Failed to load courses:', error);
+      if (!(error instanceof ApiError && error.code === 401)) {
+        console.error('Failed to load courses:', error);
+      }
       setCourses([]);
     } finally {
       setLoading(false);

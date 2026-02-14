@@ -27,6 +27,8 @@ interface CustomRequestInit extends RequestInit {
     skipAuth?: boolean;
 }
 
+let authRedirectScheduled = false;
+
 // Helper to handle requests with auth headers
 async function request<T>(endpoint: string, options: CustomRequestInit = {}): Promise<T> {
     const { skipAuth, ...fetchOptions } = options;
@@ -49,11 +51,14 @@ async function request<T>(endpoint: string, options: CustomRequestInit = {}): Pr
             if (response.status === 401 && !skipAuth) {
                 localStorage.removeItem('token');
                 localStorage.removeItem('isLoggedIn');
-                
-                // Small delay to show any pending toasts
-                setTimeout(() => {
-                    window.location.href = '/#/login';
-                }, 100);
+
+                if (!authRedirectScheduled) {
+                    authRedirectScheduled = true;
+                    window.dispatchEvent(new Event('authExpired'));
+                    setTimeout(() => {
+                        window.location.href = '/#/login';
+                    }, 100);
+                }
                 
                 throw new ApiError(401, 'Сессия истекла. Пожалуйста, войдите снова.');
             }

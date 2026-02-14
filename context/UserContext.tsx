@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '../types';
-import { AuthService } from '../lib/api';
+import { ApiError, AuthService } from '../lib/api';
 
 interface UserContextType {
     user: User | null;
@@ -28,7 +28,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const userData = await AuthService.getCurrentUser();
             setUser(userData);
         } catch (error) {
-            console.error("Failed to fetch user", error);
+            if (!(error instanceof ApiError && error.code === 401)) {
+                console.error("Failed to fetch user", error);
+            }
             setUser(null);
         } finally {
             setIsLoading(false);
