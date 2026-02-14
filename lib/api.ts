@@ -186,11 +186,28 @@ export const DashboardService = {
 export const OCRService = {
     async getQueue(): Promise<StudentResult[]> {
         const response = await request<any>('/ocr/queue');
-        // Handle various response shapes (array vs wrapped object)
-        if (Array.isArray(response)) return response;
-        if (response.items && Array.isArray(response.items)) return response.items;
-        if (response.data && Array.isArray(response.data)) return response.data;
-        return [];
+        // Handle various response shapes and normalize to StudentResult[]
+        const rawQueue = Array.isArray(response)
+            ? response
+            : Array.isArray(response?.queue)
+                ? response.queue
+                : Array.isArray(response?.items)
+                    ? response.items
+                    : Array.isArray(response?.data)
+                        ? response.data
+                        : [];
+
+        return rawQueue.map((item: any) => ({
+            id: String(item.id || ''),
+            student: {
+                name: item.studentName || item.student_name || item.student?.name || 'Ученик',
+                accuracy: Number(item.student?.accuracy ?? item.accuracy ?? 0),
+            },
+            subject: item.subject || 'Задание',
+            image: item.image || item.filename || '',
+            questions: Array.isArray(item.questions) ? item.questions : [],
+            status: item.status === 'graded' ? 'graded' : item.status === 'flagged' ? 'flagged' : 'pending',
+        }));
     },
 
     async getById(id: string): Promise<StudentResult> {
