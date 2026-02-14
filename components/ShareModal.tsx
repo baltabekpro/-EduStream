@@ -32,6 +32,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, resourceTitle,
                 password: password || undefined,
                 viewOnly,
                 allowCopy: true,
+                resourceType: resourceType === 'material' ? 'material' : 'quiz',
             });
             setGeneratedLink(result.url);
             addToast('Ссылка для учеников создана', 'success');
