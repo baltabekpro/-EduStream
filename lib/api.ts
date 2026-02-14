@@ -18,7 +18,9 @@ import {
     SharedQuizPayload,
     SharedQuizResult,
     TeacherQuizResult,
-    StudentJournalResponse
+    StudentJournalResponse,
+    AssignmentLinkHistoryItem,
+    AssignmentSubmissionHistoryItem
 } from '../types';
 
 // Use environment variable or fallback to production URL
@@ -425,6 +427,21 @@ export const ShareService = {
         if (courseId) params.set('courseId', courseId);
         const query = params.toString() ? `?${params.toString()}` : '';
         const response = await request<any>(`/share/quiz-results${query}`);
+        return Array.isArray(response) ? response : [];
+    },
+
+    async getAssignmentLinks(courseId?: string): Promise<AssignmentLinkHistoryItem[]> {
+        const query = courseId ? `?courseId=${encodeURIComponent(courseId)}` : '';
+        const response = await request<any>(`/share/assignment-links${query}`);
+        return Array.isArray(response) ? response : [];
+    },
+
+    async getAssignmentResults(courseId?: string, statusFilter: 'all' | 'pending' | 'checked' = 'all'): Promise<AssignmentSubmissionHistoryItem[]> {
+        const params = new URLSearchParams();
+        if (courseId) params.set('courseId', courseId);
+        params.set('statusFilter', statusFilter);
+        const query = params.toString() ? `?${params.toString()}` : '';
+        const response = await request<any>(`/share/assignment-results${query}`);
         return Array.isArray(response) ? response : [];
     },
 };

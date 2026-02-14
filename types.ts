@@ -221,11 +221,38 @@ export interface TeacherQuizResult {
     totalQuestions: number;
 }
 
+export interface AssignmentLinkHistoryItem {
+    linkId: string;
+    shortCode: string;
+    url: string;
+    materialId: string;
+    materialTitle: string;
+    createdAt?: string;
+    expiresAt?: string | null;
+    viewOnly: boolean;
+    allowCopy: boolean;
+}
+
+export interface AssignmentSubmissionHistoryItem {
+    submissionId: string;
+    studentName: string;
+    status: 'pending' | 'graded' | 'reviewed' | string;
+    submittedAt?: string;
+    updatedAt?: string;
+    score?: number | null;
+    fileUrl?: string;
+    previewText?: string;
+    courseId?: string;
+}
+
 export interface StudentJournalHistoryItem {
     resultId: string;
     score: number;
+    hasScore?: boolean;
+    resultType?: 'quiz' | 'assignment';
+    status?: string;
     submittedAt: string;
-    quizId: string;
+    quizId?: string | null;
     quizTitle: string;
     materialTitle: string;
 }

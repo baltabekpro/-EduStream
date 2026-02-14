@@ -288,11 +288,18 @@ const QuizResults: React.FC = () => {
                           {item.history.map((attempt) => (
                             <div key={attempt.resultId} className="flex items-center justify-between gap-3 bg-surface/40 rounded-lg p-2 text-xs">
                               <div className="min-w-0">
-                                <p className="text-white truncate" title={`${attempt.quizTitle} • ${attempt.materialTitle}`}>{attempt.quizTitle}</p>
+                                <p className="text-white truncate flex items-center gap-2" title={`${attempt.quizTitle} • ${attempt.materialTitle}`}>
+                                  <span>{attempt.quizTitle}</span>
+                                  {attempt.resultType === 'assignment' && (
+                                    <span className={`px-1.5 py-0.5 rounded border text-[10px] ${attempt.status === 'graded' || attempt.status === 'reviewed' ? 'text-green-400 border-green-500/30 bg-green-500/10' : 'text-amber-300 border-amber-500/30 bg-amber-500/10'}`}>
+                                      {attempt.status === 'graded' || attempt.status === 'reviewed' ? 'проверено' : 'на проверке'}
+                                    </span>
+                                  )}
+                                </p>
                                 <p className="text-slate-400">{formatDate(attempt.submittedAt)}</p>
                               </div>
-                              <span className={`font-bold ${attempt.score >= 70 ? 'text-green-400' : attempt.score >= 40 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                {attempt.score}%
+                              <span className={`font-bold ${attempt.hasScore === false ? 'text-slate-500' : attempt.score >= 70 ? 'text-green-400' : attempt.score >= 40 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                {attempt.hasScore === false ? '—' : `${attempt.score}%`}
                               </span>
                             </div>
                           ))}

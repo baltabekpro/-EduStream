@@ -1,10 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { PageTransition } from '../components/PageTransition';
 import { useCourse } from '../context/CourseContext';
-import { AIService, MaterialService } from '../lib/api';
+import { AIService, MaterialService, ShareService } from '../lib/api';
 import { useToast } from '../components/Toast';
-import type { Material } from '../types';
+import type { AssignmentLinkHistoryItem, AssignmentSubmissionHistoryItem, Material } from '../types';
 import ShareModal from '../components/ShareModal';
+
+const formatDate = (value?: string) => {
+  if (!value) return '—';
+  try {
+    return new Date(value).toLocaleString();
+  } catch {
+    return value;
+  }
+};
 
 const Assignments: React.FC = () => {
   const { selectedCourse } = useCourse();
@@ -18,6 +27,9 @@ const Assignments: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [linksHistory, setLinksHistory] = useState<AssignmentLinkHistoryItem[]>([]);
+  const [submissionsHistory, setSubmissionsHistory] = useState<AssignmentSubmissionHistoryItem[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const selectedMaterial = useMemo(
     () => materials.find((item) => item.id === selectedMaterialId) || null,
@@ -45,8 +57,31 @@ const Assignments: React.FC = () => {
     }
   };
 
+  const loadHistory = async () => {
+    if (!selectedCourse?.id) {
+      setLinksHistory([]);
+      setSubmissionsHistory([]);
+      return;
+    }
+
+    setHistoryLoading(true);
+    try {
+      const [links, submissions] = await Promise.all([
+        ShareService.getAssignmentLinks(selectedCourse.id),
+        ShareService.getAssignmentResults(selectedCourse.id, 'all'),
+      ]);
+      setLinksHistory(links);
+      setSubmissionsHistory(submissions);
+    } catch (error: any) {
+      addToast(error.message || 'Не удалось загрузить историю заданий', 'error');
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadMaterials();
+    loadHistory();
   }, [selectedCourse?.id]);
 
   useEffect(() => {
@@ -178,7 +213,9 @@ const Assignments: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => setShowShareModal(true)}
+              onClick={() => {
+                setShowShareModal(true);
+              }}
               disabled={!selectedMaterial || !assignmentText.trim()}
               className="px-4 py-2 bg-surface border border-border text-white rounded-xl font-bold hover:bg-white/5 disabled:opacity-60"
             >
@@ -196,11 +233,71 @@ const Assignments: React.FC = () => {
             />
           </div>
         </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <div className="bg-surface border border-border rounded-2xl p-5 md:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-white">История назначений</h2>
+              <button
+                onClick={loadHistory}
+                className="text-xs px-3 py-1.5 rounded-lg border border-border text-slate-300 hover:bg-white/5"
+              >
+                Обновить
+              </button>
+            </div>
+
+            {historyLoading ? (
+              <div className="text-slate-400 text-sm">Загрузка...</div>
+            ) : linksHistory.length === 0 ? (
+              <div className="text-slate-400 text-sm">Пока нет созданных ссылок на задания</div>
+            ) : (
+              <div className="space-y-2 max-h-80 overflow-y-auto custom-scrollbar pr-1">
+                {linksHistory.map((item) => (
+                  <div key={item.linkId} className="bg-background border border-border rounded-lg p-3">
+                    <p className="text-white text-sm font-bold truncate" title={item.materialTitle}>{item.materialTitle}</p>
+                    <p className="text-slate-400 text-xs mt-1">Код: {item.shortCode} • {formatDate(item.createdAt)}</p>
+                    <a href={item.url} target="_blank" rel="noreferrer" className="text-primary text-xs mt-2 inline-block hover:underline">Открыть ссылку</a>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="bg-surface border border-border rounded-2xl p-5 md:p-6">
+            <h2 className="text-lg font-bold text-white mb-4">История проверенных заданий</h2>
+
+            {historyLoading ? (
+              <div className="text-slate-400 text-sm">Загрузка...</div>
+            ) : submissionsHistory.length === 0 ? (
+              <div className="text-slate-400 text-sm">Ответов по заданиям пока нет</div>
+            ) : (
+              <div className="space-y-2 max-h-80 overflow-y-auto custom-scrollbar pr-1">
+                {submissionsHistory.map((item) => (
+                  <div key={item.submissionId} className="bg-background border border-border rounded-lg p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-white text-sm font-bold truncate">{item.studentName}</p>
+                      <span className={`text-[10px] px-2 py-1 rounded-full border ${item.status === 'graded' || item.status === 'reviewed' ? 'text-green-400 border-green-500/30 bg-green-500/10' : 'text-amber-300 border-amber-500/30 bg-amber-500/10'}`}>
+                        {item.status === 'graded' || item.status === 'reviewed' ? 'Проверено' : 'На проверке'}
+                      </span>
+                    </div>
+                    <p className="text-slate-400 text-xs mt-1">{formatDate(item.submittedAt)}{typeof item.score === 'number' ? ` • ${item.score}%` : ''}</p>
+                    {item.previewText && (
+                      <p className="text-slate-300 text-xs mt-2 line-clamp-2">{item.previewText}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       <ShareModal
         isOpen={showShareModal}
-        onClose={() => setShowShareModal(false)}
+        onClose={() => {
+          setShowShareModal(false);
+          loadHistory();
+        }}
         resourceType="material"
         resourceId={selectedMaterial?.id}
         resourceTitle={selectedMaterial?.title || 'Задание'}
