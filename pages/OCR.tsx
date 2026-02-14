@@ -25,6 +25,8 @@ const OCR: React.FC = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
 
+    const isImagePath = (value?: string) => /\.(png|jpe?g|bmp|tiff?|webp|gif)$/i.test(value || '');
+
   useEffect(() => { loadQueue(); }, []);
 
   // Warn before leaving with unsaved changes
@@ -277,12 +279,29 @@ const OCR: React.FC = () => {
                              <span className="material-symbols-outlined text-xl">remove</span>
                          </button>
                      </div>
-                     <img 
-                        src={currentWork.image} 
-                        className="transition-transform duration-200 shadow-2xl"
-                        style={{ transform: `scale(${zoom / 100})`, maxWidth: '90%', maxHeight: '90vh' }} 
-                                alt="Скан работы ученика" 
-                     />
+                     {isImagePath(currentWork.image) ? (
+                        <img 
+                            src={currentWork.image} 
+                            className="transition-transform duration-200 shadow-2xl"
+                            style={{ transform: `scale(${zoom / 100})`, maxWidth: '90%', maxHeight: '90vh' }} 
+                            alt="Скан работы ученика" 
+                        />
+                     ) : (
+                        <div className="w-[90%] max-w-2xl rounded-2xl border border-border bg-surface/70 p-6 text-slate-200">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="bg-primary/10 p-2 rounded-lg text-primary">
+                                    <span className="material-symbols-outlined">description</span>
+                                </div>
+                                <div>
+                                    <div className="text-sm font-bold text-white">Текстовый ответ ученика</div>
+                                    <div className="text-xs text-slate-400">Вложение не является изображением: {currentWork.image || 'без файла'}</div>
+                                </div>
+                            </div>
+                            <div className="bg-background/70 border border-border rounded-xl p-4 whitespace-pre-wrap leading-relaxed text-sm">
+                                {currentWork.questions?.find(q => q.id === 'text-response')?.ocrText || 'Текст ответа не найден'}
+                            </div>
+                        </div>
+                     )}
                 </div>
                 
                 {/* Grading Pane */}
