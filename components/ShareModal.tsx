@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
+import { ShareService } from '../lib/api';
+import { useToast } from './Toast';
 
 interface ShareModalProps {
     isOpen: boolean;
     onClose: () => void;
     resourceTitle: string;
+    resourceId?: string;
     resourceType: 'quiz' | 'result';
 }
 
-const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, resourceTitle, resourceType }) => {
+const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, resourceTitle, resourceId, resourceType }) => {
+    const { addToast } = useToast();
     const [viewOnly, setViewOnly] = useState(true);
     const [password, setPassword] = useState('');
     const [expiresIn, setExpiresIn] = useState('7d');
@@ -16,18 +20,31 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, resourceTitle,
 
     if (!isOpen) return null;
 
-    const handleCreateLink = () => {
+    const handleCreateLink = async () => {
+        if (!resourceId) {
+            addToast('Сначала сгенерируйте и сохраните тест', 'error');
+            return;
+        }
+
         setLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setGeneratedLink(`https://edustream.app/share/${Math.random().toString(36).substr(2, 6)}`);
+        try {
+            const result = await ShareService.create(resourceId, {
+                password: password || undefined,
+                viewOnly,
+                allowCopy: true,
+            });
+            setGeneratedLink(result.url);
+            addToast('Ссылка для учеников создана', 'success');
+        } catch (error: any) {
+            addToast(error.message || 'Не удалось создать ссылку', 'error');
+        } finally {
             setLoading(false);
-        }, 1000);
+        }
     };
 
     const handleCopy = () => {
         navigator.clipboard.writeText(generatedLink);
-        // Assuming a toast trigger here or just visual feedback
+        addToast('Ссылка скопирована', 'success');
     };
 
     return (

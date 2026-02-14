@@ -6,6 +6,8 @@ import OCR from './pages/OCR';
 import Analytics from './pages/Analytics';
 import AIWorkspace from './pages/AIWorkspace';
 import Library from './pages/Library';
+import TeacherQuizPreview from './pages/TeacherQuizPreview';
+import SharedQuiz from './pages/SharedQuiz';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -26,6 +28,8 @@ const Layout: React.FC = () => {
   const location = useLocation();
 
   const getPageTitle = (path: string) => {
+    if (path.startsWith('/quiz/')) return 'Предпросмотр теста';
+
     switch (path) {
       case '/dashboard': return 'Дашборд';
       case '/ocr': return 'Проверка работ';
@@ -90,10 +94,13 @@ const App: React.FC = () => {
                         <Route path="/ocr" element={<OCR />} />
                         <Route path="/analytics" element={<Analytics />} />
                         <Route path="/ai" element={<AIWorkspace />} />
+                        <Route path="/quiz/:quizId" element={<TeacherQuizPreview />} />
                         <Route path="/library" element={<Library />} />
                         <Route path="/settings" element={<Settings />} />
                     </Route>
                     </Route>
+
+                      <Route path="/shared/:code" element={<SharedQuiz />} />
 
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 </Routes>

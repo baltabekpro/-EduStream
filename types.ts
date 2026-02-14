@@ -144,6 +144,42 @@ export interface Question {
     explanation: string;
 }
 
+export interface QuizPayload {
+    id: string;
+    materialId: string;
+    createdAt: string;
+    questions: Question[];
+}
+
+export interface SharedQuizPayload {
+    resourceType: 'quiz';
+    shortCode: string;
+    title: string;
+    quizId: string;
+    viewOnly: boolean;
+    allowCopy: boolean;
+    questions: Array<{
+        id: string;
+        type: 'mcq' | 'open' | 'boolean';
+        text: string;
+        options: string[];
+    }>;
+}
+
+export interface SharedQuizResult {
+    quizId: string;
+    studentName: string;
+    score: number;
+    correct: number;
+    total: number;
+    details: Array<{
+        questionId: string;
+        userAnswer: string;
+        correctAnswer: string;
+        isCorrect: boolean;
+    }>;
+}
+
 export interface SmartActionRequest {
     text: string;
     action: 'explain' | 'simplify' | 'translate' | 'summarize';

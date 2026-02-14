@@ -73,6 +73,8 @@ const AIWorkspace: React.FC = () => {
   });
   const [showShareModal, setShowShareModal] = useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+    const [generatedQuizId, setGeneratedQuizId] = useState<string>('');
+    const [isEditMode, setIsEditMode] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -83,6 +85,7 @@ const AIWorkspace: React.FC = () => {
       setIsGenerating(false);
       setSelection(null);
       setTestQuestions([]);
+      setGeneratedQuizId('');
       setTestConfig({
           difficulty: 'medium',
           count: 5,
@@ -144,6 +147,7 @@ const AIWorkspace: React.FC = () => {
                  const saved = getSavedQuiz(location.state.savedQuizId);
                  if (saved) {
                      setActiveTab('test-builder');
+                     setGeneratedQuizId('');
                      setTestConfig(saved.config);
                      setTestQuestions(saved.questions);
                      addToast('Тест загружен из библиотеки', 'success');
@@ -303,8 +307,9 @@ const AIWorkspace: React.FC = () => {
              throw new Error("No valid material selected");
           }
 
-          const questions = await AIService.generateQuiz({ ...config, materialId: matId });
-          setTestQuestions(questions);
+          const quiz = await AIService.generateQuiz({ ...config, materialId: matId });
+          setGeneratedQuizId(quiz.id || '');
+          setTestQuestions(quiz.questions || []);
           incrementTimeSaved('quizzesGenerated', 1);
           addToast("Test generated successfully", "success");
       } catch (e: any) {
@@ -323,6 +328,34 @@ const AIWorkspace: React.FC = () => {
           addToast("Question updated", "success");
       } catch (e) {
           addToast("Failed to update question", "error");
+      }
+  };
+
+  const handleQuestionChange = (index: number, patch: Partial<Question>) => {
+      setTestQuestions(prev => prev.map((q, i) => (i === index ? { ...q, ...patch } : q)));
+  };
+
+  const handleOptionChange = (questionIndex: number, optionIndex: number, value: string) => {
+      setTestQuestions(prev => prev.map((q, i) => {
+          if (i !== questionIndex) return q;
+          const options = [...(q.options || [])];
+          options[optionIndex] = value;
+          return { ...q, options };
+      }));
+  };
+
+  const handleSaveEdits = async () => {
+      if (!generatedQuizId) {
+          addToast('Этот тест пока не сохранён на сервере', 'info');
+          return;
+      }
+      try {
+          const updated = await AIService.updateQuiz(generatedQuizId, testQuestions);
+          setTestQuestions(updated.questions || []);
+          addToast('Изменения теста сохранены', 'success');
+          setIsEditMode(false);
+      } catch (error: any) {
+          addToast(error.message || 'Не удалось сохранить изменения', 'error');
       }
   };
 
@@ -458,6 +491,30 @@ const AIWorkspace: React.FC = () => {
                              </button>
                          </div>
 
+                         {testQuestions.length > 0 && (
+                             <div className="flex items-center justify-between gap-3 bg-surface border border-border rounded-xl p-3">
+                                 <div className="text-sm text-slate-300">
+                                     {generatedQuizId ? 'Тест сохранён на сервере' : 'Локальный черновик'}
+                                 </div>
+                                 <div className="flex items-center gap-2">
+                                     <button
+                                         onClick={() => setIsEditMode(v => !v)}
+                                         className="px-3 py-2 rounded-lg bg-background border border-border text-slate-300 hover:text-white"
+                                     >
+                                         {isEditMode ? 'Закрыть редактирование' : 'Редактировать'}
+                                     </button>
+                                     {isEditMode && (
+                                         <button
+                                             onClick={handleSaveEdits}
+                                             className="px-3 py-2 rounded-lg bg-primary text-white font-bold hover:bg-primary-hover"
+                                         >
+                                             Сохранить правки
+                                         </button>
+                                     )}
+                                 </div>
+                             </div>
+                         )}
+
                          {/* Questions List */}
                          {testQuestions.map((q, idx) => (
                              <div key={q.id} className="bg-surface border border-border rounded-xl p-4 relative group">
@@ -469,15 +526,58 @@ const AIWorkspace: React.FC = () => {
                                  <div className="flex gap-3">
                                      <span className="text-slate-500 font-bold">{idx + 1}.</span>
                                      <div className="flex-1">
-                                         <p className="text-white font-medium mb-2">{q.text}</p>
-                                         <ul className="space-y-1 ml-4 list-disc text-slate-400 text-sm">
-                                             {q.options?.map((opt, i) => (
-                                                 <li key={i} className={opt === q.correctAnswer ? 'text-green-400' : ''}>{opt}</li>
-                                             ))}
-                                         </ul>
-                                         <div className="mt-3 p-2 bg-background/50 rounded text-xs text-slate-400 italic">
-                                             <span className="font-bold not-italic text-slate-300">{t('ai.explanation')}:</span> {q.explanation}
-                                         </div>
+                                         {isEditMode ? (
+                                             <>
+                                                 <input
+                                                     value={q.text}
+                                                     onChange={(e) => handleQuestionChange(idx, { text: e.target.value })}
+                                                     className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white mb-2"
+                                                 />
+                                                 {q.type === 'mcq' && (
+                                                     <div className="space-y-2 mb-2">
+                                                         {(q.options || []).map((opt, i) => (
+                                                             <div key={i} className="grid grid-cols-[1fr_auto] gap-2">
+                                                                 <input
+                                                                     value={opt}
+                                                                     onChange={(e) => handleOptionChange(idx, i, e.target.value)}
+                                                                     className="w-full bg-background border border-border rounded-lg px-3 py-2 text-slate-300 text-sm"
+                                                                 />
+                                                                 <button
+                                                                     onClick={() => handleQuestionChange(idx, { correctAnswer: opt })}
+                                                                     className={`px-3 py-2 rounded-lg text-xs font-bold ${q.correctAnswer === opt ? 'bg-green-600 text-white' : 'bg-background border border-border text-slate-300'}`}
+                                                                 >
+                                                                     Верный
+                                                                 </button>
+                                                             </div>
+                                                         ))}
+                                                     </div>
+                                                 )}
+                                                 {q.type !== 'mcq' && (
+                                                     <input
+                                                         value={q.correctAnswer}
+                                                         onChange={(e) => handleQuestionChange(idx, { correctAnswer: e.target.value })}
+                                                         className="w-full bg-background border border-border rounded-lg px-3 py-2 text-slate-300 text-sm mb-2"
+                                                     />
+                                                 )}
+                                                 <textarea
+                                                     value={q.explanation || ''}
+                                                     onChange={(e) => handleQuestionChange(idx, { explanation: e.target.value })}
+                                                     className="w-full bg-background border border-border rounded-lg px-3 py-2 text-slate-300 text-xs min-h-20"
+                                                 />
+                                             </>
+                                         ) : (
+                                             <>
+                                                 <p className="text-white font-medium mb-2">{q.text}</p>
+                                                 <ul className="space-y-1 ml-4 list-disc text-slate-400 text-sm">
+                                                     {q.options?.map((opt, i) => (
+                                                         <li key={i} className={opt === q.correctAnswer ? 'text-green-400' : ''}>{opt}</li>
+                                                     ))}
+                                                 </ul>
+                                                 <div className="mt-3 p-2 bg-background/50 rounded text-xs text-slate-400 italic">
+                                                     <span className="font-bold not-italic text-slate-300">{t('ai.explanation')}:</span> {q.explanation}
+                                                 </div>
+                                             </>
+                                         )}
                                      </div>
                                  </div>
                              </div>
@@ -518,7 +618,13 @@ const AIWorkspace: React.FC = () => {
                                          Сохранить в библиотеку
                                      </button>
                                      <button 
-                                         onClick={() => setShowShareModal(true)}
+                                         onClick={() => {
+                                             if (!generatedQuizId) {
+                                                 addToast('Сначала сохраните тест на сервере (сгенерируйте заново)', 'info');
+                                                 return;
+                                             }
+                                             setShowShareModal(true);
+                                         }}
                                          className="flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all group"
                                      >
                                          <span className="material-symbols-outlined group-hover:scale-110 transition-transform">share</span>
@@ -527,7 +633,13 @@ const AIWorkspace: React.FC = () => {
                                  </div>
                                  <div className="grid grid-cols-2 gap-3">
                                      <button 
-                                         onClick={() => addToast("Предпросмотр в разработке", "info")}
+                                         onClick={() => {
+                                             if (!generatedQuizId) {
+                                                 addToast('Для предпросмотра нужен тест, сохранённый на сервере', 'info');
+                                                 return;
+                                             }
+                                             navigate(`/quiz/${generatedQuizId}`);
+                                         }}
                                          className="flex items-center justify-center gap-2 px-4 py-3 bg-surface border border-border text-slate-300 rounded-xl font-medium hover:bg-white/5 hover:text-white transition-all"
                                      >
                                          <span className="material-symbols-outlined text-sm">visibility</span>
@@ -574,6 +686,7 @@ const AIWorkspace: React.FC = () => {
     <ShareModal 
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
+        resourceId={generatedQuizId}
         resourceTitle={documentData?.title || "Тест"}
         resourceType="quiz"
     />
