@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { PageTransition } from '../components/PageTransition';
 import { useCourse } from '../context/CourseContext';
-import { AIService, MaterialService, ShareService } from '../lib/api';
+import { AIService, MaterialService, OCRService, ShareService } from '../lib/api';
 import { useToast } from '../components/Toast';
-import type { AssignmentLinkHistoryItem, AssignmentSubmissionHistoryItem, Material } from '../types';
+import type { AssignmentLinkHistoryItem, AssignmentSubmissionHistoryItem, Material, StudentResult } from '../types';
 import ShareModal from '../components/ShareModal';
 
 const formatDate = (value?: string) => {
@@ -30,11 +30,17 @@ const Assignments: React.FC = () => {
   const [linksHistory, setLinksHistory] = useState<AssignmentLinkHistoryItem[]>([]);
   const [submissionsHistory, setSubmissionsHistory] = useState<AssignmentSubmissionHistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [isAnswerModalOpen, setIsAnswerModalOpen] = useState(false);
+  const [answerLoading, setAnswerLoading] = useState(false);
+  const [openedSubmission, setOpenedSubmission] = useState<AssignmentSubmissionHistoryItem | null>(null);
+  const [openedAnswerDetails, setOpenedAnswerDetails] = useState<StudentResult | null>(null);
 
   const selectedMaterial = useMemo(
     () => materials.find((item) => item.id === selectedMaterialId) || null,
     [materials, selectedMaterialId]
   );
+
+  const isImagePath = (value?: string) => /\.(png|jpe?g|bmp|tiff?|webp|gif)$/i.test(value || '');
 
   const loadMaterials = async () => {
     if (!selectedCourse?.id) {
@@ -137,6 +143,21 @@ const Assignments: React.FC = () => {
       addToast(error.message || 'Не удалось сохранить задание', 'error');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleOpenCheckedAnswer = async (item: AssignmentSubmissionHistoryItem) => {
+    setOpenedSubmission(item);
+    setIsAnswerModalOpen(true);
+    setAnswerLoading(true);
+    setOpenedAnswerDetails(null);
+    try {
+      const details = await OCRService.getById(item.submissionId);
+      setOpenedAnswerDetails(details);
+    } catch (error: any) {
+      addToast(error.message || 'Не удалось открыть ответ', 'error');
+    } finally {
+      setAnswerLoading(false);
     }
   };
 
@@ -284,6 +305,15 @@ const Assignments: React.FC = () => {
                     {item.previewText && (
                       <p className="text-slate-300 text-xs mt-2 line-clamp-2">{item.previewText}</p>
                     )}
+                    <div className="mt-3 flex justify-end">
+                      <button
+                        onClick={() => handleOpenCheckedAnswer(item)}
+                        disabled={!(item.status === 'graded' || item.status === 'reviewed')}
+                        className="text-xs px-3 py-1.5 rounded-lg border border-border text-slate-200 hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        Открыть ответ
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -291,6 +321,53 @@ const Assignments: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {isAnswerModalOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsAnswerModalOpen(false)}></div>
+          <div className="relative w-full max-w-3xl bg-surface border border-border rounded-2xl p-5 md:p-6 max-h-[85vh] overflow-y-auto custom-scrollbar">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div>
+                <h3 className="text-lg font-bold text-white">Ответ ученика</h3>
+                <p className="text-xs text-slate-400">{openedSubmission?.studentName || '—'} • {formatDate(openedSubmission?.submittedAt)}</p>
+              </div>
+              <button
+                onClick={() => setIsAnswerModalOpen(false)}
+                className="text-slate-400 hover:text-white"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            {answerLoading ? (
+              <div className="text-slate-400 text-sm">Загрузка ответа...</div>
+            ) : !openedAnswerDetails ? (
+              <div className="text-slate-400 text-sm">Не удалось загрузить детали ответа</div>
+            ) : (
+              <div className="space-y-4">
+                {isImagePath(openedAnswerDetails.image) ? (
+                  <div className="bg-background border border-border rounded-xl p-3">
+                    <img src={openedAnswerDetails.image} alt="Ответ ученика" className="max-h-[320px] mx-auto rounded-lg" />
+                  </div>
+                ) : (
+                  <div className="bg-background border border-border rounded-xl p-3 text-xs text-slate-400">
+                    Файл ответа: {openedAnswerDetails.image || 'нет файла'}
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  {openedAnswerDetails.questions.map((region) => (
+                    <div key={region.id} className="bg-background border border-border rounded-xl p-3">
+                      <p className="text-xs text-slate-400 mb-2">{region.label}</p>
+                      <div className="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed">{region.ocrText || '—'}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <ShareModal
         isOpen={showShareModal}
