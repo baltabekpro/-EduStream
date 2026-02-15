@@ -21,6 +21,7 @@ const QuizResults = lazy(() => import('./pages/QuizResults'));
 const Settings = lazy(() => import('./pages/Settings'));
 const StudentDashboard = lazy(() => import('./pages/StudentDashboard'));
 const StudentAssignments = lazy(() => import('./pages/StudentAssignments'));
+const StudentTests = lazy(() => import('./pages/StudentTests'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 
@@ -84,6 +85,7 @@ const Layout: React.FC = () => {
     switch (path) {
       case '/student': return 'Мой кабинет';
       case '/student-assignments': return 'Мои задания';
+      case '/student-tests': return 'Мои тесты';
       case '/dashboard': return 'Дашборд';
       case '/assignments': return 'Задания';
       case '/ocr': return 'Проверка работ';
@@ -150,6 +152,7 @@ const App: React.FC = () => {
                         <Route element={<RoleRoute allowedRoles={['student']} />}>
                           <Route path="/student" element={<StudentDashboard />} />
                           <Route path="/student-assignments" element={<StudentAssignments />} />
+                          <Route path="/student-tests" element={<StudentTests />} />
                         </Route>
 
                         <Route element={<RoleRoute allowedRoles={['teacher', 'admin']} />}>

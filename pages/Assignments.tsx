@@ -146,6 +146,10 @@ const Assignments: React.FC = () => {
     }
   };
 
+  const insertFormatting = (snippet: string) => {
+    setAssignmentText((prev) => `${prev}${prev.endsWith('\n') || prev.length === 0 ? '' : '\n'}${snippet}`);
+  };
+
   const handleOpenCheckedAnswer = async (item: AssignmentSubmissionHistoryItem) => {
     setOpenedSubmission(item);
     setIsAnswerModalOpen(true);
@@ -246,12 +250,21 @@ const Assignments: React.FC = () => {
 
           <div>
             <label className="block text-xs font-bold text-slate-400 mb-2">Текст задания</label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              <button type="button" onClick={() => insertFormatting('# Заголовок')} className="px-2 py-1 text-xs rounded-lg border border-border text-slate-300 hover:bg-white/5">H1</button>
+              <button type="button" onClick={() => insertFormatting('## Подзаголовок')} className="px-2 py-1 text-xs rounded-lg border border-border text-slate-300 hover:bg-white/5">H2</button>
+              <button type="button" onClick={() => insertFormatting('**Жирный текст**')} className="px-2 py-1 text-xs rounded-lg border border-border text-slate-300 hover:bg-white/5">Жирный</button>
+              <button type="button" onClick={() => insertFormatting('*Курсив*')} className="px-2 py-1 text-xs rounded-lg border border-border text-slate-300 hover:bg-white/5">Курсив</button>
+              <button type="button" onClick={() => insertFormatting('- Пункт списка')} className="px-2 py-1 text-xs rounded-lg border border-border text-slate-300 hover:bg-white/5">Список</button>
+              <button type="button" onClick={() => insertFormatting('1) Шаг 1\n2) Шаг 2')} className="px-2 py-1 text-xs rounded-lg border border-border text-slate-300 hover:bg-white/5">Шаги</button>
+            </div>
             <textarea
               value={assignmentText}
               onChange={(e) => setAssignmentText(e.target.value)}
               className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white min-h-56"
               placeholder="Сгенерируйте задание через AI или введите текст вручную"
             />
+            <p className="text-xs text-slate-500 mt-2">Поддерживается форматирование: заголовки (#), жирный (**текст**), курсив (*текст*), списки (- пункт).</p>
           </div>
         </div>
 

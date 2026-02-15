@@ -23,6 +23,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     ? [
         { icon: 'school', label: 'Мой кабинет', path: '/student' },
         { icon: 'assignment', label: 'Мои задания', path: '/student-assignments' },
+        { icon: 'quiz', label: 'Мои тесты', path: '/student-tests' },
         { icon: 'settings', label: t('nav.settings'), path: '/settings' },
       ]
     : [

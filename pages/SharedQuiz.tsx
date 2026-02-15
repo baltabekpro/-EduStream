@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { ShareService, ApiError } from '../lib/api';
 import { PageTransition } from '../components/PageTransition';
 import type { SharedQuizPayload, SharedQuizResult } from '../types';
+import { useUser } from '../context/UserContext';
 
 const QUESTION_TIME = 20;
 const MAX_ASSIGNMENT_FILE_SIZE = 10 * 1024 * 1024;
@@ -10,8 +11,29 @@ const ALLOWED_ASSIGNMENT_EXTENSIONS = ['pdf', 'docx', 'txt', 'png', 'jpg', 'jpeg
 const STUDENT_NAME_STORAGE_KEY = 'studentDisplayName';
 const SHARE_CODE_PATTERN = /^[A-Za-z0-9_-]{6,32}$/;
 
+const escapeHtml = (raw: string) => raw
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;');
+
+const renderAssignmentHtml = (raw: string) => {
+  const escaped = escapeHtml(raw || '').replace(/\r\n/g, '\n');
+  let html = escaped
+    .replace(/^###\s+(.+)$/gm, '<h3 class="text-base font-bold text-white mt-3 mb-1">$1</h3>')
+    .replace(/^##\s+(.+)$/gm, '<h2 class="text-lg font-bold text-white mt-3 mb-1">$1</h2>')
+    .replace(/^#\s+(.+)$/gm, '<h1 class="text-xl font-black text-white mt-3 mb-1">$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^-\s+(.+)$/gm, '<li>$1</li>');
+
+  html = html.replace(/(<li>.*<\/li>)(?!\n<li>)/gms, '<ul class="list-disc pl-5 space-y-1 my-2 text-slate-200">$1</ul>');
+  html = html.replace(/\n/g, '<br/>');
+  return html;
+};
+
 const SharedQuiz: React.FC = () => {
   const { code } = useParams();
+  const { user } = useUser();
   const normalizedCode = (code ? decodeURIComponent(code).trim() : '');
 
   const [quiz, setQuiz] = useState<SharedQuizPayload | null>(null);
@@ -33,6 +55,14 @@ const SharedQuiz: React.FC = () => {
   const [streak, setStreak] = useState(0);
   const [showReveal, setShowReveal] = useState(false);
   const [answerAccepted, setAnswerAccepted] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const profileName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
+    if (profileName) {
+      setStudentName(profileName);
+      localStorage.setItem(STUDENT_NAME_STORAGE_KEY, profileName);
+    }
+  }, [user?.firstName, user?.lastName]);
 
   const load = async (pw?: string) => {
     if (!code) return;
@@ -123,15 +153,13 @@ const SharedQuiz: React.FC = () => {
       setError('Добавьте файл и/или текст ответа');
       return;
     }
-    if (!studentName.trim()) {
-      setError('Введите имя перед отправкой');
-      return;
-    }
+    const profileName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
+    const effectiveStudentName = profileName || studentName.trim() || 'Ученик';
     setSubmitting(true);
     setError('');
     setUploadMessage('');
     try {
-      const data = await ShareService.uploadAssignment(normalizedCode, studentName.trim(), assignmentFile, assignmentText);
+      const data = await ShareService.uploadAssignment(normalizedCode, effectiveStudentName, assignmentFile, assignmentText);
       setUploadMessage(data.message || 'Ответ успешно отправлен учителю');
       setAssignmentFile(null);
       setAssignmentText('');
@@ -253,28 +281,23 @@ const SharedQuiz: React.FC = () => {
               <h1 className="text-2xl font-black">{quiz.title}</h1>
               <p className="text-slate-400 text-sm">Выполните задание и загрузите документ для проверки учителем.</p>
               <div className="flex flex-wrap gap-2 text-xs">
-                <span className="px-2 py-1 rounded-full bg-background border border-border text-slate-300">1. Введите имя</span>
-                <span className="px-2 py-1 rounded-full bg-background border border-border text-slate-300">2. Добавьте текст и/или файл</span>
-                <span className="px-2 py-1 rounded-full bg-background border border-border text-slate-300">3. Отправьте</span>
+                <span className="px-2 py-1 rounded-full bg-background border border-border text-slate-300">1. Добавьте текст и/или файл</span>
+                <span className="px-2 py-1 rounded-full bg-background border border-border text-slate-300">2. Отправьте ответ</span>
+                <span className="px-2 py-1 rounded-full bg-background border border-border text-slate-300">Имя подставится автоматически</span>
               </div>
               {quiz.description && (
-                <div className="bg-background border border-border rounded-lg p-3 text-sm text-slate-300 whitespace-pre-wrap">
-                  {quiz.description}
+                <div
+                  className="bg-background border border-border rounded-lg p-3 text-sm text-slate-300"
+                  dangerouslySetInnerHTML={{ __html: renderAssignmentHtml(quiz.description) }}
+                >
                 </div>
               )}
             </div>
 
             <div className="bg-surface border border-border rounded-2xl p-5 space-y-4">
-              <input
-                value={studentName}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setStudentName(value);
-                  localStorage.setItem(STUDENT_NAME_STORAGE_KEY, value);
-                }}
-                placeholder="Ваше имя"
-                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white"
-              />
+              <div className="w-full bg-background border border-border rounded-lg px-3 py-2 text-slate-300 text-sm">
+                Ученик: {( `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || studentName || 'Ученик')}
+              </div>
               <textarea
                 value={assignmentText}
                 onChange={(e) => setAssignmentText(e.target.value)}
@@ -294,7 +317,7 @@ const SharedQuiz: React.FC = () => {
               <button
                 type="button"
                 onClick={submitAssignment}
-                disabled={submitting || (!assignmentFile && !assignmentText.trim()) || !studentName.trim()}
+                disabled={submitting || (!assignmentFile && !assignmentText.trim())}
                 className="w-full bg-primary text-white rounded-xl py-3 font-bold hover:bg-primary-hover disabled:opacity-60"
               >
                 {submitting ? 'Отправка...' : 'Отправить ответ'}
