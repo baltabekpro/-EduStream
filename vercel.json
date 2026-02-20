@@ -1,4 +1,17 @@
 {
+  "routes": [
+    {
+      "src": "/api/v1/(.*)",
+      "dest": "/api/proxy/$1"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
   "build": {
     "env": {
       "VITE_API_BASE_URL": "/api/v1"

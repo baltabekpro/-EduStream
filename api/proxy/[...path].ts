@@ -1,5 +1,5 @@
 // Disable TLS cert verification for the self-signed cert on the backend.
-// Safe: this runs only inside Vercel's isolated serverless container.
+// This runs only inside Vercel's isolated serverless container — safe.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (process.env as any)['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 
@@ -15,6 +15,7 @@ export const config = {
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // [...]path catch-all: req.query.path is string[] for /auth/login → ['auth','login']
   const segments = req.query.path;
   const pathParts = Array.isArray(segments)
     ? segments
@@ -32,40 +33,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const forwardHeaders: Record<string, string> = {};
   for (const [k, v] of Object.entries(req.headers)) {
-    if (!HOP_BY_HOP.has(k.toLowerCase()) && typeof v === 'string') {
-      forwardHeaders[k] = v;
-    } else if (Array.isArray(v)) {
-      forwardHeaders[k] = v.join(', ');
-    }
+    const lk = k.toLowerCase();
+    if (HOP_BY_HOP.has(lk)) continue;
+    if (typeof v === 'string') forwardHeaders[k] = v;
+    else if (Array.isArray(v)) forwardHeaders[k] = v.join(', ');
   }
 
-  // Collect body
+  // Collect raw body (needed for multipart file uploads and JSON POSTs)
   const chunks: Buffer[] = [];
   await new Promise<void>((resolve) => {
     req.on('data', (c: Buffer) => chunks.push(c));
     req.on('end', resolve);
   });
-  const body = chunks.length ? Buffer.concat(chunks) : undefined;
+  const bodyBuf = chunks.length ? Buffer.concat(chunks) : null;
+
+  console.log(`[proxy] ${req.method} ${targetUrl} body=${bodyBuf?.length ?? 0}B`);
 
   try {
     const upstream = await fetch(targetUrl, {
       method: req.method ?? 'GET',
       headers: forwardHeaders,
-      body: body?.length ? body : undefined,
-      // @ts-ignore - Node 18+ fetch
-      duplex: 'half',
+      ...(bodyBuf && bodyBuf.length > 0
+        ? { body: bodyBuf, duplex: 'half' as never }
+        : {}),
     });
 
     res.status(upstream.status);
     upstream.headers.forEach((v, k) => {
-      if (!k.startsWith('access-control-')) res.setHeader(k, v);
+      if (k.startsWith('access-control-')) return;
+      res.setHeader(k, v);
     });
 
     const buf = Buffer.from(await upstream.arrayBuffer());
     res.end(buf);
+    console.log(`[proxy] ← ${upstream.status} ${buf.length}B`);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error('[proxy] error:', msg, 'target:', targetUrl);
+    console.error('[proxy] error:', msg, '→', targetUrl);
     if (!res.headersSent) {
       res.status(502).json({ detail: 'Bad Gateway', error: msg });
     }
