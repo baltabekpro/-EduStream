@@ -92,7 +92,7 @@ const Layout: React.FC = () => {
       case '/analytics': return 'Аналитика';
       case '/ai': return 'AI Ассистент';
       case '/materials-library': return 'Библиотека файлов';
-      case '/quiz-results': return 'Результаты тестов';
+      case '/quiz-results': return 'Результаты';
       case '/library': return 'Библиотека тестов';
       case '/settings': return 'Настройки';
       default: return 'EduStream';

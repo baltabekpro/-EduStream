@@ -25,7 +25,7 @@ import {
 
 // Use environment variable or fallback to production URL
 // Using optional chaining to avoid "Cannot read properties of undefined" if import.meta.env is missing
-const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://94.131.85.176/api/v1';
+const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://edustream-94-131-85-176.sslip.io/api/v1';
 
 // Custom Error Class
 export class ApiError extends Error {

@@ -48,7 +48,7 @@ const QuizResults: React.FC = () => {
       const data = await ShareService.getTeacherResults(quizId, selectedCourse.id);
       setResults(data);
     } catch (error: any) {
-      addToast(error.message || 'Не удалось загрузить результаты тестов', 'error');
+      addToast(error.message || 'Не удалось загрузить результаты', 'error');
     } finally {
       setIsLoadingResults(false);
     }

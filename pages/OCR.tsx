@@ -25,7 +25,54 @@ const OCR: React.FC = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
 
-    const isImagePath = (value?: string) => /\.(png|jpe?g|bmp|tiff?|webp|gif)$/i.test(value || '');
+        const isImagePath = (value?: string) => /\.(png|jpe?g|bmp|tiff?|webp|gif)$/i.test(value || '');
+        const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://edustream-94-131-85-176.sslip.io/api/v1';
+
+        const getFileUrl = (value?: string) => {
+            const raw = (value || '').trim();
+            if (!raw) return '';
+            if (/^https?:\/\//i.test(raw)) return raw;
+            const apiOrigin = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
+
+            const normalized = raw
+                .replace(/\\/g, '/')
+                .replace(/^\.\//, '/');
+
+            if (normalized.startsWith('/api/v1/uploads/')) {
+                return `${apiOrigin}${normalized}`;
+            }
+
+            if (normalized.startsWith('/uploads/')) {
+                return `${API_BASE_URL}${normalized.replace('/uploads', '/uploads')}`;
+            }
+
+            if (normalized.startsWith('uploads/')) {
+                return `${API_BASE_URL}/${normalized}`;
+            }
+
+            return normalized;
+        };
+
+        const isInlinePreviewableFile = (value?: string) => {
+            const lower = (value || '').toLowerCase();
+            return lower.endsWith('.pdf') || lower.endsWith('.txt');
+        };
+
+        const downloadFile = () => {
+            const fileUrl = getFileUrl(currentWork?.image);
+            if (!fileUrl) {
+                addToast('Файл не найден', 'error');
+                return;
+            }
+            const anchor = document.createElement('a');
+            anchor.href = fileUrl;
+            anchor.target = '_blank';
+            anchor.rel = 'noopener noreferrer';
+            anchor.download = (currentWork?.image?.split('/').pop() || 'student-file');
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+        };
 
   useEffect(() => { loadQueue(); }, []);
 
@@ -59,7 +106,7 @@ const OCR: React.FC = () => {
       try {
           const data = await OCRService.getById(id);
           setCurrentWork(data);
-          setManualScore(18); // Mock score
+          setManualScore(Number(data?.student?.accuracy ?? 0));
           setViewMode('detail');
       } catch (e) { addToast("Не удалось загрузить детали работы", "error"); }
   };
@@ -299,6 +346,29 @@ const OCR: React.FC = () => {
                             </div>
                             <div className="bg-background/70 border border-border rounded-xl p-4 whitespace-pre-wrap leading-relaxed text-sm">
                                 {currentWork.questions?.find(q => q.id === 'text-response')?.ocrText || 'Текст ответа не найден'}
+                            </div>
+                            {getFileUrl(currentWork.image) && isInlinePreviewableFile(currentWork.image) && (
+                                <div className="mt-4 rounded-xl border border-border overflow-hidden bg-background/60">
+                                    <iframe
+                                        src={getFileUrl(currentWork.image)}
+                                        title="Файл ученика"
+                                        className="w-full h-[420px]"
+                                    />
+                                </div>
+                            )}
+                            {getFileUrl(currentWork.image) && !isInlinePreviewableFile(currentWork.image) && (
+                                <div className="mt-4 text-xs text-slate-400">
+                                    Этот формат может не поддерживать встроенный просмотр в браузере. Используйте скачивание файла.
+                                </div>
+                            )}
+                            <div className="mt-4 flex flex-wrap gap-2">
+                                <button
+                                    onClick={downloadFile}
+                                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-slate-200 hover:bg-white/5 transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-base">download</span>
+                                    Скачать файл
+                                </button>
                             </div>
                         </div>
                      )}

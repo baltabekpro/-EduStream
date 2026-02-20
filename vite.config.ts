@@ -13,9 +13,9 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api/v1': {
-        target: 'https://94.131.85.176',
+        target: 'https://edustream-94-131-85-176.sslip.io',
         changeOrigin: true,
-        secure: false
+        secure: true
       }
     }
   }

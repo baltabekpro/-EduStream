@@ -10,7 +10,6 @@ import { useUser } from '../context/UserContext';
 import Confetti from '../components/Confetti';
 import { PageTransition } from '../components/PageTransition';
 import { CreateCourseModal } from '../components/CreateCourseModal';
-import Onboarding from '../components/Onboarding';
 import { incrementTimeSaved } from '../lib/timeSaved';
 
 interface UploadItem {
@@ -21,7 +20,7 @@ interface UploadItem {
 }
 
 const DashboardSkeleton = () => (
-    <div className="animate-pulse space-y-8">
+    <div className="space-y-8">
         <div className="flex justify-between items-center">
             <div className="space-y-2">
                 <div className="h-8 w-64 bg-slate-700 rounded-lg"></div>
@@ -127,22 +126,7 @@ const Dashboard: React.FC = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [uploadQueue, setUploadQueue] = useState<UploadItem[]>([]);
   const [showCreateCourseModal, setShowCreateCourseModal] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Check if this is first visit
-  useEffect(() => {
-    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
-    if (!hasSeenOnboarding) {
-      // Wait a bit for page to load
-      setTimeout(() => setShowOnboarding(true), 1000);
-    }
-  }, []);
-
-  const handleCompleteOnboarding = () => {
-    setShowOnboarding(false);
-    localStorage.setItem('hasSeenOnboarding', 'true');
-  };
 
   useEffect(() => {
     if (!selectedCourse) {
@@ -303,13 +287,13 @@ const Dashboard: React.FC = () => {
 
   return (
     <PageTransition>
-    <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8 pb-32 md:pb-8 h-full overflow-y-auto custom-scrollbar relative">
+    <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8 pb-32 md:pb-8 h-full overflow-y-auto custom-scrollbar relative [&_*]:!animate-none [&_*]:!transition-none">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none -z-10"></div>
       
       <Confetti active={showConfetti} />
     <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept="image/*,.pdf,.docx,.txt" multiple />
 
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 animate-fade-in">
+    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight mb-2">
               {t('dash.welcome')}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{user?.firstName}</span>
@@ -358,14 +342,14 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-in-right">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <StatCard title="Ожидает проверки" value={needsReviewCount} icon="pending_actions" color="orange" subtext="работ в очереди" />
           <StatCard title="Средний балл" value={`${Math.round(averageScore)}%`} icon="analytics" color="green" subtext={`${submissionsCount} проверенных попыток`} />
           <StatCard title="Учеников" value={studentsCount} icon="groups" color="blue" subtext="активны в этом курсе" />
       </div>
 
       {uploadQueue.length > 0 && (
-          <div className="bg-surface/50 backdrop-blur border border-border rounded-xl p-5 animate-fade-in shadow-xl">
+          <div className="bg-surface/50 backdrop-blur border border-border rounded-xl p-5 shadow-xl">
               <div className="flex justify-between items-center mb-4">
                   <h3 className="text-sm font-bold text-white flex items-center gap-2">
                       <span className="material-symbols-outlined text-primary animate-spin">sync</span>
@@ -395,7 +379,7 @@ const Dashboard: React.FC = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6 animate-slide-in-right" style={{animationDelay: '0.1s'}}>
+        <div className="lg:col-span-2 space-y-6">
             
             {/* Templates Section */}
             <div>
@@ -468,7 +452,7 @@ const Dashboard: React.FC = () => {
             </div>
         </div>
 
-        <div className="space-y-6 animate-slide-in-right" style={{animationDelay: '0.2s'}}>
+        <div className="space-y-6">
             <PerformanceChart 
                 data={pieChart} 
                 title={t('dash.performance')} 
@@ -547,11 +531,6 @@ const Dashboard: React.FC = () => {
         onClose={() => setShowCreateCourseModal(false)} 
       />
       
-      {/* Onboarding */}
-      <Onboarding 
-        isOpen={showOnboarding} 
-        onComplete={handleCompleteOnboarding} 
-      />
     </div>
     </PageTransition>
   );
