@@ -1,7 +1,4 @@
 {
-  "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
-  ],
   "build": {
     "env": {
       "VITE_API_BASE_URL": "/api/v1"
