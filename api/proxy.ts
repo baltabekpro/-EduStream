@@ -15,16 +15,16 @@ export const config = {
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // [...]path catch-all: req.query.path is string[] for /auth/login → ['auth','login']
-  const segments = req.query.path;
-  const pathParts = Array.isArray(segments)
-    ? segments
-    : segments
-    ? [segments]
-    : [];
-
-  const qs = (req.url ?? '').split('?')[1];
-  const targetUrl = `${BACKEND}/api/v1/${pathParts.join('/')}${qs ? `?${qs}` : ''}`;
+  // proxyPath is passed from vercel.json rewrite
+  const proxyPath = req.query.proxyPath as string || '';
+  
+  // Reconstruct query string without proxyPath
+  const queryObj = { ...req.query };
+  delete queryObj.proxyPath;
+  const qsParams = new URLSearchParams(queryObj as Record<string, string>);
+  const qs = qsParams.toString();
+  
+  const targetUrl = `${BACKEND}/api/v1/${proxyPath}${qs ? `?${qs}` : ''}`;
 
   const HOP_BY_HOP = new Set([
     'host', 'connection', 'keep-alive', 'transfer-encoding',
