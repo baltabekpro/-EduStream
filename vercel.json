@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/api/v1/:proxyPath*",
-      "destination": "/api/proxy?proxyPath=:proxyPath*"
+      "source": "/api/v1/(.*)",
+      "destination": "/api/proxy?proxyPath=$1"
     }
   ],
   "build": {
