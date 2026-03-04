@@ -1,11 +1,6 @@
-// Disable TLS cert verification for the self-signed cert on the backend.
-// This runs only inside Vercel's isolated serverless container — safe.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(process.env as any)['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
-
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const BACKEND = 'https://94.131.85.176';
+const BACKEND = 'https://94-131-92-125.sslip.io';
 
 export const config = {
   api: {
