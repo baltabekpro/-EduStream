@@ -5,10 +5,11 @@ import { AnalyticsData, AnalyticsTopic } from '../types';
 import { PageTransition } from '../components/PageTransition';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from '../components/Toast';
+import { formatNumber } from '../lib/localeFormatting';
 
 const Analytics: React.FC = () => {
   const { selectedCourse } = useCourse();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
     const { addToast } = useToast();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -112,7 +113,7 @@ const Analytics: React.FC = () => {
                               <div key={s.id} className="flex justify-between items-center p-3 hover:bg-white/5 rounded-lg">
                                   <span className="text-slate-300 font-bold">{s.name}</span>
                                   <span className={`font-mono ${s.progress >= selectedTopic.score ? 'text-green-400' : 'text-red-400'}`}>
-                                      {Math.round(s.progress)}%
+                                      {formatNumber(Math.round(s.progress), language)}%
                                   </span>
                               </div>
                           ))}
@@ -143,7 +144,7 @@ const Analytics: React.FC = () => {
                     Экспорт PDF
                 </button>
                 <div className="text-right">
-                    <div className="text-4xl font-black text-white">{averageScore}%</div>
+                    <div className="text-4xl font-black text-white">{formatNumber(parseFloat(averageScore), language)}%</div>
                     <div className="text-xs font-bold text-slate-500 uppercase">{t('analytics.average')}</div>
                 </div>
             </div>
@@ -152,12 +153,12 @@ const Analytics: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-surface border border-border rounded-xl p-4">
                 <p className="text-xs text-slate-400 uppercase font-bold">Постоянные ученики</p>
-                <p className="text-2xl font-black text-white mt-1">{regularStudents}</p>
+                <p className="text-2xl font-black text-white mt-1">{formatNumber(regularStudents, language)}</p>
                 <p className="text-xs text-slate-500 mt-1">3+ выполненных теста в курсе</p>
             </div>
             <div className="bg-surface border border-border rounded-xl p-4">
                 <p className="text-xs text-slate-400 uppercase font-bold">Всего активных</p>
-                <p className="text-2xl font-black text-white mt-1">{sortedStudents.length}</p>
+                <p className="text-2xl font-black text-white mt-1">{formatNumber(sortedStudents.length, language)}</p>
                 <p className="text-xs text-slate-500 mt-1">учеников с результатами</p>
             </div>
             <div className="bg-surface border border-border rounded-xl p-4">
@@ -178,7 +179,7 @@ const Analytics: React.FC = () => {
                          <span className={`material-symbols-outlined text-${topic.colorKey}-500 group-hover:scale-110 transition-transform`}>
                              {topic.score > 80 ? 'stars' : 'analytics'}
                          </span>
-                         <span className="text-xl font-black text-white">{topic.score}</span>
+                         <span className="text-xl font-black text-white">{formatNumber(topic.score, language)}</span>
                     </div>
                     <p className="text-xs font-bold text-slate-400 uppercase truncate" title={topic.name}>{topic.name}</p>
                 </div>
@@ -204,7 +205,7 @@ const Analytics: React.FC = () => {
                                 <div className={`h-full bg-${student.color}-500`} style={{ width: `${student.progress}%` }}></div>
                             </div>
                         </div>
-                        <span className="text-sm font-black text-slate-300">{student.progress}%</span>
+                        <span className="text-sm font-black text-slate-300">{formatNumber(student.progress, language)}%</span>
                     </div>
                 ))}
             </div>

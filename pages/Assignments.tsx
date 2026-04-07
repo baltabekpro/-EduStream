@@ -1,23 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { PageTransition } from '../components/PageTransition';
 import { useCourse } from '../context/CourseContext';
+import { useLanguage } from '../context/LanguageContext';
+import { formatDate } from '../lib/localeFormatting';
 import { AIService, MaterialService, OCRService, ShareService } from '../lib/api';
 import { useToast } from '../components/Toast';
 import type { AssignmentLinkHistoryItem, AssignmentSubmissionHistoryItem, Material, StudentResult } from '../types';
 import ShareModal from '../components/ShareModal';
 
-const formatDate = (value?: string) => {
-  if (!value) return '—';
-  try {
-    return new Date(value).toLocaleString();
-  } catch {
-    return value;
-  }
-};
-
 const Assignments: React.FC = () => {
   const { selectedCourse } = useCourse();
   const { addToast } = useToast();
+  const { language } = useLanguage();
 
   const [materials, setMaterials] = useState<Material[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -289,7 +283,7 @@ const Assignments: React.FC = () => {
                 {linksHistory.map((item) => (
                   <div key={item.linkId} className="bg-background border border-border rounded-lg p-3">
                     <p className="text-white text-sm font-bold truncate" title={item.materialTitle}>{item.materialTitle}</p>
-                    <p className="text-slate-400 text-xs mt-1">Код: {item.shortCode} • {formatDate(item.createdAt)}</p>
+                    <p className="text-slate-400 text-xs mt-1">Код: {item.shortCode} • {formatDate(item.createdAt, language)}</p>
                     <a href={item.url} target="_blank" rel="noreferrer" className="text-primary text-xs mt-2 inline-block hover:underline">Открыть ссылку</a>
                   </div>
                 ))}
@@ -314,7 +308,7 @@ const Assignments: React.FC = () => {
                         {item.status === 'graded' || item.status === 'reviewed' ? 'Проверено' : 'На проверке'}
                       </span>
                     </div>
-                    <p className="text-slate-400 text-xs mt-1">{formatDate(item.submittedAt)}{typeof item.score === 'number' ? ` • ${item.score}%` : ''}</p>
+                    <p className="text-slate-400 text-xs mt-1">{formatDate(item.submittedAt, language)}{typeof item.score === 'number' ? ` • ${item.score}%` : ''}</p>
                     {item.previewText && (
                       <p className="text-slate-300 text-xs mt-2 line-clamp-2">{item.previewText}</p>
                     )}
@@ -342,7 +336,7 @@ const Assignments: React.FC = () => {
             <div className="flex items-center justify-between gap-3 mb-4">
               <div>
                 <h3 className="text-lg font-bold text-white">Ответ ученика</h3>
-                <p className="text-xs text-slate-400">{openedSubmission?.studentName || '—'} • {formatDate(openedSubmission?.submittedAt)}</p>
+                <p className="text-xs text-slate-400">{openedSubmission?.studentName || '—'} • {formatDate(openedSubmission?.submittedAt, language)}</p>
               </div>
               <button
                 onClick={() => setIsAnswerModalOpen(false)}

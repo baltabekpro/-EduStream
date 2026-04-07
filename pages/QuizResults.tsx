@@ -4,15 +4,9 @@ import { PageTransition } from '../components/PageTransition';
 import { AnalyticsService, ShareService } from '../lib/api';
 import { useToast } from '../components/Toast';
 import { useCourse } from '../context/CourseContext';
+import { useLanguage } from '../context/LanguageContext';
+import { formatDate, formatNumber } from '../lib/localeFormatting';
 import type { StudentJournalItem, TeacherQuizResult } from '../types';
-
-const formatDate = (value: string) => {
-  try {
-    return new Date(value).toLocaleString();
-  } catch {
-    return value;
-  }
-};
 
 type ViewMode = 'results' | 'journal';
 
@@ -20,6 +14,7 @@ const QuizResults: React.FC = () => {
   const navigate = useNavigate();
   const { addToast } = useToast();
   const { selectedCourse } = useCourse();
+  const { language } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const initialQuizId = searchParams.get('quizId') || '';
@@ -187,7 +182,7 @@ const QuizResults: React.FC = () => {
               </div>
               <div className="bg-surface border border-border rounded-xl p-4">
                 <p className="text-slate-400 text-xs">Средний балл</p>
-                <p className="text-2xl font-black text-white mt-1">{averageScore}%</p>
+                <p className="text-2xl font-black text-white mt-1">{formatNumber(averageScore, language)}%</p>
               </div>
               <div className="bg-surface border border-border rounded-xl p-4">
                 <p className="text-slate-400 text-xs">Текущий фильтр</p>
@@ -220,7 +215,7 @@ const QuizResults: React.FC = () => {
                     <div className={`font-bold ${item.score >= 70 ? 'text-green-400' : item.score >= 40 ? 'text-yellow-400' : 'text-red-400'}`}>
                       {item.score}%
                     </div>
-                    <div className="text-slate-400">{formatDate(item.submittedAt)}</div>
+                    <div className="text-slate-400">{formatDate(item.submittedAt, language)}</div>
                   </div>
                 ))
               )}
@@ -240,7 +235,7 @@ const QuizResults: React.FC = () => {
               </div>
               <div className="bg-surface border border-border rounded-xl p-4">
                 <p className="text-slate-400 text-xs">Средний балл курса</p>
-                <p className="text-2xl font-black text-white mt-1">{Math.round(journalStats.averageScore)}%</p>
+                <p className="text-2xl font-black text-white mt-1">{formatNumber(Math.round(journalStats.averageScore), language)}%</p>
               </div>
             </div>
 
@@ -266,7 +261,7 @@ const QuizResults: React.FC = () => {
                           </span>
                         </div>
                         <p className="text-xs text-slate-400 mt-1">
-                          Попыток: {item.attempts} • Средний: {Math.round(item.averageScore)}% • Последний: {item.lastScore}%
+                          Попыток: {formatNumber(item.attempts, language)} • Средний: {formatNumber(Math.round(item.averageScore), language)}% • Последний: {formatNumber(item.lastScore, language)}%
                         </p>
                       </div>
                     </div>
@@ -296,7 +291,7 @@ const QuizResults: React.FC = () => {
                                     </span>
                                   )}
                                 </p>
-                                <p className="text-slate-400">{formatDate(attempt.submittedAt)}</p>
+                                <p className="text-slate-400">{formatDate(attempt.submittedAt, language)}</p>
                               </div>
                               <span className={`font-bold ${attempt.hasScore === false ? 'text-slate-500' : attempt.score >= 70 ? 'text-green-400' : attempt.score >= 40 ? 'text-yellow-400' : 'text-red-400'}`}>
                                 {attempt.hasScore === false ? '—' : `${attempt.score}%`}

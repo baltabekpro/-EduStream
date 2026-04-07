@@ -11,6 +11,7 @@ import Confetti from '../components/Confetti';
 import { PageTransition } from '../components/PageTransition';
 import { CreateCourseModal } from '../components/CreateCourseModal';
 import { incrementTimeSaved } from '../lib/timeSaved';
+import { formatNumber, formatRelativeTime } from '../lib/localeFormatting';
 
 interface UploadItem {
     id: string;
@@ -53,9 +54,9 @@ const DashboardSkeleton = () => (
     </div>
 );
 
-const PerformanceChart = React.memo(({ data, title, avgLabel, score }: any) => {
+const PerformanceChart = React.memo(({ data, title, avgLabel, score, locale }: any) => {
     const chartData = Array.isArray(data) ? data : [];
-    const safeScore = Number.isFinite(score) ? `${Math.round(score)}%` : '0%';
+    const safeScore = Number.isFinite(score) ? `${formatNumber(Math.round(score), locale)}%` : '0%';
 
     return (
         <div className="bg-surface/50 backdrop-blur-sm border border-border rounded-2xl p-5 md:p-6 flex flex-col items-center justify-start relative shadow-lg min-h-[340px] overflow-hidden">
@@ -92,7 +93,7 @@ const PerformanceChart = React.memo(({ data, title, avgLabel, score }: any) => {
                             <div className="size-2.5 rounded-full ring-2 ring-opacity-20 ring-white" style={{ backgroundColor: item.color }}></div>
                             <span className="text-slate-300 font-medium group-hover:text-white transition-colors">{item.name}</span>
                         </div>
-                        <span className="font-bold text-white bg-slate-800 px-2 py-0.5 rounded text-xs">{item.value}%</span>
+                        <span className="font-bold text-white bg-slate-800 px-2 py-0.5 rounded text-xs">{formatNumber(item.value, locale)}%</span>
                     </div>
                 ))}
             </div>
@@ -118,7 +119,7 @@ const Dashboard: React.FC = () => {
     const location = useLocation() as { state?: { openCreateCourse?: boolean } };
   const { addToast } = useToast();
   const { selectedCourse, loading: loadingCourses } = useCourse();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useUser();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -343,9 +344,9 @@ const Dashboard: React.FC = () => {
 
       {/* Stats Overview */}
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <StatCard title="Ожидает проверки" value={needsReviewCount} icon="pending_actions" color="orange" subtext="работ в очереди" />
-          <StatCard title="Средний балл" value={`${Math.round(averageScore)}%`} icon="analytics" color="green" subtext={`${submissionsCount} проверенных попыток`} />
-          <StatCard title="Учеников" value={studentsCount} icon="groups" color="blue" subtext="активны в этом курсе" />
+          <StatCard title="Ожидает проверки" value={formatNumber(needsReviewCount, language)} icon="pending_actions" color="orange" subtext="работ в очереди" />
+          <StatCard title="Средний балл" value={`${formatNumber(Math.round(averageScore), language)}%`} icon="analytics" color="green" subtext={`${formatNumber(submissionsCount, language)} проверенных попыток`} />
+          <StatCard title="Учеников" value={formatNumber(studentsCount, language)} icon="groups" color="blue" subtext="активны в этом курсе" />
       </div>
 
       {uploadQueue.length > 0 && (
@@ -363,7 +364,7 @@ const Dashboard: React.FC = () => {
                           <div className="flex justify-between text-xs font-medium">
                               <span className="text-white truncate max-w-[200px]">{item.name}</span>
                               <span className={item.status === 'completed' ? 'text-green-400' : 'text-primary'}>
-                                  {item.status === 'completed' ? 'Готово' : `${Math.round(item.progress)}%`}
+                                  {item.status === 'completed' ? 'Готово' : `${formatNumber(Math.round(item.progress), language)}%`}
                               </span>
                           </div>
                           <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
@@ -458,6 +459,7 @@ const Dashboard: React.FC = () => {
                 title={t('dash.performance')} 
                 avgLabel={t('dash.avgScore')} 
                 score={averageScore}
+                locale={language}
             />
 
             {/* Activity List */}
@@ -494,7 +496,7 @@ const Dashboard: React.FC = () => {
                                         <div>
                                             <p className="text-sm font-bold text-white leading-tight mb-0.5">{activity.title}</p>
                                             <p className="text-[10px] text-slate-400 flex items-center gap-1">
-                                                <span className="material-symbols-outlined text-[10px]">schedule</span> {activity.time}
+                                                <span className="material-symbols-outlined text-[10px]">schedule</span> {formatRelativeTime(activity.time, language)}
                                             </p>
                                         </div>
                                     </div>

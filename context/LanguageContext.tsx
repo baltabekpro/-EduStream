@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-type Language = 'ru' | 'en';
+type Language = 'ru' | 'en' | 'kk';
 
 type Translations = {
     [key in Language]: {
@@ -206,6 +206,105 @@ const translations: Translations = {
         'auth.alreadyHaveAccount': 'Already have an account?',
         'auth.login': 'Log in',
         'auth.join': 'Join',
+    },
+    kk: {
+        'nav.dashboard': 'Басты бет',
+        'nav.ocr': 'Жұмыстарды тексеру',
+        'nav.ai': 'AI Көмекші',
+        'nav.files': 'Файлдар кітапханасы',
+        'nav.library': 'Тесттер кітапханасы',
+        'nav.results': 'Нәтижелер',
+        'nav.analytics': 'Аналитика',
+        'nav.settings': 'Баптаулар',
+        'nav.support': 'Қолдау',
+        'nav.logout': 'Шығу',
+        'nav.tools': 'Мұғалім құралдары',
+        'nav.saved': 'AI арқылы үнемделді',
+        
+        'dash.welcome': 'Қайырлы таң',
+        'dash.upload': 'Материал жүктеу',
+        'dash.check': 'Жұмыстарды тексеру',
+        'dash.needsReview': 'Тексеру қажет',
+        'dash.viewAll': 'Барлығын көру',
+        'dash.performance': 'Сынып үлгерімі',
+        'dash.avgScore': 'Орташа балл',
+        'dash.activity': 'Соңғы белсенділік',
+        'dash.search': 'Материалдарды іздеу...',
+        'dash.export': 'Экспорт',
+        'dash.queue': 'Жүктеу кезегі',
+        'dash.clear': 'Тазалау',
+        
+        'ocr.back': 'Артқа',
+        'ocr.save': 'Сақтау',
+        'ocr.confirmAll': 'Барлығын растау',
+        'ocr.unsaved': 'Сақталмаған',
+        'ocr.accuracy': 'Дәлдік',
+        'ocr.selected': 'таңдалды',
+        'ocr.approveSelected': 'Таңдалғандарды растау',
+        'ocr.close': 'Жабу',
+        'ocr.saveChanges': 'Өзгерістерді сақтау',
+        'ocr.th.student': 'Студент',
+        'ocr.th.subject': 'Пән',
+        'ocr.th.accuracy': 'Дәлдік',
+        'ocr.th.status': 'Мәртебе',
+        'ocr.th.actions': 'Әрекеттер',
+        'ocr.review': 'Тексеру',
+        'ocr.grade': 'Баға',
+        'ocr.caughtUp': 'Барлығы тексерілді! Күтіп тұрған жұмыстар жоқ.',
+        'ocr.conf.high': 'Жоғары дәлдік',
+        'ocr.conf.low': 'Төмен дәлдік',
+        
+        'ai.typing': 'теріп жатыр...',
+        'ai.ask': 'AI-ден сұрау',
+        'ai.analysis': 'Талдау',
+        'ai.history': 'Сессиялар тарихы',
+        'ai.newChat': 'Жаңа чат',
+        'ai.placeholder': 'Материал бойынша сұрақ қойыңыз...',
+        'ai.tab.canvas': 'AI Кенепі',
+        'ai.tab.builder': 'Тест құрастырушы',
+        'ai.actions': 'AI әрекеттері',
+        'ai.action.explain': 'Түсіндіру',
+        'ai.action.simplify': 'Жеңілдету',
+        'ai.action.translate': 'Аудару',
+        'ai.difficulty': 'ҚИЫНДЫҚ',
+        'ai.count': 'САНЫ',
+        'ai.generate': 'Генерациялау',
+        'ai.generating': 'Генерациялануда...',
+        'ai.explanation': 'Түсіндірме',
+        'ai.diff.easy': 'Оңай',
+        'ai.diff.medium': 'Орташа',
+        'ai.diff.hard': 'Қиын',
+
+        'analytics.title': 'Сынып аналитикасы',
+        'analytics.subtitle': 'Үлгерімнің толық шолуы',
+        'analytics.average': 'Орташа балл',
+        'analytics.leaderboard': 'Оқушылар рейтингі',
+        'analytics.back': 'Шолуға оралу',
+        'analytics.breakdown': 'Оқушылар бойынша бөлу',
+
+        'settings.title': 'Баптаулар',
+        'settings.subtitle': 'Профиль мен баптауларды басқару',
+        'settings.profile': 'Профиль',
+        'settings.name': 'Аты',
+        'settings.surname': 'Тегі',
+        'settings.email': 'Email',
+        'settings.emailReports': 'Email есептері',
+        'settings.notifications': 'Ақылды хабарландырулар',
+        'settings.language': 'Интерфейс тілі',
+        'settings.demo': 'Демо режимі',
+        'settings.demoDesc': 'Қалпына келтіру барлық жергілікті өзгерістерді тазалап, бастапқы деректерді қалпына келтіреді.',
+        'settings.reset': 'Демо деректерге қалпына келтіру',
+        'settings.save': 'Сақтау',
+        'settings.cancel': 'Болдырмау',
+
+        'auth.register': 'Тіркелу',
+        'auth.createAccount': 'Аккаунт құру',
+        'auth.firstName': 'Аты',
+        'auth.lastName': 'Тегі',
+        'auth.password': 'Құпия сөз',
+        'auth.alreadyHaveAccount': 'Аккаунт бар ма?',
+        'auth.login': 'Кіру',
+        'auth.join': 'Қосылу',
     }
 };
 
@@ -235,7 +334,14 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }, [language]);
 
     const t = (key: string) => {
-        return translations[language][key] || key;
+        const translation = translations[language][key];
+        if (!translation) {
+            if (process.env.NODE_ENV === 'development') {
+                console.warn(`Missing translation key: "${key}" for language: "${language}"`);
+            }
+            return key;
+        }
+        return translation;
     };
 
     return (

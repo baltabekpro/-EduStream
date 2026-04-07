@@ -5,6 +5,7 @@ import { AuthService } from '../lib/api';
 import { useLanguage } from '../context/LanguageContext';
 import { useUser } from '../context/UserContext';
 import { PageTransition } from '../components/PageTransition';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const DRAWN_AVATARS = [
     'https://api.dicebear.com/7.x/adventurer/svg?seed=Aru&backgroundColor=b6e3f4,c0aede,d1d4f9',
@@ -199,10 +200,7 @@ const Settings: React.FC = () => {
                                             <p className="text-sm font-bold text-white">{t('settings.language')}</p>
                                         </div>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <button onClick={() => setLanguage('en')} className={`px-2 py-1 text-xs font-bold rounded ${language === 'en' ? 'bg-primary text-white' : 'bg-slate-700 text-slate-400'}`}>EN</button>
-                                        <button onClick={() => setLanguage('ru')} className={`px-2 py-1 text-xs font-bold rounded ${language === 'ru' ? 'bg-primary text-white' : 'bg-slate-700 text-slate-400'}`}>RU</button>
-                                    </div>
+                                    <LanguageSwitcher />
                                 </div>
 
                                 <a

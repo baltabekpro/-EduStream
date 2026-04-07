@@ -25,7 +25,7 @@ import {
 
 // Use environment variable or fallback to production URL
 // Using optional chaining to avoid "Cannot read properties of undefined" if import.meta.env is missing
-const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://94-131-92-125.sslip.io/api/v1';
+const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://94-131-93-137.sslip.io/api/v1';
 
 // Custom Error Class
 export class ApiError extends Error {
@@ -41,13 +41,20 @@ interface CustomRequestInit extends RequestInit {
 
 let authRedirectScheduled = false;
 
+// Helper to get current language from localStorage
+function getCurrentLanguage(): string {
+    return localStorage.getItem('appLanguage') || 'ru';
+}
+
 // Helper to handle requests with auth headers
 async function request<T>(endpoint: string, options: CustomRequestInit = {}): Promise<T> {
     const { skipAuth, ...fetchOptions } = options;
     const token = localStorage.getItem('token');
+    const language = getCurrentLanguage();
     
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
+        'Accept-Language': language,
         ...((token && !skipAuth) ? { 'Authorization': `Bearer ${token}` } : {}),
         ...fetchOptions.headers as any, // Cast to any to merge properly
     };
@@ -246,11 +253,13 @@ export const AIService = {
         formData.append('courseId', courseId);
 
         const token = localStorage.getItem('token');
+        const language = getCurrentLanguage();
         
         // Use raw fetch to avoid setting Content-Type header manually (browser sets boundary)
         const response = await fetch(`${API_BASE_URL}/materials/`, { // Added trailing slash to avoid 307 Redirect
             method: 'POST',
             headers: {
+                'Accept-Language': language,
                 ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
             },
             body: formData
@@ -409,8 +418,13 @@ export const ShareService = {
             formData.append('responseText', responseText.trim());
         }
 
+        const language = getCurrentLanguage();
+
         const response = await fetch(`${API_BASE_URL}/share/${shortCode}/upload`, {
             method: 'POST',
+            headers: {
+                'Accept-Language': language,
+            },
             body: formData,
         });
 

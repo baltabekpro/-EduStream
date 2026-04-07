@@ -3,20 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { PageTransition } from '../components/PageTransition';
 import { useToast } from '../components/Toast';
 import { useCourse } from '../context/CourseContext';
+import { useLanguage } from '../context/LanguageContext';
+import { formatDate } from '../lib/localeFormatting';
 import { deleteSavedQuiz, listSavedQuizzes, type SavedQuiz } from '../lib/quizLibrary';
-
-const formatDate = (iso: string) => {
-  try {
-    return new Date(iso).toLocaleString();
-  } catch {
-    return iso;
-  }
-};
 
 const Library: React.FC = () => {
   const navigate = useNavigate();
   const { addToast } = useToast();
   const { selectedCourse } = useCourse();
+  const { language } = useLanguage();
 
   const [items, setItems] = useState<SavedQuiz[]>([]);
 
@@ -93,7 +88,7 @@ const Library: React.FC = () => {
                       <p className="text-white font-bold truncate">{q.materialTitle || 'Тест'}</p>
                     </div>
                     <p className="text-slate-400 text-xs mt-1">
-                      {q.questions?.length || 0} вопросов • {formatDate(q.createdAt)}
+                      {q.questions?.length || 0} вопросов • {formatDate(q.createdAt, language)}
                     </p>
                   </div>
 

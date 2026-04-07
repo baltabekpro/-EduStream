@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const BACKEND = 'https://94-131-92-125.sslip.io';
+const BACKEND = 'https://94-131-93-137.sslip.io';
 
 export const config = {
   api: {
