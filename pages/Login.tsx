@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { AuthService } from '../lib/api';
+import { useLanguage } from '../context/LanguageContext';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { addToast } = useToast();
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -22,12 +24,12 @@ const Login: React.FC = () => {
     e.preventDefault();
     
     if (!validateEmail(email)) {
-        addToast("Введите корректный Email", "error");
+        addToast(t('login.invalidEmail'), "error");
         return;
     }
 
     if (!password) {
-        addToast("Введите пароль", "error");
+        addToast(t('login.enterPassword'), "error");
         return;
     }
 
@@ -40,10 +42,10 @@ const Login: React.FC = () => {
         const normalizedRole = String(user.role || '').toLowerCase();
         localStorage.setItem('userRole', normalizedRole);
         window.dispatchEvent(new Event('authChanged'));
-        addToast("Добро пожаловать!", "success");
+        addToast(t('login.welcome'), "success");
         navigate(normalizedRole === 'student' ? '/student' : '/dashboard');
     } catch (error: any) {
-        addToast(error.message || "Неверный логин или пароль", "error");
+        addToast(error.message || t('login.invalidCredentials'), "error");
     } finally {
         setIsLoading(false);
     }
@@ -71,8 +73,8 @@ const Login: React.FC = () => {
         <div className="w-full max-w-[400px] bg-surface/80 backdrop-blur-xl border border-border rounded-2xl shadow-2xl animate-fade-in p-8">
           
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-white mb-2">Вход в систему</h2>
-            <p className="text-slate-400 text-sm">Введите свои данные для доступа</p>
+            <h2 className="text-2xl font-bold text-white mb-2">{t('login.title')}</h2>
+            <p className="text-slate-400 text-sm">{t('login.subtitle')}</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
@@ -95,8 +97,8 @@ const Login: React.FC = () => {
 
             <div className="space-y-1.5">
                 <div className="flex justify-between items-center ml-1">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Пароль</label>
-                    <a href="#" className="text-xs text-primary hover:text-primary-hover transition-colors">Забыли пароль?</a>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('auth.password')}</label>
+                    <a href="#" className="text-xs text-primary hover:text-primary-hover transition-colors">{t('login.forgotPassword')}</a>
                 </div>
                 <div className="relative group">
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors">lock</span>
@@ -122,7 +124,7 @@ const Login: React.FC = () => {
                     <span className="material-symbols-outlined animate-spin text-xl">sync</span>
                 ) : (
                     <>
-                        <span>Войти</span>
+                        <span>{t('auth.login')}</span>
                         <span className="material-symbols-outlined text-sm">arrow_forward</span>
                     </>
                 )}
@@ -131,7 +133,7 @@ const Login: React.FC = () => {
 
           <div className="mt-8 pt-6 border-t border-border/50 text-center">
             <p className="text-sm text-slate-500">
-                Еще нет аккаунта? <Link to="/register" className="text-white font-bold hover:text-primary transition-colors ml-1">Регистрация</Link>
+                {t('login.noAccount')} <Link to="/register" className="text-white font-bold hover:text-primary transition-colors ml-1">{t('auth.register')}</Link>
             </p>
           </div>
         </div>

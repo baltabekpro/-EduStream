@@ -108,6 +108,16 @@ const translations: Translations = {
         'auth.login': 'Войти',
         'auth.join': 'Присоединиться',
 
+        // Login
+        'login.title': 'Вход в систему',
+        'login.subtitle': 'Введите свои данные для доступа',
+        'login.invalidEmail': 'Введите корректный Email',
+        'login.enterPassword': 'Введите пароль',
+        'login.forgotPassword': 'Забыли пароль?',
+        'login.welcome': 'Добро пожаловать!',
+        'login.invalidCredentials': 'Неверный логин или пароль',
+        'login.noAccount': 'Еще нет аккаунта?',
+
         // AI Workspace
         'ai.documentNotFound': 'Документ не найден',
         'ai.uploadFile': 'Загрузите файл для начала работы',
@@ -465,6 +475,16 @@ const translations: Translations = {
         'auth.login': 'Log in',
         'auth.join': 'Join',
 
+        // Login
+        'login.title': 'Login',
+        'login.subtitle': 'Enter your credentials to access',
+        'login.invalidEmail': 'Enter a valid email',
+        'login.enterPassword': 'Enter password',
+        'login.forgotPassword': 'Forgot password?',
+        'login.welcome': 'Welcome!',
+        'login.invalidCredentials': 'Invalid login or password',
+        'login.noAccount': 'Don\'t have an account yet?',
+
         // AI Workspace
         'ai.documentNotFound': 'Document not found',
         'ai.uploadFile': 'Upload a file to get started',
@@ -821,6 +841,16 @@ const translations: Translations = {
         'auth.alreadyHaveAccount': 'Аккаунт бар ма?',
         'auth.login': 'Кіру',
         'auth.join': 'Қосылу',
+
+        // Login
+        'login.title': 'Жүйеге кіру',
+        'login.subtitle': 'Қол жеткізу үшін деректеріңізді енгізіңіз',
+        'login.invalidEmail': 'Дұрыс email енгізіңіз',
+        'login.enterPassword': 'Құпия сөзді енгізіңіз',
+        'login.forgotPassword': 'Құпия сөзді ұмыттыңыз ба?',
+        'login.welcome': 'Қош келдіңіз!',
+        'login.invalidCredentials': 'Қате логин немесе құпия сөз',
+        'login.noAccount': 'Аккаунт жоқ па?',
 
         // AI Workspace
         'ai.documentNotFound': 'Құжат табылмады',
