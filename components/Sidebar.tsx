@@ -21,14 +21,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   const menuItems = isStudent
     ? [
-        { icon: 'school', label: 'Мой кабинет', path: '/student' },
-        { icon: 'assignment', label: 'Мои задания', path: '/student-assignments' },
-        { icon: 'quiz', label: 'Мои тесты', path: '/student-tests' },
+        { icon: 'school', label: t('nav.myDashboard'), path: '/student' },
+        { icon: 'assignment', label: t('nav.myAssignments'), path: '/student-assignments' },
+        { icon: 'quiz', label: t('nav.myTests'), path: '/student-tests' },
         { icon: 'settings', label: t('nav.settings'), path: '/settings' },
       ]
     : [
         { icon: 'dashboard', label: t('nav.dashboard'), path: '/dashboard' },
-        { icon: 'assignment', label: 'Задания', path: '/assignments' },
+        { icon: 'assignment', label: t('nav.assignments'), path: '/assignments' },
         { icon: 'document_scanner', label: t('nav.ocr'), path: '/ocr' },
         { icon: 'auto_awesome', label: t('nav.ai'), path: '/ai' },
         { icon: 'folder_open', label: t('nav.files'), path: '/materials-library' },
@@ -80,7 +80,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               </div>
               <div className="flex flex-col">
                 <h1 className="text-lg font-bold leading-tight text-white tracking-tight">EduStream</h1>
-                <p className="text-slate-400 text-xs font-medium">{isStudent ? 'Кабинет ученика' : t('nav.tools')}</p>
+                <p className="text-slate-400 text-xs font-medium">{isStudent ? t('nav.studentDashboard') : t('nav.tools')}</p>
               </div>
             </div>
             
@@ -97,13 +97,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                         className="w-full bg-surface/50 border border-border text-white text-sm rounded-xl py-3 pl-4 pr-10 appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary hover:bg-surface hover:border-slate-500 transition-all cursor-pointer disabled:opacity-50 font-medium shadow-sm"
                     >
                         {loadingCourses ? (
-                            <option>Загрузка...</option>
+                            <option>{t('nav.loading')}</option>
                     ) : courses.length > 0 ? (
                       courses.map(course => (
                                 <option key={course.id} value={course.id}>{course.title}</option>
                             ))
                         ) : (
-                            <option value="" disabled>Нет курсов</option>
+                            <option value="" disabled>{t('nav.noCourses')}</option>
                         )}
                     </select>
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-white transition-colors">
@@ -119,7 +119,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                   className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-surface/40 border border-border text-slate-300 hover:text-white hover:bg-surface transition-colors text-xs font-bold"
                 >
                   <span className="material-symbols-outlined text-sm">add</span>
-                  Создать курс
+                  {t('nav.createCourse')}
                 </button>
               </>
             )}
@@ -170,7 +170,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             </div>
             <div className="overflow-hidden flex-1">
                <p className="text-sm font-bold text-white truncate group-hover:text-primary transition-colors">
-                   {user ? `${user.firstName} ${user.lastName}` : 'Загрузка...'}
+                   {user ? `${user.firstName} ${user.lastName}` : t('nav.loading')}
                </p>
                <p className="text-[11px] text-slate-400 truncate">{user?.role || 'Teacher'}</p>
             </div>
