@@ -118,6 +118,18 @@ const translations: Translations = {
         'login.invalidCredentials': 'Неверный логин или пароль',
         'login.noAccount': 'Еще нет аккаунта?',
 
+        // Teacher Quiz Preview
+        'preview.title': 'Предпросмотр теста',
+        'preview.subtitle': 'Режим учителя: редактирование перед отправкой ученикам.',
+        'preview.backToAI': 'Назад в AI',
+        'preview.saveChanges': 'Сохранить изменения',
+        'preview.saving': 'Сохранение...',
+        'preview.quizTitle': 'Название теста',
+        'preview.test': 'Тест',
+        'preview.failedToLoad': 'Не удалось загрузить тест',
+        'preview.changesSaved': 'Изменения сохранены',
+        'preview.failedToSave': 'Не удалось сохранить изменения',
+
         // AI Workspace
         'ai.documentNotFound': 'Документ не найден',
         'ai.uploadFile': 'Загрузите файл для начала работы',
@@ -485,6 +497,18 @@ const translations: Translations = {
         'login.invalidCredentials': 'Invalid login or password',
         'login.noAccount': 'Don\'t have an account yet?',
 
+        // Teacher Quiz Preview
+        'preview.title': 'Test Preview',
+        'preview.subtitle': 'Teacher mode: edit before sending to students.',
+        'preview.backToAI': 'Back to AI',
+        'preview.saveChanges': 'Save changes',
+        'preview.saving': 'Saving...',
+        'preview.quizTitle': 'Test title',
+        'preview.test': 'Test',
+        'preview.failedToLoad': 'Failed to load test',
+        'preview.changesSaved': 'Changes saved',
+        'preview.failedToSave': 'Failed to save changes',
+
         // AI Workspace
         'ai.documentNotFound': 'Document not found',
         'ai.uploadFile': 'Upload a file to get started',
@@ -851,6 +875,18 @@ const translations: Translations = {
         'login.welcome': 'Қош келдіңіз!',
         'login.invalidCredentials': 'Қате логин немесе құпия сөз',
         'login.noAccount': 'Аккаунт жоқ па?',
+
+        // Teacher Quiz Preview
+        'preview.title': 'Тестті алдын ала қарау',
+        'preview.subtitle': 'Мұғалім режимі: студенттерге жіберу алдында өңдеу.',
+        'preview.backToAI': 'AI-ға оралу',
+        'preview.saveChanges': 'Өзгерістерді сақтау',
+        'preview.saving': 'Сақталуда...',
+        'preview.quizTitle': 'Тест атауы',
+        'preview.test': 'Тест',
+        'preview.failedToLoad': 'Тестті жүктеу мүмкін болмады',
+        'preview.changesSaved': 'Өзгерістер сақталды',
+        'preview.failedToSave': 'Өзгерістерді сақтау мүмкін болмады',
 
         // AI Workspace
         'ai.documentNotFound': 'Құжат табылмады',

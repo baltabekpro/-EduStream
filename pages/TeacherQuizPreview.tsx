@@ -4,12 +4,14 @@ import { useToast } from '../components/Toast';
 import ShareModal from '../components/ShareModal';
 import { AIService } from '../lib/api';
 import { PageTransition } from '../components/PageTransition';
+import { useLanguage } from '../context/LanguageContext';
 import type { Question, QuizPayload } from '../types';
 
 const TeacherQuizPreview: React.FC = () => {
   const { quizId } = useParams();
   const navigate = useNavigate();
   const { addToast } = useToast();
+  const { t } = useLanguage();
 
   const [quiz, setQuiz] = useState<QuizPayload | null>(null);
   const [quizTitle, setQuizTitle] = useState('');
@@ -24,10 +26,10 @@ const TeacherQuizPreview: React.FC = () => {
       try {
         const data = await AIService.getQuizById(quizId);
         setQuiz(data);
-        setQuizTitle(data.title || 'Тест');
+        setQuizTitle(data.title || t('preview.test'));
         setQuestions(data.questions || []);
       } catch (error: any) {
-        addToast(error.message || 'Не удалось загрузить тест', 'error');
+        addToast(error.message || t('preview.failedToLoad'), 'error');
       } finally {
         setIsLoading(false);
       }
@@ -57,9 +59,9 @@ const TeacherQuizPreview: React.FC = () => {
       setQuiz(updated);
       setQuizTitle(updated.title || quizTitle);
       setQuestions(updated.questions || []);
-      addToast('Изменения сохранены', 'success');
+      addToast(t('preview.changesSaved'), 'success');
     } catch (error: any) {
-      addToast(error.message || 'Не удалось сохранить изменения', 'error');
+      addToast(error.message || t('preview.failedToSave'), 'error');
     } finally {
       setIsSaving(false);
     }
@@ -80,22 +82,22 @@ const TeacherQuizPreview: React.FC = () => {
       <div className="h-full w-full overflow-y-auto custom-scrollbar p-6 md:p-8 space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-black text-white">Предпросмотр теста</h1>
-            <p className="text-slate-400 text-sm">Режим учителя: редактирование перед отправкой ученикам.</p>
+            <h1 className="text-2xl font-black text-white">{t('preview.title')}</h1>
+            <p className="text-slate-400 text-sm">{t('preview.subtitle')}</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => navigate('/ai')}
               className="px-4 py-2 bg-surface border border-border rounded-xl text-slate-300 hover:bg-white/5"
             >
-              Назад в AI
+              {t('preview.backToAI')}
             </button>
             <button
               onClick={handleSave}
               disabled={isSaving}
               className="px-4 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover disabled:opacity-60"
             >
-              {isSaving ? 'Сохранение...' : 'Сохранить изменения'}
+              {isSaving ? t('preview.saving') : t('preview.saveChanges')}
             </button>
             <button
               onClick={() => setShowShareModal(true)}
@@ -114,12 +116,12 @@ const TeacherQuizPreview: React.FC = () => {
         </div>
 
         <div className="bg-surface border border-border rounded-2xl p-5">
-          <label className="block text-xs font-bold text-slate-400 mb-2">Название теста</label>
+          <label className="block text-xs font-bold text-slate-400 mb-2">{t('preview.quizTitle')}</label>
           <input
             value={quizTitle}
             onChange={(e) => setQuizTitle(e.target.value)}
             className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white"
-            placeholder="Название теста"
+            placeholder={t('preview.quizTitle')}
           />
         </div>
 
