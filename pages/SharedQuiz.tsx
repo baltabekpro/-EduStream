@@ -4,6 +4,7 @@ import { ShareService, ApiError } from '../lib/api';
 import { PageTransition } from '../components/PageTransition';
 import type { SharedQuizPayload, SharedQuizResult } from '../types';
 import { useUser } from '../context/UserContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const QUESTION_TIME = 20;
 const MAX_ASSIGNMENT_FILE_SIZE = 10 * 1024 * 1024;
@@ -34,6 +35,7 @@ const renderAssignmentHtml = (raw: string) => {
 const SharedQuiz: React.FC = () => {
   const { code } = useParams();
   const { user } = useUser();
+  const { t } = useLanguage();
   const normalizedCode = (code ? decodeURIComponent(code).trim() : '');
 
   const [quiz, setQuiz] = useState<SharedQuizPayload | null>(null);
@@ -70,7 +72,7 @@ const SharedQuiz: React.FC = () => {
       setQuiz(null);
       setNeedPassword(false);
       setLoading(false);
-      setError('Неверный формат кода. Используйте код из ссылки учителя');
+      setError(t('shared.invalidCodeFormat'));
       return;
     }
     setLoading(true);
@@ -91,9 +93,9 @@ const SharedQuiz: React.FC = () => {
     } catch (e: any) {
       if (e instanceof ApiError && e.code === 401) {
         setNeedPassword(true);
-        setError('Требуется пароль для доступа к тесту');
+        setError(t('shared.passwordRequired'));
       } else {
-        setError(e.message || 'Не удалось загрузить тест');
+        setError(e.message || t('shared.failedToLoadTest'));
       }
     } finally {
       setLoading(false);
@@ -130,7 +132,7 @@ const SharedQuiz: React.FC = () => {
   const submit = async () => {
     if (!normalizedCode || !quiz) return;
     if (!studentName.trim()) {
-      setError('Введите имя перед отправкой');
+      setError(t('shared.enterNameBeforeSubmit'));
       return;
     }
     setSubmitting(true);
@@ -139,7 +141,7 @@ const SharedQuiz: React.FC = () => {
       const data = await ShareService.submit(normalizedCode, studentName.trim(), answers);
       setResult(data);
     } catch (e: any) {
-      setError(e.message || 'Не удалось отправить ответы');
+      setError(e.message || t('shared.failedToSubmitAnswers'));
     } finally {
       setSubmitting(false);
     }
@@ -150,21 +152,21 @@ const SharedQuiz: React.FC = () => {
       return;
     }
     if (!assignmentFile && !assignmentText.trim()) {
-      setError('Добавьте файл и/или текст ответа');
+      setError(t('shared.addFileOrText'));
       return;
     }
     const profileName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
-    const effectiveStudentName = profileName || studentName.trim() || 'Ученик';
+    const effectiveStudentName = profileName || studentName.trim() || t('shared.student');
     setSubmitting(true);
     setError('');
     setUploadMessage('');
     try {
       const data = await ShareService.uploadAssignment(normalizedCode, effectiveStudentName, assignmentFile, assignmentText);
-      setUploadMessage(data.message || 'Ответ успешно отправлен учителю');
+      setUploadMessage(data.message || t('shared.answerSentSuccessfully'));
       setAssignmentFile(null);
       setAssignmentText('');
     } catch (e: any) {
-      setError(e.message || 'Не удалось отправить ответ');
+      setError(e.message || t('shared.failedToSendAnswer'));
     } finally {
       setSubmitting(false);
     }
@@ -178,13 +180,13 @@ const SharedQuiz: React.FC = () => {
 
     const extension = selected.name.split('.').pop()?.toLowerCase() || '';
     if (!ALLOWED_ASSIGNMENT_EXTENSIONS.includes(extension)) {
-      setError('Неподдерживаемый тип файла. Разрешены: pdf, docx, txt и изображения');
+      setError(t('shared.unsupportedFileType'));
       setAssignmentFile(null);
       return;
     }
 
     if (selected.size > MAX_ASSIGNMENT_FILE_SIZE) {
-      setError('Файл слишком большой. Максимум 10MB');
+      setError(t('shared.fileTooLarge'));
       setAssignmentFile(null);
       return;
     }
@@ -296,7 +298,7 @@ const SharedQuiz: React.FC = () => {
 
             <div className="bg-surface border border-border rounded-2xl p-5 space-y-4">
               <div className="w-full bg-background border border-border rounded-lg px-3 py-2 text-slate-300 text-sm">
-                Ученик: {( `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || studentName || 'Ученик')}
+                {t('shared.student')}: {( `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || studentName || t('shared.student'))}
               </div>
               <textarea
                 value={assignmentText}

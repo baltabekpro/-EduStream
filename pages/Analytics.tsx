@@ -125,7 +125,7 @@ const Analytics: React.FC = () => {
   }
 
   // DASHBOARD VIEW
-    const regularStudents = sortedStudents.filter((s) => s.status.startsWith('Постоянный')).length;
+    const regularStudents = sortedStudents.filter((s) => s.status.startsWith(t('analytics.regularStudent'))).length;
 
   return (
     <PageTransition>

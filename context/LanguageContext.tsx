@@ -176,6 +176,48 @@ const translations: Translations = {
         'course.created': 'Курс создан!',
         'course.failedToCreate': 'Не удалось создать курс',
 
+        // Student pages
+        'student.dashboard.greeting': 'Здравствуйте',
+        'student.dashboard.student': 'ученик',
+        'student.dashboard.selectSection': 'Выберите нужный раздел: задания или тесты.',
+        'student.dashboard.myAssignments': 'Мои задания',
+        'student.dashboard.myAssignmentsDesc': 'Загрузите файл и/или отправьте текстовый ответ по заданию учителя.',
+        'student.dashboard.openAssignments': 'Открыть задания',
+        'student.dashboard.myTests': 'Мои тесты',
+        'student.dashboard.myTestsDesc': 'Пройдите тесты по кодам, которые выдал учитель.',
+        'student.dashboard.openTests': 'Открыть тесты',
+        'student.dashboard.myProgress': 'Мой прогресс',
+        'student.dashboard.progressDesc': 'История попыток и аналитика будут отображаться здесь по мере выполнения заданий.',
+        'student.tests.title': 'Тесты ученика',
+        'student.tests.greeting': 'Здравствуйте',
+        'student.tests.description': 'Здесь вы проходите тесты по кодам от учителя.',
+        'student.tests.openByCode': 'Открыть тест по коду',
+        'student.tests.enterCode': 'Введите код теста',
+        'student.tests.open': 'Открыть',
+        'student.tests.continueLastTest': 'Продолжить последний тест',
+        'student.tests.enterTestCode': 'Введите код теста',
+        'student.tests.checkCode': 'Проверьте код из ссылки учителя',
+        'student.assignments.title': 'Задания ученика',
+        'student.assignments.description': 'Здесь собраны ваши задания с возможностью отправить файл и/или текстовый ответ.',
+        'student.assignments.openByCode': 'Открыть задание по коду',
+        'student.assignments.enterCode': 'Введите код задания',
+        'student.assignments.continueLastAssignment': 'Продолжить последнее задание',
+        'student.assignments.enterAssignmentCode': 'Введите код задания',
+        'student.label': 'Ученик',
+
+        // Shared Quiz
+        'shared.student': 'Ученик',
+
+        // OCR tooltips
+        'ocr.zoomIn': 'Увеличить',
+        'ocr.zoomOut': 'Уменьшить',
+
+        // Analytics
+        'analytics.regularStudent': 'Постоянный',
+
+        // AI Workspace
+        'ai.testKeyword': 'тест',
+
         // AI Workspace
         'ai.documentNotFound': 'Документ не найден',
         'ai.uploadFile': 'Загрузите файл для начала работы',
@@ -433,6 +475,53 @@ const translations: Translations = {
         'library.open': 'Открыть',
         'library.delete': 'Удалить',
         'library.quizDeleted': 'Тест удалён из библиотеки',
+
+        // Teacher Quiz Preview - additional
+        'preview.share': 'Поделиться',
+        'preview.results': 'Результаты',
+        'preview.correct': 'Верный',
+        'preview.correctAnswerPlaceholder': 'Правильный ответ',
+        'preview.explanationPlaceholder': 'Пояснение для учителя',
+
+        // Shared Quiz
+        'shared.invalidCodeFormat': 'Неверный формат кода. Используйте код из ссылки учителя',
+        'shared.passwordRequired': 'Требуется пароль для доступа к тесту',
+        'shared.failedToLoadTest': 'Не удалось загрузить тест',
+        'shared.enterNameBeforeSubmit': 'Введите имя перед отправкой',
+        'shared.failedToSubmitAnswers': 'Не удалось отправить ответы',
+        'shared.addFileOrText': 'Добавьте файл и/или текст ответа',
+        'shared.answerSentSuccessfully': 'Ответ успешно отправлен учителю',
+        'shared.failedToSendAnswer': 'Не удалось отправить ответ',
+        'shared.unsupportedFileType': 'Неподдерживаемый тип файла. Разрешены: pdf, docx, txt и изображения',
+        'shared.fileTooLarge': 'Файл слишком большой. Максимум 10MB',
+
+        // Onboarding
+        'onboarding.createCourse': 'Создайте курс',
+        'onboarding.createCourseDesc': 'Курс объединяет материалы и студентов. Выберите название, например \'Физика 10А\' или \'История 9Б\'.',
+        'onboarding.uploadMaterial': 'Загрузите материал',
+        'onboarding.uploadMaterialDesc': 'Загрузите PDF, DOCX или TXT файл с лекцией, которую хотите использовать для генерации тестов.',
+        'onboarding.generateTest': 'Сгенерируйте тест',
+        'onboarding.generateTestDesc': 'Перейдите в AI Ассистент и создайте тест автоматически. AI проанализирует материал и сформирует вопросы.',
+        'onboarding.skip': 'Пропустить',
+        'onboarding.next': 'Далее',
+        'onboarding.startWorking': 'Начать работу',
+        'onboarding.step': 'Шаг',
+        'onboarding.of': 'из',
+
+        // Create Course Modal
+        'createCourse.title': 'Создать курс',
+        'createCourse.courseName': 'Название курса',
+        'createCourse.required': '*',
+        'createCourse.namePlaceholder': 'Например: 9А класс - Математика',
+        'createCourse.description': 'Описание (опционально)',
+        'createCourse.descriptionPlaceholder': 'Краткое описание курса...',
+        'createCourse.courseColor': 'Цвет курса',
+        'createCourse.courseIcon': 'Иконка курса',
+        'createCourse.preview': 'Предпросмотр',
+        'createCourse.courseNameDefault': 'Название курса',
+        'createCourse.cancel': 'Отмена',
+        'createCourse.create': 'Создать',
+        'createCourse.creating': 'Создание...',
     },
     en: {
         'nav.dashboard': 'Dashboard',
@@ -600,6 +689,48 @@ const translations: Translations = {
         'course.enterTitle': 'Enter course title',
         'course.created': 'Course created!',
         'course.failedToCreate': 'Failed to create course',
+
+        // Student pages
+        'student.dashboard.greeting': 'Hello',
+        'student.dashboard.student': 'student',
+        'student.dashboard.selectSection': 'Select the section you need: assignments or tests.',
+        'student.dashboard.myAssignments': 'My Assignments',
+        'student.dashboard.myAssignmentsDesc': 'Upload a file and/or submit a text response to the teacher\'s assignment.',
+        'student.dashboard.openAssignments': 'Open assignments',
+        'student.dashboard.myTests': 'My Tests',
+        'student.dashboard.myTestsDesc': 'Take tests using codes provided by the teacher.',
+        'student.dashboard.openTests': 'Open tests',
+        'student.dashboard.myProgress': 'My Progress',
+        'student.dashboard.progressDesc': 'Attempt history and analytics will be displayed here as you complete assignments.',
+        'student.tests.title': 'Student Tests',
+        'student.tests.greeting': 'Hello',
+        'student.tests.description': 'Here you take tests using codes from the teacher.',
+        'student.tests.openByCode': 'Open test by code',
+        'student.tests.enterCode': 'Enter test code',
+        'student.tests.open': 'Open',
+        'student.tests.continueLastTest': 'Continue last test',
+        'student.tests.enterTestCode': 'Enter test code',
+        'student.tests.checkCode': 'Check the code from the teacher\'s link',
+        'student.assignments.title': 'Student Assignments',
+        'student.assignments.description': 'Here are your assignments with the ability to submit a file and/or text response.',
+        'student.assignments.openByCode': 'Open assignment by code',
+        'student.assignments.enterCode': 'Enter assignment code',
+        'student.assignments.continueLastAssignment': 'Continue last assignment',
+        'student.assignments.enterAssignmentCode': 'Enter assignment code',
+        'student.label': 'Student',
+
+        // Shared Quiz
+        'shared.student': 'Student',
+
+        // OCR tooltips
+        'ocr.zoomIn': 'Zoom in',
+        'ocr.zoomOut': 'Zoom out',
+
+        // Analytics
+        'analytics.regularStudent': 'Regular',
+
+        // AI Workspace
+        'ai.testKeyword': 'test',
 
         // AI Workspace
         'ai.documentNotFound': 'Document not found',
@@ -858,6 +989,53 @@ const translations: Translations = {
         'library.open': 'Open',
         'library.delete': 'Delete',
         'library.quizDeleted': 'Test deleted from library',
+
+        // Teacher Quiz Preview - additional
+        'preview.share': 'Share',
+        'preview.results': 'Results',
+        'preview.correct': 'Correct',
+        'preview.correctAnswerPlaceholder': 'Correct answer',
+        'preview.explanationPlaceholder': 'Explanation for teacher',
+
+        // Shared Quiz
+        'shared.invalidCodeFormat': 'Invalid code format. Use code from teacher link',
+        'shared.passwordRequired': 'Password required to access test',
+        'shared.failedToLoadTest': 'Failed to load test',
+        'shared.enterNameBeforeSubmit': 'Enter name before submitting',
+        'shared.failedToSubmitAnswers': 'Failed to submit answers',
+        'shared.addFileOrText': 'Add file and/or text answer',
+        'shared.answerSentSuccessfully': 'Answer successfully sent to teacher',
+        'shared.failedToSendAnswer': 'Failed to send answer',
+        'shared.unsupportedFileType': 'Unsupported file type. Allowed: pdf, docx, txt and images',
+        'shared.fileTooLarge': 'File too large. Maximum 10MB',
+
+        // Onboarding
+        'onboarding.createCourse': 'Create a course',
+        'onboarding.createCourseDesc': 'A course brings together materials and students. Choose a name, for example \'Physics 10A\' or \'History 9B\'.',
+        'onboarding.uploadMaterial': 'Upload material',
+        'onboarding.uploadMaterialDesc': 'Upload a PDF, DOCX or TXT file with a lecture you want to use for test generation.',
+        'onboarding.generateTest': 'Generate a test',
+        'onboarding.generateTestDesc': 'Go to AI Assistant and create a test automatically. AI will analyze the material and form questions.',
+        'onboarding.skip': 'Skip',
+        'onboarding.next': 'Next',
+        'onboarding.startWorking': 'Start working',
+        'onboarding.step': 'Step',
+        'onboarding.of': 'of',
+
+        // Create Course Modal
+        'createCourse.title': 'Create course',
+        'createCourse.courseName': 'Course name',
+        'createCourse.required': '*',
+        'createCourse.namePlaceholder': 'For example: Grade 9A - Mathematics',
+        'createCourse.description': 'Description (optional)',
+        'createCourse.descriptionPlaceholder': 'Brief course description...',
+        'createCourse.courseColor': 'Course color',
+        'createCourse.courseIcon': 'Course icon',
+        'createCourse.preview': 'Preview',
+        'createCourse.courseNameDefault': 'Course name',
+        'createCourse.cancel': 'Cancel',
+        'createCourse.create': 'Create',
+        'createCourse.creating': 'Creating...',
     },
     kk: {
         'nav.dashboard': 'Басты бет',
@@ -1025,6 +1203,48 @@ const translations: Translations = {
         'course.enterTitle': 'Курс атауын енгізіңіз',
         'course.created': 'Курс жасалды!',
         'course.failedToCreate': 'Курс жасау мүмкін болмады',
+
+        // Student pages
+        'student.dashboard.greeting': 'Сәлеметсіз бе',
+        'student.dashboard.student': 'оқушы',
+        'student.dashboard.selectSection': 'Қажетті бөлімді таңдаңыз: тапсырмалар немесе тесттер.',
+        'student.dashboard.myAssignments': 'Менің тапсырмаларым',
+        'student.dashboard.myAssignmentsDesc': 'Файл жүктеңіз және/немесе мұғалімнің тапсырмасына мәтіндік жауап жіберіңіз.',
+        'student.dashboard.openAssignments': 'Тапсырмаларды ашу',
+        'student.dashboard.myTests': 'Менің тесттерім',
+        'student.dashboard.myTestsDesc': 'Мұғалім берген кодтар бойынша тесттерден өтіңіз.',
+        'student.dashboard.openTests': 'Тесттерді ашу',
+        'student.dashboard.myProgress': 'Менің прогресім',
+        'student.dashboard.progressDesc': 'Әрекеттер тарихы және аналитика тапсырмаларды орындау барысында осында көрсетіледі.',
+        'student.tests.title': 'Оқушы тесттері',
+        'student.tests.greeting': 'Сәлеметсіз бе',
+        'student.tests.description': 'Мұнда сіз мұғалімнің кодтары бойынша тесттерден өтесіз.',
+        'student.tests.openByCode': 'Код бойынша тестті ашу',
+        'student.tests.enterCode': 'Тест кодын енгізіңіз',
+        'student.tests.open': 'Ашу',
+        'student.tests.continueLastTest': 'Соңғы тестті жалғастыру',
+        'student.tests.enterTestCode': 'Тест кодын енгізіңіз',
+        'student.tests.checkCode': 'Мұғалімнің сілтемесінен кодты тексеріңіз',
+        'student.assignments.title': 'Оқушы тапсырмалары',
+        'student.assignments.description': 'Мұнда файл және/немесе мәтіндік жауап жіберу мүмкіндігі бар тапсырмаларыңыз жиналған.',
+        'student.assignments.openByCode': 'Код бойынша тапсырманы ашу',
+        'student.assignments.enterCode': 'Тапсырма кодын енгізіңіз',
+        'student.assignments.continueLastAssignment': 'Соңғы тапсырманы жалғастыру',
+        'student.assignments.enterAssignmentCode': 'Тапсырма кодын енгізіңіз',
+        'student.label': 'Оқушы',
+
+        // Shared Quiz
+        'shared.student': 'Оқушы',
+
+        // OCR tooltips
+        'ocr.zoomIn': 'Үлкейту',
+        'ocr.zoomOut': 'Кішірейту',
+
+        // Analytics
+        'analytics.regularStudent': 'Тұрақты',
+
+        // AI Workspace
+        'ai.testKeyword': 'тест',
 
         // AI Workspace
         'ai.documentNotFound': 'Құжат табылмады',
@@ -1283,6 +1503,53 @@ const translations: Translations = {
         'library.open': 'Ашу',
         'library.delete': 'Жою',
         'library.quizDeleted': 'Тест кітапханадан жойылды',
+
+        // Teacher Quiz Preview - additional
+        'preview.share': 'Бөлісу',
+        'preview.results': 'Нәтижелер',
+        'preview.correct': 'Дұрыс',
+        'preview.correctAnswerPlaceholder': 'Дұрыс жауап',
+        'preview.explanationPlaceholder': 'Мұғалімге түсініктеме',
+
+        // Shared Quiz
+        'shared.invalidCodeFormat': 'Код форматы дұрыс емес. Мұғалім сілтемесінен кодты пайдаланыңыз',
+        'shared.passwordRequired': 'Тестке қол жеткізу үшін құпия сөз қажет',
+        'shared.failedToLoadTest': 'Тестті жүктеу мүмкін болмады',
+        'shared.enterNameBeforeSubmit': 'Жіберу алдында атыңызды енгізіңіз',
+        'shared.failedToSubmitAnswers': 'Жауаптарды жіберу мүмкін болмады',
+        'shared.addFileOrText': 'Файл және/немесе мәтін жауабын қосыңыз',
+        'shared.answerSentSuccessfully': 'Жауап мұғалімге сәтті жіберілді',
+        'shared.failedToSendAnswer': 'Жауапты жіберу мүмкін болмады',
+        'shared.unsupportedFileType': 'Қолдау көрсетілмейтін файл түрі. Рұқсат етілген: pdf, docx, txt және суреттер',
+        'shared.fileTooLarge': 'Файл тым үлкен. Максимум 10MB',
+
+        // Onboarding
+        'onboarding.createCourse': 'Курс жасаңыз',
+        'onboarding.createCourseDesc': 'Курс материалдар мен студенттерді біріктіреді. Атауын таңдаңыз, мысалы \'Физика 10А\' немесе \'Тарих 9Б\'.',
+        'onboarding.uploadMaterial': 'Материал жүктеңіз',
+        'onboarding.uploadMaterialDesc': 'Тест генерациялау үшін пайдаланғыңыз келетін дәрісі бар PDF, DOCX немесе TXT файлын жүктеңіз.',
+        'onboarding.generateTest': 'Тест генерациялаңыз',
+        'onboarding.generateTestDesc': 'AI көмекшісіне өтіп, тестті автоматты түрде жасаңыз. AI материалды талдап, сұрақтар құрастырады.',
+        'onboarding.skip': 'Өткізіп жіберу',
+        'onboarding.next': 'Келесі',
+        'onboarding.startWorking': 'Жұмысты бастау',
+        'onboarding.step': 'Қадам',
+        'onboarding.of': 'ден',
+
+        // Create Course Modal
+        'createCourse.title': 'Курс жасау',
+        'createCourse.courseName': 'Курс атауы',
+        'createCourse.required': '*',
+        'createCourse.namePlaceholder': 'Мысалы: 9А сынып - Математика',
+        'createCourse.description': 'Сипаттама (міндетті емес)',
+        'createCourse.descriptionPlaceholder': 'Курстың қысқаша сипаттамасы...',
+        'createCourse.courseColor': 'Курс түсі',
+        'createCourse.courseIcon': 'Курс белгішесі',
+        'createCourse.preview': 'Алдын ала қарау',
+        'createCourse.courseNameDefault': 'Курс атауы',
+        'createCourse.cancel': 'Болдырмау',
+        'createCourse.create': 'Жасау',
+        'createCourse.creating': 'Жасалуда...',
     }
 };
 

@@ -334,7 +334,7 @@ const AIWorkspace: React.FC = () => {
       setIsGenerating(true);
 
       // Simulate a logic check for "Test" request
-      if (text.toLowerCase().includes('тест') || text.toLowerCase().includes('quiz')) {
+      if (text.toLowerCase().includes(t('ai.testKeyword')) || text.toLowerCase().includes('quiz')) {
           setActiveTab('test-builder');
           handleGenerateTest();
           streamResponse(t('ai.generating')); // Using translated "Generating..." or "Switching to..."

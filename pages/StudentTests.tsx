@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageTransition } from '../components/PageTransition';
 import { useUser } from '../context/UserContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const RECENT_TEST_CODES_KEY = 'recentTestCodes';
 const LAST_OPENED_TEST_CODE_KEY = 'lastOpenedTestCode';
@@ -21,6 +22,7 @@ const getRecentCodes = (): string[] => {
 const StudentTests: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useUser();
+  const { t } = useLanguage();
 
   const [shareCode, setShareCode] = useState('');
   const [shareCodeError, setShareCodeError] = useState('');
@@ -36,11 +38,11 @@ const StudentTests: React.FC = () => {
   const openByCode = () => {
     const normalized = shareCode.trim().replace(/\s+/g, '');
     if (!normalized) {
-      setShareCodeError('Введите код теста');
+      setShareCodeError(t('student.tests.enterTestCode'));
       return;
     }
     if (!SHARE_CODE_PATTERN.test(normalized)) {
-      setShareCodeError('Проверьте код из ссылки учителя');
+      setShareCodeError(t('student.tests.checkCode'));
       return;
     }
 
@@ -54,12 +56,12 @@ const StudentTests: React.FC = () => {
     <PageTransition>
       <div className="h-full w-full overflow-y-auto custom-scrollbar p-6 md:p-8 space-y-6">
         <div>
-          <h1 className="text-3xl font-black text-white">Тесты ученика</h1>
-          <p className="text-slate-400 mt-2">Здравствуйте, {user?.firstName || 'ученик'}! Здесь вы проходите тесты по кодам от учителя.</p>
+          <h1 className="text-3xl font-black text-white">{t('student.tests.title')}</h1>
+          <p className="text-slate-400 mt-2">{t('student.tests.greeting')}, {user?.firstName || t('student.dashboard.student')}! {t('student.tests.description')}</p>
         </div>
 
         <div className="bg-surface border border-border rounded-2xl p-5 md:p-6 max-w-3xl space-y-4">
-          <h2 className="text-lg font-bold text-white">Открыть тест по коду</h2>
+          <h2 className="text-lg font-bold text-white">{t('student.tests.openByCode')}</h2>
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               value={shareCode}
@@ -73,14 +75,14 @@ const StudentTests: React.FC = () => {
                   openByCode();
                 }
               }}
-              placeholder="Введите код теста"
+              placeholder={t('student.tests.enterCode')}
               className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-white"
             />
             <button
               onClick={openByCode}
               className="px-4 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover"
             >
-              Открыть
+              {t('student.tests.open')}
             </button>
           </div>
           {shareCodeError && <p className="text-xs text-red-400">{shareCodeError}</p>}
@@ -91,7 +93,7 @@ const StudentTests: React.FC = () => {
               onClick={() => navigate(`/shared/${encodeURIComponent(lastOpenedCode)}`)}
               className="px-3 py-2 rounded-lg border border-border bg-background text-slate-300 hover:text-white hover:border-primary/60 text-sm font-bold"
             >
-              Продолжить последний тест: {lastOpenedCode}
+              {t('student.tests.continueLastTest')}: {lastOpenedCode}
             </button>
           )}
 

@@ -104,13 +104,13 @@ const TeacherQuizPreview: React.FC = () => {
               disabled={!quiz?.id}
               className="px-4 py-2 bg-surface border border-border text-white rounded-xl font-bold hover:bg-white/5 disabled:opacity-60"
             >
-              Поделиться
+              {t('preview.share')}
             </button>
             <button
               onClick={() => navigate(`/quiz-results?quizId=${quizId || ''}`)}
               className="px-4 py-2 bg-surface border border-border text-slate-300 rounded-xl font-bold hover:bg-white/5"
             >
-              Результаты
+              {t('preview.results')}
             </button>
           </div>
         </div>
@@ -150,7 +150,7 @@ const TeacherQuizPreview: React.FC = () => {
                         onClick={() => updateQuestion(idx, { correctAnswer: opt })}
                         className={`px-3 py-2 rounded-lg text-xs font-bold ${q.correctAnswer === opt ? 'bg-green-600 text-white' : 'bg-surface border border-border text-slate-300'}`}
                       >
-                        Верный
+                        {t('preview.correct')}
                       </button>
                     </div>
                   ))}
@@ -162,7 +162,7 @@ const TeacherQuizPreview: React.FC = () => {
                   value={q.correctAnswer}
                   onChange={(e) => updateQuestion(idx, { correctAnswer: e.target.value })}
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white text-sm"
-                  placeholder="Правильный ответ"
+                  placeholder={t('preview.correctAnswerPlaceholder')}
                 />
               )}
 
@@ -170,7 +170,7 @@ const TeacherQuizPreview: React.FC = () => {
                 value={q.explanation || ''}
                 onChange={(e) => updateQuestion(idx, { explanation: e.target.value })}
                 className="w-full bg-background border border-border rounded-lg px-3 py-2 text-slate-300 text-sm min-h-20"
-                placeholder="Пояснение для учителя"
+                placeholder={t('preview.explanationPlaceholder')}
               />
             </div>
           ))}
@@ -182,7 +182,7 @@ const TeacherQuizPreview: React.FC = () => {
         onClose={() => setShowShareModal(false)}
         resourceType="quiz"
         resourceId={quiz?.id}
-        resourceTitle={quizTitle || 'Тест'}
+        resourceTitle={quizTitle || t('preview.test')}
       />
     </PageTransition>
   );
