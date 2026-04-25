@@ -11,7 +11,7 @@ import ShareModal from '../components/ShareModal';
 const Assignments: React.FC = () => {
   const { selectedCourse } = useCourse();
   const { addToast } = useToast();
-  const { language } = useLanguage();
+  const { t, language } = useLanguage();
 
   const [materials, setMaterials] = useState<Material[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,7 +51,7 @@ const Assignments: React.FC = () => {
         setAssignmentText(data[0].summary || '');
       }
     } catch (error: any) {
-      addToast(error.message || 'Не удалось загрузить материалы курса', 'error');
+      addToast(error.message || t('assignments.failedToLoadMaterials'), 'error');
     } finally {
       setIsLoading(false);
     }
@@ -73,7 +73,7 @@ const Assignments: React.FC = () => {
       setLinksHistory(links);
       setSubmissionsHistory(submissions);
     } catch (error: any) {
-      addToast(error.message || 'Не удалось загрузить историю заданий', 'error');
+      addToast(error.message || t('assignments.failedToLoadHistory'), 'error');
     } finally {
       setHistoryLoading(false);
     }
@@ -92,7 +92,7 @@ const Assignments: React.FC = () => {
 
   const handleGenerate = async () => {
     if (!selectedMaterial) {
-      addToast('Выберите материал для генерации задания', 'error');
+      addToast(t('assignments.selectMaterial'), 'error');
       return;
     }
 
@@ -105,9 +105,9 @@ const Assignments: React.FC = () => {
           ? { ...item, summary: result.assignmentText }
           : item
       )));
-      addToast('Задание сгенерировано', 'success');
+      addToast(t('assignments.generated'), 'success');
     } catch (error: any) {
-      addToast(error.message || 'Не удалось сгенерировать задание', 'error');
+      addToast(error.message || t('assignments.failedToGenerate'), 'error');
     } finally {
       setIsGenerating(false);
     }
@@ -115,12 +115,12 @@ const Assignments: React.FC = () => {
 
   const handleSave = async () => {
     if (!selectedMaterial) {
-      addToast('Выберите материал', 'error');
+      addToast(t('assignments.selectMaterialError'), 'error');
       return;
     }
 
     if (!assignmentText.trim()) {
-      addToast('Введите текст задания перед сохранением', 'error');
+      addToast(t('assignments.enterText'), 'error');
       return;
     }
 
@@ -132,9 +132,9 @@ const Assignments: React.FC = () => {
           ? { ...item, summary: assignmentText.trim() }
           : item
       )));
-      addToast('Задание сохранено', 'success');
+      addToast(t('assignments.saved'), 'success');
     } catch (error: any) {
-      addToast(error.message || 'Не удалось сохранить задание', 'error');
+      addToast(error.message || t('assignments.failedToSave'), 'error');
     } finally {
       setIsSaving(false);
     }
@@ -153,7 +153,7 @@ const Assignments: React.FC = () => {
       const details = await OCRService.getById(item.submissionId);
       setOpenedAnswerDetails(details);
     } catch (error: any) {
-      addToast(error.message || 'Не удалось открыть ответ', 'error');
+      addToast(error.message || t('assignments.failedToOpenAnswer'), 'error');
     } finally {
       setAnswerLoading(false);
     }
@@ -164,8 +164,8 @@ const Assignments: React.FC = () => {
       <PageTransition>
         <div className="h-full w-full overflow-y-auto custom-scrollbar p-6 md:p-8">
           <div className="bg-surface border border-border rounded-2xl p-8 max-w-3xl">
-            <h1 className="text-2xl font-black text-white">Задания</h1>
-            <p className="text-slate-400 mt-2">Сначала выберите курс в левом меню.</p>
+            <h1 className="text-2xl font-black text-white">{t('assignments.title')}</h1>
+            <p className="text-slate-400 mt-2">{t('assignments.selectCourseFirst')}</p>
           </div>
         </div>
       </PageTransition>
@@ -176,14 +176,14 @@ const Assignments: React.FC = () => {
     <PageTransition>
       <div className="h-full w-full overflow-y-auto custom-scrollbar p-6 md:p-8 space-y-6">
         <div>
-          <h1 className="text-3xl font-black text-white">Задания курса</h1>
-          <p className="text-slate-400 mt-2">Курс: {selectedCourse.title}</p>
+          <h1 className="text-3xl font-black text-white">{t('assignments.title')}</h1>
+          <p className="text-slate-400 mt-2">{t('assignments.course')}: {selectedCourse.title}</p>
         </div>
 
         <div className="bg-surface border border-border rounded-2xl p-5 md:p-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-2">Материал-источник</label>
+              <label className="block text-xs font-bold text-slate-400 mb-2">{t('assignments.sourceMaterial')}</label>
               <select
                 value={selectedMaterialId}
                 onChange={(e) => setSelectedMaterialId(e.target.value)}
@@ -191,7 +191,7 @@ const Assignments: React.FC = () => {
                 disabled={isLoading || materials.length === 0}
               >
                 {materials.length === 0 ? (
-                  <option value="">Нет материалов в курсе</option>
+                  <option value="">{t('assignments.noMaterials')}</option>
                 ) : (
                   materials.map((item) => (
                     <option key={item.id} value={item.id}>{item.title}</option>
@@ -201,11 +201,11 @@ const Assignments: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-2">Пожелания к заданию (опционально)</label>
+              <label className="block text-xs font-bold text-slate-400 mb-2">{t('assignments.preferences')}</label>
               <input
                 value={instruction}
                 onChange={(e) => setInstruction(e.target.value)}
-                placeholder="Например: сделать задание для 9 класса, 20 минут"
+                placeholder={t('assignments.preferencesPlaceholder')}
                 className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white"
               />
             </div>
@@ -218,7 +218,7 @@ const Assignments: React.FC = () => {
               disabled={!selectedMaterial || isGenerating}
               className="px-4 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover disabled:opacity-60"
             >
-              {isGenerating ? 'Генерация...' : 'Сгенерировать задание с AI'}
+              {isGenerating ? t('assignments.generating') : t('assignments.generateWithAI')}
             </button>
 
             <button
@@ -227,7 +227,7 @@ const Assignments: React.FC = () => {
               disabled={!selectedMaterial || isSaving}
               className="px-4 py-2 bg-surface border border-border text-slate-300 rounded-xl font-bold hover:bg-white/5 disabled:opacity-60"
             >
-              {isSaving ? 'Сохранение...' : 'Сохранить задание'}
+              {isSaving ? t('assignments.saving') : t('assignments.saveAssignment')}
             </button>
 
             <button
@@ -238,53 +238,53 @@ const Assignments: React.FC = () => {
               disabled={!selectedMaterial || !assignmentText.trim()}
               className="px-4 py-2 bg-surface border border-border text-white rounded-xl font-bold hover:bg-white/5 disabled:opacity-60"
             >
-              Назначить ученикам
+              {t('assignments.assignToStudents')}
             </button>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-400 mb-2">Текст задания</label>
+            <label className="block text-xs font-bold text-slate-400 mb-2">{t('assignments.assignmentText')}</label>
             <div className="flex flex-wrap gap-2 mb-2">
-              <button type="button" onClick={() => insertFormatting('# Заголовок')} className="px-2 py-1 text-xs rounded-lg border border-border text-slate-300 hover:bg-white/5">H1</button>
-              <button type="button" onClick={() => insertFormatting('## Подзаголовок')} className="px-2 py-1 text-xs rounded-lg border border-border text-slate-300 hover:bg-white/5">H2</button>
-              <button type="button" onClick={() => insertFormatting('**Жирный текст**')} className="px-2 py-1 text-xs rounded-lg border border-border text-slate-300 hover:bg-white/5">Жирный</button>
-              <button type="button" onClick={() => insertFormatting('*Курсив*')} className="px-2 py-1 text-xs rounded-lg border border-border text-slate-300 hover:bg-white/5">Курсив</button>
-              <button type="button" onClick={() => insertFormatting('- Пункт списка')} className="px-2 py-1 text-xs rounded-lg border border-border text-slate-300 hover:bg-white/5">Список</button>
-              <button type="button" onClick={() => insertFormatting('1) Шаг 1\n2) Шаг 2')} className="px-2 py-1 text-xs rounded-lg border border-border text-slate-300 hover:bg-white/5">Шаги</button>
+              <button type="button" onClick={() => insertFormatting('# ' + t('assignments.heading'))} className="px-2 py-1 text-xs rounded-lg border border-border text-slate-300 hover:bg-white/5">H1</button>
+              <button type="button" onClick={() => insertFormatting('## ' + t('assignments.subheading'))} className="px-2 py-1 text-xs rounded-lg border border-border text-slate-300 hover:bg-white/5">H2</button>
+              <button type="button" onClick={() => insertFormatting('**' + t('assignments.bold') + '**')} className="px-2 py-1 text-xs rounded-lg border border-border text-slate-300 hover:bg-white/5">{t('assignments.bold')}</button>
+              <button type="button" onClick={() => insertFormatting('*' + t('assignments.italic') + '*')} className="px-2 py-1 text-xs rounded-lg border border-border text-slate-300 hover:bg-white/5">{t('assignments.italic')}</button>
+              <button type="button" onClick={() => insertFormatting('- ' + t('assignments.listItem'))} className="px-2 py-1 text-xs rounded-lg border border-border text-slate-300 hover:bg-white/5">{t('assignments.list')}</button>
+              <button type="button" onClick={() => insertFormatting('1) ' + t('assignments.step1') + '\n2) ' + t('assignments.step2'))} className="px-2 py-1 text-xs rounded-lg border border-border text-slate-300 hover:bg-white/5">{t('assignments.steps')}</button>
             </div>
             <textarea
               value={assignmentText}
               onChange={(e) => setAssignmentText(e.target.value)}
               className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white min-h-56"
-              placeholder="Сгенерируйте задание через AI или введите текст вручную"
+              placeholder={t('assignments.generateOrEnter')}
             />
-            <p className="text-xs text-slate-500 mt-2">Поддерживается форматирование: заголовки (#), жирный (**текст**), курсив (*текст*), списки (- пункт).</p>
+            <p className="text-xs text-slate-500 mt-2">{t('assignments.formattingSupport')}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <div className="bg-surface border border-border rounded-2xl p-5 md:p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-white">История назначений</h2>
+              <h2 className="text-lg font-bold text-white">{t('assignments.historyOfAssignments')}</h2>
               <button
                 onClick={loadHistory}
                 className="text-xs px-3 py-1.5 rounded-lg border border-border text-slate-300 hover:bg-white/5"
               >
-                Обновить
+                {t('assignments.refresh')}
               </button>
             </div>
 
             {historyLoading ? (
-              <div className="text-slate-400 text-sm">Загрузка...</div>
+              <div className="text-slate-400 text-sm">{t('assignments.loading')}</div>
             ) : linksHistory.length === 0 ? (
-              <div className="text-slate-400 text-sm">Пока нет созданных ссылок на задания</div>
+              <div className="text-slate-400 text-sm">{t('assignments.noLinksYet')}</div>
             ) : (
               <div className="space-y-2 max-h-80 overflow-y-auto custom-scrollbar pr-1">
                 {linksHistory.map((item) => (
                   <div key={item.linkId} className="bg-background border border-border rounded-lg p-3">
                     <p className="text-white text-sm font-bold truncate" title={item.materialTitle}>{item.materialTitle}</p>
-                    <p className="text-slate-400 text-xs mt-1">Код: {item.shortCode} • {formatDate(item.createdAt, language)}</p>
-                    <a href={item.url} target="_blank" rel="noreferrer" className="text-primary text-xs mt-2 inline-block hover:underline">Открыть ссылку</a>
+                    <p className="text-slate-400 text-xs mt-1">{t('assignments.code')}: {item.shortCode} • {formatDate(item.createdAt, language)}</p>
+                    <a href={item.url} target="_blank" rel="noreferrer" className="text-primary text-xs mt-2 inline-block hover:underline">{t('assignments.openLink')}</a>
                   </div>
                 ))}
               </div>
@@ -292,12 +292,12 @@ const Assignments: React.FC = () => {
           </div>
 
           <div className="bg-surface border border-border rounded-2xl p-5 md:p-6">
-            <h2 className="text-lg font-bold text-white mb-4">История проверенных заданий</h2>
+            <h2 className="text-lg font-bold text-white mb-4">{t('assignments.historyOfChecked')}</h2>
 
             {historyLoading ? (
-              <div className="text-slate-400 text-sm">Загрузка...</div>
+              <div className="text-slate-400 text-sm">{t('assignments.loading')}</div>
             ) : submissionsHistory.length === 0 ? (
-              <div className="text-slate-400 text-sm">Ответов по заданиям пока нет</div>
+              <div className="text-slate-400 text-sm">{t('assignments.noAnswersYet')}</div>
             ) : (
               <div className="space-y-2 max-h-80 overflow-y-auto custom-scrollbar pr-1">
                 {submissionsHistory.map((item) => (
@@ -305,7 +305,7 @@ const Assignments: React.FC = () => {
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-white text-sm font-bold truncate">{item.studentName}</p>
                       <span className={`text-[10px] px-2 py-1 rounded-full border ${item.status === 'graded' || item.status === 'reviewed' ? 'text-green-400 border-green-500/30 bg-green-500/10' : 'text-amber-300 border-amber-500/30 bg-amber-500/10'}`}>
-                        {item.status === 'graded' || item.status === 'reviewed' ? 'Проверено' : 'На проверке'}
+                        {item.status === 'graded' || item.status === 'reviewed' ? t('assignments.checked') : t('assignments.onReview')}
                       </span>
                     </div>
                     <p className="text-slate-400 text-xs mt-1">{formatDate(item.submittedAt, language)}{typeof item.score === 'number' ? ` • ${item.score}%` : ''}</p>
@@ -318,7 +318,7 @@ const Assignments: React.FC = () => {
                         disabled={!(item.status === 'graded' || item.status === 'reviewed')}
                         className="text-xs px-3 py-1.5 rounded-lg border border-border text-slate-200 hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed"
                       >
-                        Открыть ответ
+                        {t('assignments.openAnswer')}
                       </button>
                     </div>
                   </div>
@@ -335,7 +335,7 @@ const Assignments: React.FC = () => {
           <div className="relative w-full max-w-3xl bg-surface border border-border rounded-2xl p-5 md:p-6 max-h-[85vh] overflow-y-auto custom-scrollbar">
             <div className="flex items-center justify-between gap-3 mb-4">
               <div>
-                <h3 className="text-lg font-bold text-white">Ответ ученика</h3>
+                <h3 className="text-lg font-bold text-white">{t('assignments.studentAnswer')}</h3>
                 <p className="text-xs text-slate-400">{openedSubmission?.studentName || '—'} • {formatDate(openedSubmission?.submittedAt, language)}</p>
               </div>
               <button
@@ -347,18 +347,18 @@ const Assignments: React.FC = () => {
             </div>
 
             {answerLoading ? (
-              <div className="text-slate-400 text-sm">Загрузка ответа...</div>
+              <div className="text-slate-400 text-sm">{t('assignments.loadingAnswer')}</div>
             ) : !openedAnswerDetails ? (
-              <div className="text-slate-400 text-sm">Не удалось загрузить детали ответа</div>
+              <div className="text-slate-400 text-sm">{t('assignments.failedToLoadAnswer')}</div>
             ) : (
               <div className="space-y-4">
                 {isImagePath(openedAnswerDetails.image) ? (
                   <div className="bg-background border border-border rounded-xl p-3">
-                    <img src={openedAnswerDetails.image} alt="Ответ ученика" className="max-h-[320px] mx-auto rounded-lg" />
+                    <img src={openedAnswerDetails.image} alt={t('assignments.studentAnswer')} className="max-h-[320px] mx-auto rounded-lg" />
                   </div>
                 ) : (
                   <div className="bg-background border border-border rounded-xl p-3 text-xs text-slate-400">
-                    Файл ответа: {openedAnswerDetails.image || 'нет файла'}
+                    {t('assignments.answerFile')}: {openedAnswerDetails.image || t('assignments.noFile')}
                   </div>
                 )}
 
@@ -384,7 +384,7 @@ const Assignments: React.FC = () => {
         }}
         resourceType="material"
         resourceId={selectedMaterial?.id}
-        resourceTitle={selectedMaterial?.title || 'Задание'}
+        resourceTitle={selectedMaterial?.title || t('assignments.assignment')}
       />
     </PageTransition>
   );

@@ -113,7 +113,7 @@ const AIWorkspace: React.FC = () => {
               resetSessionState(doc.title);
           }
       } catch {
-          addToast('Не удалось открыть материал', 'error');
+          addToast(t('ai.failedToOpenMaterial'), 'error');
       } finally {
           setIsLoadingDoc(false);
       }
@@ -141,9 +141,9 @@ const AIWorkspace: React.FC = () => {
               text: m.text || '',
               isTyping: false,
           }));
-          setMessages(mapped.length ? mapped : [{ id: 1, type: 'ai', text: 'Сессия пуста.' }]);
+          setMessages(mapped.length ? mapped : [{ id: 1, type: 'ai', text: t('ai.sessionEmpty') }]);
       } catch (error: any) {
-          addToast(error.message || 'Не удалось открыть сессию', 'error');
+          addToast(error.message || t('ai.failedToOpenSession'), 'error');
       } finally {
           setIsLoadingDoc(false);
       }
@@ -166,8 +166,8 @@ const AIWorkspace: React.FC = () => {
           id: 1,
           type: 'ai',
           text: docTitle
-              ? `Я проанализировал документ "**${docTitle}**". Готов ответить на вопросы или создать тест.`
-              : 'Пожалуйста, загрузите материал на странице Дашборда, чтобы начать работу.'
+              ? `${t('ai.analyzed')} "**${docTitle}**". ${t('ai.readyToWork')}.`
+              : t('ai.uploadFirst')
       }]);
   };
 
@@ -198,7 +198,7 @@ const AIWorkspace: React.FC = () => {
                  setMessages([{ 
                     id: 1, 
                     type: 'ai', 
-                    text: `Выберите материал вверху, чтобы начать работу.` 
+                    text: t('ai.selectMaterialAbove')
                  }]);
                  return;
              }
@@ -229,9 +229,9 @@ const AIWorkspace: React.FC = () => {
                      setGeneratedQuizId(saved.serverQuizId || '');
                      setTestConfig(saved.config);
                      setTestQuestions(saved.questions);
-                     addToast('Тест загружен из библиотеки', 'success');
+                     addToast(t('ai.loadedFromLibrary'), 'success');
                  } else {
-                     addToast('Не удалось найти тест в библиотеке', 'error');
+                     addToast(t('ai.notFoundInLibrary'), 'error');
                  }
              }
 
@@ -244,8 +244,8 @@ const AIWorkspace: React.FC = () => {
              }
 
          } catch (e) {
-             addToast("Не удалось загрузить документ", "error");
-             setDocumentData({ id: 'err', title: 'Ошибка', content: 'Не удалось загрузить содержимое.' });
+             addToast(t('ai.failedToLoad'), "error");
+             setDocumentData({ id: 'err', title: t('ai.error'), content: t('ai.errorContent') });
          } finally {
              setIsLoadingDoc(false);
          }
@@ -316,10 +316,10 @@ const AIWorkspace: React.FC = () => {
       try {
           const result = await AIService.performSmartAction({ text, action });
           // Stream the result - ensure it's a string
-          streamResponse(result || "Действие выполнено");
+          streamResponse(result || t('ai.actionCompleted'));
       } catch (e) {
-          addToast("Не удалось выполнить действие", "error");
-          streamResponse("Не удалось выполнить действие. Попробуйте ещё раз.");
+          addToast(t('ai.failedToPerformAction'), "error");
+          streamResponse(t('ai.tryAgainLater'));
           setIsGenerating(false);
       }
   };
@@ -348,17 +348,17 @@ const AIWorkspace: React.FC = () => {
               localStorage.setItem(LAST_AI_SESSION_KEY, String(result.sessionId));
               loadServerSessions();
           }
-          streamResponse(result.response || "Сообщение получено");
+          streamResponse(result.response || t('ai.messageReceived'));
       } catch (e) {
           console.error("Chat error:", e);
-          streamResponse("Не удалось подключиться к серверу. Попробуйте чуть позже.");
+          streamResponse(t('ai.failedToConnect'));
       }
   };
 
   const streamResponse = (fullText: string) => {
       // Safety check: ensure we have a valid string
       if (!fullText || typeof fullText !== 'string') {
-          fullText = "Ошибка: некорректный ответ сервера";
+          fullText = t('ai.incorrectResponse');
       }
       
       const aiMsgId = Date.now() + 1;
@@ -388,30 +388,30 @@ const AIWorkspace: React.FC = () => {
           const matId = overrideMaterialId || currentStateId;
           
           if (!matId) {
-                 throw new Error("Не выбран корректный материал");
+                 throw new Error(t('ai.noCorrectMaterial'));
           }
 
           const quiz = await AIService.generateQuiz({ ...config, materialId: matId });
           setGeneratedQuizId(quiz.id || '');
           setTestQuestions(quiz.questions || []);
           incrementTimeSaved('quizzesGenerated', 1);
-          addToast("Тест успешно сгенерирован", "success");
+          addToast(t('ai.quizGenerated'), "success");
       } catch (e: any) {
-          addToast(e.message || "Ошибка при генерации теста", "error");
+          addToast(e.message || t('ai.failedToGenerate'), "error");
       } finally {
           setIsGenerating(false);
       }
   };
 
   const handleRegenerateQuestion = async (id: string) => {
-      addToast("Перегенерация вопроса...", "info");
+      addToast(t('ai.regeneratingQuestion'), "info");
       
       try {
           const newQ = await AIService.regenerateBlock(id, "context");
           setTestQuestions(prev => prev.map(q => q.id === id ? newQ : q));
-          addToast("Вопрос обновлён", "success");
+          addToast(t('ai.questionUpdated'), "success");
       } catch (e) {
-          addToast("Не удалось обновить вопрос", "error");
+          addToast(t('ai.failedToUpdate'), "error");
       }
   };
 
@@ -430,27 +430,27 @@ const AIWorkspace: React.FC = () => {
 
   const handleSaveEdits = async () => {
       if (!generatedQuizId) {
-          addToast('Этот тест пока не сохранён на сервере', 'info');
+          addToast(t('ai.notSavedOnServer'), 'info');
           return;
       }
       try {
           const updated = await AIService.updateQuiz(generatedQuizId, testQuestions);
           setTestQuestions(updated.questions || []);
-          addToast('Изменения теста сохранены', 'success');
+          addToast(t('ai.changesSaved'), 'success');
           setIsEditMode(false);
       } catch (error: any) {
-          addToast(error.message || 'Не удалось сохранить изменения', 'error');
+          addToast(error.message || t('ai.failedToSaveChanges'), 'error');
       }
   };
 
   const ensureServerQuizId = async (): Promise<string> => {
       if (generatedQuizId) return generatedQuizId;
       if (!documentData || documentData.id === 'err') {
-          addToast('Сначала выберите материал', 'error');
+          addToast(t('ai.selectMaterial'), 'error');
           return '';
       }
       if (testQuestions.length === 0) {
-          addToast('Нет вопросов для сохранения', 'error');
+          addToast(t('ai.noQuestionsToSave'), 'error');
           return '';
       }
 
@@ -458,7 +458,7 @@ const AIWorkspace: React.FC = () => {
           const created = await AIService.createQuizFromDraft(documentData.id, testQuestions);
           const newQuizId = created.id || '';
           if (!newQuizId) {
-              addToast('Не удалось сохранить тест на сервере', 'error');
+              addToast(t('ai.failedToSaveOnServer'), 'error');
               return '';
           }
 
@@ -466,10 +466,10 @@ const AIWorkspace: React.FC = () => {
           if (loadedSavedQuizId) {
               setSavedQuizServerQuizId(loadedSavedQuizId, newQuizId);
           }
-          addToast('Тест сохранён на сервере', 'success');
+          addToast(t('ai.savedOnServer'), 'success');
           return newQuizId;
       } catch (error: any) {
-          addToast(error.message || 'Не удалось сохранить тест на сервере', 'error');
+          addToast(error.message || t('ai.failedToSaveOnServer'), 'error');
           return '';
       }
   };
@@ -528,9 +528,9 @@ const AIWorkspace: React.FC = () => {
                                 if (nextId) handleSelectMaterial(nextId);
                             }}
                             className="bg-surface border border-border text-slate-200 rounded-lg px-3 py-2 text-xs flex-1 min-w-[160px]"
-                            title="Выбор материала"
+                            title={t('ai.selectMaterial')}
                         >
-                            <option value="">Выберите материал</option>
+                            <option value="">{t('ai.selectMaterial')}</option>
                             {materials.map((material) => (
                                 <option key={material.id} value={material.id}>{material.title}</option>
                             ))}
@@ -543,9 +543,9 @@ const AIWorkspace: React.FC = () => {
                                 if (nextId) handleOpenServerSession(nextId);
                             }}
                             className="bg-surface border border-border text-slate-200 rounded-lg px-3 py-2 text-xs flex-1 min-w-[160px]"
-                            title="История чатов"
+                            title={t('ai.historyChats')}
                         >
-                            <option value="">История чатов</option>
+                            <option value="">{t('ai.historyChats')}</option>
                             {sessions.map((session) => (
                                 <option key={session.id} value={session.id}>{session.title}</option>
                             ))}
@@ -559,13 +559,13 @@ const AIWorkspace: React.FC = () => {
                                 localStorage.removeItem(LAST_AI_SESSION_KEY);
                                 setActiveSessionId(null);
                                 resetSessionState(documentData.title);
-                                addToast('Начата новая сессия', 'success');
+                                addToast(t('ai.newSessionStarted'), 'success');
                             }}
                             className="flex items-center justify-center gap-2 px-3 py-2 bg-surface border border-border text-slate-300 rounded-lg text-xs font-bold hover:bg-white/5 hover:text-white transition-colors whitespace-nowrap"
-                            title="Начать новую сессию"
+                            title={t('ai.newSession')}
                         >
                             <span className="material-symbols-outlined text-sm">restart_alt</span>
-                            Новая сессия
+                            {t('ai.newSession')}
                         </button>
                     </div>
                 </div>
@@ -643,21 +643,21 @@ const AIWorkspace: React.FC = () => {
                          {testQuestions.length > 0 && (
                              <div className="flex items-center justify-between gap-3 bg-surface border border-border rounded-xl p-3">
                                  <div className="text-sm text-slate-300">
-                                     {generatedQuizId ? 'Тест сохранён на сервере' : 'Локальный черновик'}
+                                     {generatedQuizId ? t('ai.savedOnServer') : t('ai.localDraft')}
                                  </div>
                                  <div className="flex items-center gap-2">
                                      <button
                                          onClick={() => setIsEditMode(v => !v)}
                                          className="px-3 py-2 rounded-lg bg-background border border-border text-slate-300 hover:text-white"
                                      >
-                                         {isEditMode ? 'Закрыть редактирование' : 'Редактировать'}
+                                         {isEditMode ? t('ai.closeEdit') : t('ai.edit')}
                                      </button>
                                      {isEditMode && (
                                          <button
                                              onClick={handleSaveEdits}
                                              className="px-3 py-2 rounded-lg bg-primary text-white font-bold hover:bg-primary-hover"
                                          >
-                                             Сохранить правки
+                                             {t('ai.saveEdits')}
                                          </button>
                                      )}
                                  </div>
@@ -695,7 +695,7 @@ const AIWorkspace: React.FC = () => {
                                                                      onClick={() => handleQuestionChange(idx, { correctAnswer: opt })}
                                                                      className={`px-3 py-2 rounded-lg text-xs font-bold ${q.correctAnswer === opt ? 'bg-green-600 text-white' : 'bg-background border border-border text-slate-300'}`}
                                                                  >
-                                                                     Верный
+                                                                     {t('ai.correct')}
                                                                  </button>
                                                              </div>
                                                          ))}
@@ -737,13 +737,13 @@ const AIWorkspace: React.FC = () => {
                              <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 space-y-4 animate-fade-in">
                                  <div className="flex items-center gap-2 text-primary text-sm font-bold uppercase tracking-wider">
                                      <span className="material-symbols-outlined">check_circle</span>
-                                     Тест сгенерирован успешно ({testQuestions.length} {testQuestions.length === 1 ? 'вопрос' : testQuestions.length < 5 ? 'вопроса' : 'вопросов'})
+                                     {t('ai.generatedSuccessfully')} ({testQuestions.length} {testQuestions.length === 1 ? t('ai.question') : testQuestions.length < 5 ? t('ai.questions2') : t('ai.questions5')})
                                  </div>
                                  <div className="grid grid-cols-2 gap-3">
                                      <button 
                                          onClick={() => {
                                              if (!documentData || documentData.id === 'err') {
-                                                 addToast('Сначала выберите материал', 'error');
+                                                 addToast(t('ai.selectMaterial'), 'error');
                                                  return;
                                              }
                                              if (testQuestions.length === 0) return;
@@ -757,8 +757,8 @@ const AIWorkspace: React.FC = () => {
                                                  questions: testQuestions,
                                              });
                                              setShowSaveSuccess(true);
-                                             addToast('Тест сохранён в библиотеку', 'success', {
-                                                 label: 'Открыть библиотеку',
+                                             addToast(t('ai.savedToLibrary'), 'success', {
+                                                 label: t('ai.openLibrary'),
                                                  onClick: () => navigate('/library'),
                                              });
                                              setTimeout(() => setShowSaveSuccess(false), 3000);
@@ -766,7 +766,7 @@ const AIWorkspace: React.FC = () => {
                                          className="flex items-center justify-center gap-2 px-4 py-3 bg-surface border border-border text-white rounded-xl font-bold hover:bg-white/5 transition-all group"
                                      >
                                          <span className="material-symbols-outlined group-hover:scale-110 transition-transform">save</span>
-                                         Сохранить в библиотеку
+                                         {t('ai.saveToLibrary')}
                                      </button>
                                      <button 
                                          onClick={async () => {
@@ -777,7 +777,7 @@ const AIWorkspace: React.FC = () => {
                                          className="flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all group"
                                      >
                                          <span className="material-symbols-outlined group-hover:scale-110 transition-transform">share</span>
-                                         Поделиться с учениками
+                                         {t('ai.shareWithStudents')}
                                      </button>
                                  </div>
                                  <div className="grid grid-cols-2 gap-3">
@@ -790,7 +790,7 @@ const AIWorkspace: React.FC = () => {
                                          className="flex items-center justify-center gap-2 px-4 py-3 bg-surface border border-border text-slate-300 rounded-xl font-medium hover:bg-white/5 hover:text-white transition-all"
                                      >
                                          <span className="material-symbols-outlined text-sm">visibility</span>
-                                         Предпросмотр
+                                         {t('ai.preview')}
                                      </button>
                                      <button 
                                          onClick={() => {
@@ -800,7 +800,7 @@ const AIWorkspace: React.FC = () => {
                                          className="flex items-center justify-center gap-2 px-4 py-3 bg-surface border border-border text-slate-300 rounded-xl font-medium hover:bg-white/5 hover:text-white transition-all"
                                      >
                                          <span className="material-symbols-outlined text-sm">refresh</span>
-                                         Сгенерировать заново
+                                         {t('ai.regenerateAgain')}
                                      </button>
                                  </div>
                              </div>
@@ -834,7 +834,7 @@ const AIWorkspace: React.FC = () => {
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         resourceId={generatedQuizId}
-        resourceTitle={documentData?.title || "Тест"}
+        resourceTitle={documentData?.title || t('ai.quiz')}
         resourceType="quiz"
     />
     </PageTransition>

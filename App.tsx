@@ -80,21 +80,21 @@ const Layout: React.FC = () => {
   const location = useLocation();
 
   const getPageTitle = (path: string) => {
-    if (path.startsWith('/quiz/')) return 'Предпросмотр теста';
+    if (path.startsWith('/quiz/')) return t('nav.results');
 
     switch (path) {
-      case '/student': return 'Мой кабинет';
-      case '/student-assignments': return 'Мои задания';
-      case '/student-tests': return 'Мои тесты';
-      case '/dashboard': return 'Дашборд';
-      case '/assignments': return 'Задания';
-      case '/ocr': return 'Проверка работ';
-      case '/analytics': return 'Аналитика';
-      case '/ai': return 'AI Ассистент';
-      case '/materials-library': return 'Библиотека файлов';
-      case '/quiz-results': return 'Результаты';
-      case '/library': return 'Библиотека тестов';
-      case '/settings': return 'Настройки';
+      case '/student': return t('nav.myOffice');
+      case '/student-assignments': return t('nav.myAssignments');
+      case '/student-tests': return t('nav.myTests');
+      case '/dashboard': return t('nav.dashboard');
+      case '/assignments': return t('nav.assignments');
+      case '/ocr': return t('nav.ocr');
+      case '/analytics': return t('nav.analytics');
+      case '/ai': return t('nav.ai');
+      case '/materials-library': return t('nav.files');
+      case '/quiz-results': return t('nav.results');
+      case '/library': return t('nav.library');
+      case '/settings': return t('nav.settings');
       default: return 'EduStream';
     }
   };

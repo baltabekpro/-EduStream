@@ -144,7 +144,7 @@ const Dashboard: React.FC = () => {
         })
         .catch(err => {
             console.error('Dashboard load error:', err);
-            addToast("Не удалось загрузить дашборд", "error");
+            addToast(t('dash.failedToLoadDashboard'), "error");
             // Set empty data instead of null to prevent infinite loading
             setData({ pieChart: [], needsReview: [], recentActivity: [] });
             setLoading(false);
@@ -188,7 +188,7 @@ const Dashboard: React.FC = () => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
       if (!files || files.length === 0) return;
-      if (!selectedCourse) { addToast("Сначала выберите курс", 'error'); return; }
+      if (!selectedCourse) { addToast(t('dash.selectCourseFirst'), 'error'); return; }
 
       const newItems: UploadItem[] = Array.from(files).map(file => ({
           id: Math.random().toString(36).substr(2, 9),
@@ -212,7 +212,7 @@ const Dashboard: React.FC = () => {
               successCount++;
           } catch (error) {
               setUploadQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: 'error', progress: 0 } : q));
-              addToast(`Не удалось загрузить файл ${file.name}`, "error");
+              addToast(`${t('dash.failedToUpload')} ${file.name}`, "error");
           }
       }
       
@@ -220,10 +220,10 @@ const Dashboard: React.FC = () => {
       if (successCount > 0) {
           incrementTimeSaved('materialsUploaded', successCount);
           addToast(
-              `${successCount} ${successCount === 1 ? 'файл загружен' : 'файла загружено'} успешно!`,
+              `${successCount} ${successCount === 1 ? t('dash.fileUploaded') : t('dash.filesUploaded')} ${t('dash.successfully')}`,
               "success",
               {
-                  label: "Создать тест",
+                  label: t('dash.createTest'),
                   onClick: () => navigate('/ai')
               }
           );
@@ -234,10 +234,10 @@ const Dashboard: React.FC = () => {
   };
 
   const handleExport = () => {
-      addToast("Генерация PDF отчета...", "info");
+      addToast(t('dash.generatingPDF'), "info");
       setTimeout(() => {
           setShowConfetti(true);
-          addToast("Отчет скачан успешно", "success");
+          addToast(t('dash.reportDownloaded'), "success");
           setTimeout(() => setShowConfetti(false), 5000);
       }, 1500);
   };
@@ -257,14 +257,14 @@ const Dashboard: React.FC = () => {
               <div className="text-center space-y-6">
                   <div className="bg-surface/50 backdrop-blur border border-border rounded-2xl p-12 max-w-md mx-auto">
                       <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">school</span>
-                      <h2 className="text-2xl font-bold text-white mb-2">Создайте свой первый курс</h2>
-                      <p className="text-slate-400 mb-6">Начните работу с платформой, создав курс для ваших студентов</p>
+                      <h2 className="text-2xl font-bold text-white mb-2">{t('dash.createFirstCourse')}</h2>
+                      <p className="text-slate-400 mb-6">{t('dash.startWorking')}</p>
                       <button
                           onClick={() => setShowCreateCourseModal(true)}
                           className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-hover transition-all mx-auto"
                       >
                           <span className="material-symbols-outlined">add</span>
-                          Создать курс
+                          {t('dash.createCourse')}
                       </button>
                   </div>
               </div>
@@ -278,12 +278,12 @@ const Dashboard: React.FC = () => {
   }
   
   if (loading) return <div className="p-8 max-w-[1600px] mx-auto h-full overflow-y-auto custom-scrollbar"><DashboardSkeleton /></div>;
-  if (!data) return <div className="p-8 max-w-[1600px] mx-auto h-full flex items-center justify-center text-slate-400"><div className="text-center"><span className="material-symbols-outlined text-6xl mb-4">error_outline</span><p>Не удалось загрузить данные</p></div></div>;
+  if (!data) return <div className="p-8 max-w-[1600px] mx-auto h-full flex items-center justify-center text-slate-400"><div className="text-center"><span className="material-symbols-outlined text-6xl mb-4">error_outline</span><p>{t('dash.failedToLoad')}</p></div></div>;
 
   const templates = [
-      { id: 1, title: 'Входное тестирование', desc: '15 вопросов', icon: 'login', color: 'blue', config: { type: 'mcq', count: 15, difficulty: 'medium' } },
-      { id: 2, title: 'Квиз-пятиминутка', desc: '5 вопросов (T/F)', icon: 'timer', color: 'amber', config: { type: 'boolean', count: 5, difficulty: 'easy' } },
-      { id: 3, title: 'Итоговая контрольная', desc: '20 вопросов', icon: 'school', color: 'purple', config: { type: 'mcq', count: 20, difficulty: 'hard' } }
+      { id: 1, title: t('ai.entryTest'), desc: t('ai.entryTestDesc'), icon: 'login', color: 'blue', config: { type: 'mcq', count: 15, difficulty: 'medium' } },
+      { id: 2, title: t('ai.quickQuiz'), desc: t('ai.quickQuizDesc'), icon: 'timer', color: 'amber', config: { type: 'boolean', count: 5, difficulty: 'easy' } },
+      { id: 3, title: t('ai.finalTest'), desc: t('ai.finalTestDesc'), icon: 'school', color: 'purple', config: { type: 'mcq', count: 20, difficulty: 'hard' } }
   ];
 
   return (
@@ -300,14 +300,14 @@ const Dashboard: React.FC = () => {
               {t('dash.welcome')}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{user?.firstName}</span>
           </h1>
           <p className="text-slate-400 font-medium">
-             Активный курс: {selectedCourse ? (
+             {t('dash.activeCourse')}: {selectedCourse ? (
                <span className="text-white font-bold bg-white/10 px-2 py-0.5 rounded ml-1">{selectedCourse.title}</span>
              ) : (
                <button
                  onClick={() => setShowCreateCourseModal(true)}
                  className="text-primary font-bold underline ml-1 hover:text-primary-hover"
                >
-                 Создать курс
+                 {t('dash.createCourse')}
                </button>
              )}
           </p>
@@ -318,7 +318,7 @@ const Dashboard: React.FC = () => {
                         className="flex items-center gap-2 px-5 py-3 bg-surface border border-border text-white rounded-xl font-bold hover:bg-surface-lighter transition-all active:scale-95 group"
                     >
                         <span className="material-symbols-outlined">add</span>
-                        Создать курс
+                        {t('dash.createCourse')}
                     </button>
           {selectedCourse && (
             <>
@@ -344,9 +344,9 @@ const Dashboard: React.FC = () => {
 
       {/* Stats Overview */}
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <StatCard title="Ожидает проверки" value={formatNumber(needsReviewCount, language)} icon="pending_actions" color="orange" subtext="работ в очереди" />
-          <StatCard title="Средний балл" value={`${formatNumber(Math.round(averageScore), language)}%`} icon="analytics" color="green" subtext={`${formatNumber(submissionsCount, language)} проверенных попыток`} />
-          <StatCard title="Учеников" value={formatNumber(studentsCount, language)} icon="groups" color="blue" subtext="активны в этом курсе" />
+          <StatCard title={t('dash.awaitingReview')} value={formatNumber(needsReviewCount, language)} icon="pending_actions" color="orange" subtext={t('dash.worksInQueue')} />
+          <StatCard title={t('dash.averageScore')} value={`${formatNumber(Math.round(averageScore), language)}%`} icon="analytics" color="green" subtext={`${formatNumber(submissionsCount, language)} ${t('dash.checkedAttempts')}`} />
+          <StatCard title={t('dash.students')} value={formatNumber(studentsCount, language)} icon="groups" color="blue" subtext={t('dash.activeInCourse')} />
       </div>
 
       {uploadQueue.length > 0 && (
@@ -364,7 +364,7 @@ const Dashboard: React.FC = () => {
                           <div className="flex justify-between text-xs font-medium">
                               <span className="text-white truncate max-w-[200px]">{item.name}</span>
                               <span className={item.status === 'completed' ? 'text-green-400' : 'text-primary'}>
-                                  {item.status === 'completed' ? 'Готово' : `${formatNumber(Math.round(item.progress), language)}%`}
+                                  {item.status === 'completed' ? t('dash.ready') : `${formatNumber(Math.round(item.progress), language)}%`}
                               </span>
                           </div>
                           <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
@@ -386,7 +386,7 @@ const Dashboard: React.FC = () => {
             <div>
                 <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                     <span className="material-symbols-outlined text-primary">auto_fix</span>
-                    Быстрый старт
+                    {t('dash.quickStart')}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {templates.map(tmpl => (
@@ -446,7 +446,7 @@ const Dashboard: React.FC = () => {
                     )) : (
                         <div className="col-span-4 p-8 text-center text-slate-500 bg-surface/30 rounded-2xl border border-dashed border-border">
                             <span className="material-symbols-outlined text-3xl mb-2 text-slate-600">check_circle</span>
-                            <p className="text-sm">Нет работ для проверки</p>
+                            <p className="text-sm">{t('dash.noWorksToReview')}</p>
                         </div>
                     )}
                 </div>
@@ -470,7 +470,7 @@ const Dashboard: React.FC = () => {
                         <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</span>
                         <input 
                             type="text" 
-                            placeholder="Поиск..."
+                            placeholder={t('dash.searchPlaceholder')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full bg-surface/50 border border-border rounded-lg py-1.5 pl-8 pr-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-all"
@@ -512,7 +512,7 @@ const Dashboard: React.FC = () => {
                         </div>
                     ) : (
                         <div className="p-8 text-center text-slate-500">
-                            <p className="text-sm">Ничего не найдено</p>
+                            <p className="text-sm">{t('dash.nothingFound')}</p>
                         </div>
                     )}
                 </div>
