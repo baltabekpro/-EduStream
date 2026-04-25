@@ -34,12 +34,12 @@ const Register: React.FC = () => {
     e.preventDefault();
     
     if (!validateEmail(formData.email)) {
-        addToast("Пожалуйста, введите корректный рабочий email", "error");
+        addToast(t('register.validEmail'), "error");
         return;
     }
     
     if (formData.password.length < 6) {
-        addToast("Пароль должен быть не менее 6 символов", "error");
+        addToast(t('register.passwordLength'), "error");
         return;
     }
 
@@ -47,7 +47,7 @@ const Register: React.FC = () => {
     
     try {
         await AuthService.register(formData);
-        addToast("Аккаунт создан успешно! Теперь войдите.", "success");
+        addToast(t('register.accountCreated'), "success");
         navigate('/login');
     } catch (error: any) {
         addToast(error.message || "Ошибка регистрации", "error");

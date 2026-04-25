@@ -138,6 +138,44 @@ const translations: Translations = {
         'preview.changesSaved': 'Изменения сохранены',
         'preview.failedToSave': 'Не удалось сохранить изменения',
 
+        // Settings additional
+        'settings.drawnAvatars': 'Нарисованные аватары',
+        'settings.selectAvatar': 'Выбрать аватар',
+        'settings.importAvatar': 'Импорт аватара',
+        'settings.failedToLoadProfile': 'Не удалось загрузить профиль пользователя',
+        'settings.onlyImages': 'Можно импортировать только изображения',
+        'settings.avatarImported': 'Аватар импортирован',
+        'settings.failedToImportAvatar': 'Не удалось импортировать аватар',
+        'settings.errorSaving': 'Ошибка при сохранении профиля',
+
+        // Register
+        'register.validEmail': 'Пожалуйста, введите корректный рабочий email',
+        'register.passwordLength': 'Пароль должен быть не менее 6 символов',
+        'register.accountCreated': 'Аккаунт создан успешно! Теперь войдите.',
+
+        // OCR
+        'ocr.fileNotFound': 'Файл не найден',
+        'ocr.failedToLoadQueue': 'Не удалось загрузить очередь OCR',
+        'ocr.failedToLoadDetails': 'Не удалось загрузить детали работы',
+        'ocr.batchFailed': 'Пакетная операция не выполнена',
+        'ocr.changesSaved': 'Изменения сохранены',
+        'ocr.failedToSave': 'Не удалось сохранить',
+
+        // Materials Library
+        'materials.linkCreated': 'Ссылка и код задания созданы',
+        'materials.failedToCreateLink': 'Не удалось создать ссылку задания',
+        'materials.codeCopied': 'Код скопирован',
+        'materials.linkCopied': 'Ссылка скопирована',
+
+        // Analytics
+        'analytics.preparingPDF': 'Подготовка PDF...',
+        'analytics.reportReady': 'Отчет готов к печати',
+
+        // Create Course Modal
+        'course.enterTitle': 'Введите название курса',
+        'course.created': 'Курс создан!',
+        'course.failedToCreate': 'Не удалось создать курс',
+
         // AI Workspace
         'ai.documentNotFound': 'Документ не найден',
         'ai.uploadFile': 'Загрузите файл для начала работы',
@@ -525,6 +563,44 @@ const translations: Translations = {
         'preview.changesSaved': 'Changes saved',
         'preview.failedToSave': 'Failed to save changes',
 
+        // Settings additional
+        'settings.drawnAvatars': 'Drawn avatars',
+        'settings.selectAvatar': 'Select avatar',
+        'settings.importAvatar': 'Import avatar',
+        'settings.failedToLoadProfile': 'Failed to load user profile',
+        'settings.onlyImages': 'Only images can be imported',
+        'settings.avatarImported': 'Avatar imported',
+        'settings.failedToImportAvatar': 'Failed to import avatar',
+        'settings.errorSaving': 'Error saving profile',
+
+        // Register
+        'register.validEmail': 'Please enter a valid work email',
+        'register.passwordLength': 'Password must be at least 6 characters',
+        'register.accountCreated': 'Account created successfully! Now log in.',
+
+        // OCR
+        'ocr.fileNotFound': 'File not found',
+        'ocr.failedToLoadQueue': 'Failed to load OCR queue',
+        'ocr.failedToLoadDetails': 'Failed to load work details',
+        'ocr.batchFailed': 'Batch operation failed',
+        'ocr.changesSaved': 'Changes saved',
+        'ocr.failedToSave': 'Failed to save',
+
+        // Materials Library
+        'materials.linkCreated': 'Link and assignment code created',
+        'materials.failedToCreateLink': 'Failed to create assignment link',
+        'materials.codeCopied': 'Code copied',
+        'materials.linkCopied': 'Link copied',
+
+        // Analytics
+        'analytics.preparingPDF': 'Preparing PDF...',
+        'analytics.reportReady': 'Report ready to print',
+
+        // Create Course Modal
+        'course.enterTitle': 'Enter course title',
+        'course.created': 'Course created!',
+        'course.failedToCreate': 'Failed to create course',
+
         // AI Workspace
         'ai.documentNotFound': 'Document not found',
         'ai.uploadFile': 'Upload a file to get started',
@@ -911,6 +987,44 @@ const translations: Translations = {
         'preview.failedToLoad': 'Тестті жүктеу мүмкін болмады',
         'preview.changesSaved': 'Өзгерістер сақталды',
         'preview.failedToSave': 'Өзгерістерді сақтау мүмкін болмады',
+
+        // Settings additional
+        'settings.drawnAvatars': 'Салынған аватарлар',
+        'settings.selectAvatar': 'Аватарды таңдау',
+        'settings.importAvatar': 'Аватарды импорттау',
+        'settings.failedToLoadProfile': 'Пайдаланушы профилін жүктеу мүмкін болмады',
+        'settings.onlyImages': 'Тек суреттерді импорттауға болады',
+        'settings.avatarImported': 'Аватар импортталды',
+        'settings.failedToImportAvatar': 'Аватарды импорттау мүмкін болмады',
+        'settings.errorSaving': 'Профильді сақтау қатесі',
+
+        // Register
+        'register.validEmail': 'Дұрыс жұмыс email енгізіңіз',
+        'register.passwordLength': 'Құпия сөз кемінде 6 таңбадан тұруы керек',
+        'register.accountCreated': 'Аккаунт сәтті жасалды! Енді кіріңіз.',
+
+        // OCR
+        'ocr.fileNotFound': 'Файл табылмады',
+        'ocr.failedToLoadQueue': 'OCR кезегін жүктеу мүмкін болмады',
+        'ocr.failedToLoadDetails': 'Жұмыс мәліметтерін жүктеу мүмкін болмады',
+        'ocr.batchFailed': 'Топтық операция орындалмады',
+        'ocr.changesSaved': 'Өзгерістер сақталды',
+        'ocr.failedToSave': 'Сақтау мүмкін болмады',
+
+        // Materials Library
+        'materials.linkCreated': 'Сілтеме және тапсырма коды жасалды',
+        'materials.failedToCreateLink': 'Тапсырма сілтемесін жасау мүмкін болмады',
+        'materials.codeCopied': 'Код көшірілді',
+        'materials.linkCopied': 'Сілтеме көшірілді',
+
+        // Analytics
+        'analytics.preparingPDF': 'PDF дайындалуда...',
+        'analytics.reportReady': 'Есеп басып шығаруға дайын',
+
+        // Create Course Modal
+        'course.enterTitle': 'Курс атауын енгізіңіз',
+        'course.created': 'Курс жасалды!',
+        'course.failedToCreate': 'Курс жасау мүмкін болмады',
 
         // AI Workspace
         'ai.documentNotFound': 'Құжат табылмады',

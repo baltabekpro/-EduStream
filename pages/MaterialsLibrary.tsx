@@ -52,9 +52,9 @@ const MaterialsLibrary: React.FC = () => {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(result.url);
       }
-      addToast('Ссылка и код задания созданы', 'success');
+      addToast(t('materials.linkCreated'), 'success');
     } catch (error: any) {
-      addToast(error.message || 'Не удалось создать ссылку задания', 'error');
+      addToast(error.message || t('materials.failedToCreateLink'), 'error');
     } finally {
       setSharingMaterialId(null);
     }

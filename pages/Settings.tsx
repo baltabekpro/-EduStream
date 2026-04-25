@@ -46,7 +46,7 @@ const Settings: React.FC = () => {
                 setLoading(false);
             })
             .catch(() => {
-                addToast('Не удалось загрузить профиль пользователя', 'error');
+                addToast(t('settings.failedToLoadProfile'), 'error');
             });
     }, []);
 
@@ -69,7 +69,7 @@ const Settings: React.FC = () => {
         }
 
         if (!file.type.startsWith('image/')) {
-            addToast('Можно импортировать только изображения', 'error');
+            addToast(t('settings.onlyImages'), 'error');
             e.target.value = '';
             return;
         }
@@ -79,11 +79,11 @@ const Settings: React.FC = () => {
             const result = typeof reader.result === 'string' ? reader.result : '';
             if (result) {
                 setFormData(prev => ({ ...prev, avatar: result }));
-                addToast('Аватар импортирован', 'success');
+                addToast(t('settings.avatarImported'), 'success');
             }
         };
         reader.onerror = () => {
-            addToast('Не удалось импортировать аватар', 'error');
+            addToast(t('settings.failedToImportAvatar'), 'error');
         };
         reader.readAsDataURL(file);
         e.target.value = '';
@@ -96,7 +96,7 @@ const Settings: React.FC = () => {
             await refreshUser();
             addToast(t('settings.save'), 'success');
         } catch (e) {
-            addToast('Ошибка при сохранении профиля', 'error');
+            addToast(t('settings.errorSaving'), 'error');
         } finally {
             setSaving(false);
         }
@@ -155,7 +155,7 @@ const Settings: React.FC = () => {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Нарисованные аватары</label>
+                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('settings.drawnAvatars')}</label>
                                         <div className="grid grid-cols-5 gap-2">
                                             {DRAWN_AVATARS.map((avatarUrl) => {
                                                 const isSelected = formData.avatar === avatarUrl;
@@ -166,7 +166,7 @@ const Settings: React.FC = () => {
                                                         onClick={() => setFormData(prev => ({ ...prev, avatar: avatarUrl }))}
                                                         className={`size-12 rounded-full border-2 bg-center bg-cover transition-all ${isSelected ? 'border-primary scale-110' : 'border-border hover:border-slate-400'}`}
                                                         style={{ backgroundImage: `url("${avatarUrl}")` }}
-                                                        title="Выбрать аватар"
+                                                        title={t('settings.selectAvatar')}
                                                     />
                                                 );
                                             })}
@@ -174,7 +174,7 @@ const Settings: React.FC = () => {
                                         <div>
                                             <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-sm text-slate-300 hover:text-white hover:bg-surface-lighter cursor-pointer transition-colors">
                                                 <span className="material-symbols-outlined text-base">upload</span>
-                                                Импорт аватара
+                                                {t('settings.importAvatar')}
                                                 <input
                                                     type="file"
                                                     accept="image/*"

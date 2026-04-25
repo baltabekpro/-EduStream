@@ -55,11 +55,11 @@ const Analytics: React.FC = () => {
   };
 
   const handleExportPDF = () => {
-      addToast("Подготовка PDF...", "info");
+      addToast(t('analytics.preparingPDF'), "info");
       // Wait a bit for toast to show
       setTimeout(() => {
           window.print();
-          addToast("Отчет готов к печати", "success");
+          addToast(t('analytics.reportReady'), "success");
       }, 500);
   };
 

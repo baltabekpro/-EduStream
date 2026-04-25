@@ -61,7 +61,7 @@ const OCR: React.FC = () => {
         const downloadFile = () => {
             const fileUrl = getFileUrl(currentWork?.image);
             if (!fileUrl) {
-                addToast('Файл не найден', 'error');
+                addToast(t('ocr.fileNotFound'), 'error');
                 return;
             }
             const anchor = document.createElement('a');
