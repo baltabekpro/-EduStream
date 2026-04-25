@@ -11,7 +11,7 @@ const Library: React.FC = () => {
   const navigate = useNavigate();
   const { addToast } = useToast();
   const { selectedCourse } = useCourse();
-  const { language } = useLanguage();
+  const { t, language } = useLanguage();
 
   const [items, setItems] = useState<SavedQuiz[]>([]);
 
@@ -41,38 +41,38 @@ const Library: React.FC = () => {
         <div className="max-w-5xl mx-auto p-6 md:p-10 space-y-8">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-black tracking-tight">Библиотека тестов</h1>
+              <h1 className="text-2xl md:text-3xl font-black tracking-tight">{t('library.title')}</h1>
               <p className="text-slate-400 mt-1 text-sm">
-                Тесты курса: {selectedCourse?.title || 'курс не выбран'}.
+                {t('library.courseTests')}: {selectedCourse?.title || t('library.courseNotSelected')}.
               </p>
             </div>
             <button
               onClick={() => navigate('/ai')}
               className="px-4 py-2 bg-surface border border-border rounded-xl text-slate-300 hover:bg-white/5 hover:text-white transition-colors text-sm font-bold"
             >
-              Вернуться в AI
+              {t('library.backToAI')}
             </button>
           </div>
 
           {!selectedCourse ? (
             <div className="bg-surface border border-border rounded-2xl p-8 text-center">
-              <p className="text-white font-bold">Выберите курс</p>
-              <p className="text-slate-400 text-sm mt-1">Сначала выберите курс в левом меню.</p>
+              <p className="text-white font-bold">{t('library.selectCourse')}</p>
+              <p className="text-slate-400 text-sm mt-1">{t('library.selectCourseFirst')}</p>
             </div>
           ) : !hasItems ? (
             <div className="bg-surface border border-border rounded-2xl p-8 text-center">
               <div className="mx-auto size-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-4">
                 <span className="material-symbols-outlined text-3xl">library_books</span>
               </div>
-              <p className="text-white font-bold">Пока пусто</p>
+              <p className="text-white font-bold">{t('library.empty')}</p>
               <p className="text-slate-400 text-sm mt-1">
-                Сгенерируйте тест в AI ассистенте и нажмите «Сохранить в библиотеку».
+                {t('library.emptyDesc')}
               </p>
               <button
                 onClick={() => navigate('/ai')}
                 className="mt-5 px-5 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover transition-colors"
               >
-                Перейти в AI ассистент
+                {t('library.goToAI')}
               </button>
             </div>
           ) : (
@@ -85,10 +85,10 @@ const Library: React.FC = () => {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-primary">quiz</span>
-                      <p className="text-white font-bold truncate">{q.materialTitle || 'Тест'}</p>
+                      <p className="text-white font-bold truncate">{q.materialTitle || t('library.test')}</p>
                     </div>
                     <p className="text-slate-400 text-xs mt-1">
-                      {q.questions?.length || 0} вопросов • {formatDate(q.createdAt, language)}
+                      {q.questions?.length || 0} {t('library.questions')} • {formatDate(q.createdAt, language)}
                     </p>
                   </div>
 
@@ -97,16 +97,16 @@ const Library: React.FC = () => {
                       onClick={() => navigate('/ai', { state: { docId: q.materialId, savedQuizId: q.id } })}
                       className="px-4 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover transition-colors text-sm"
                     >
-                      Открыть
+                      {t('library.open')}
                     </button>
                     <button
                       onClick={() => {
                         deleteSavedQuiz(q.id);
-                        addToast('Тест удалён из библиотеки', 'success');
+                        addToast(t('library.quizDeleted'), 'success');
                       }}
                       className="px-4 py-2 bg-surface border border-border text-slate-300 rounded-xl font-bold hover:bg-white/5 hover:text-white transition-colors text-sm"
                     >
-                      Удалить
+                      {t('library.delete')}
                     </button>
                   </div>
                 </div>

@@ -14,7 +14,7 @@ const QuizResults: React.FC = () => {
   const navigate = useNavigate();
   const { addToast } = useToast();
   const { selectedCourse } = useCourse();
-  const { language } = useLanguage();
+  const { t, language } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const initialQuizId = searchParams.get('quizId') || '';
@@ -43,7 +43,7 @@ const QuizResults: React.FC = () => {
       const data = await ShareService.getTeacherResults(quizId, selectedCourse.id);
       setResults(data);
     } catch (error: any) {
-      addToast(error.message || 'Не удалось загрузить результаты', 'error');
+      addToast(error.message || t('results.failedToLoad'), 'error');
     } finally {
       setIsLoadingResults(false);
     }
@@ -74,7 +74,7 @@ const QuizResults: React.FC = () => {
       setCommentDrafts(nextDrafts);
     } catch (error: any) {
       if (!(error?.code === 404)) {
-        addToast(error.message || 'Не удалось загрузить дневник учеников', 'error');
+        addToast(error.message || t('results.failedToLoadJournal'), 'error');
       }
     } finally {
       setIsLoadingJournal(false);
@@ -110,14 +110,14 @@ const QuizResults: React.FC = () => {
     setSavingCommentKey(item.studentKey);
     try {
       await AnalyticsService.saveStudentComment(selectedCourse.id, item.studentName, draft);
-      addToast('Комментарий сохранён', 'success');
+      addToast(t('results.commentSaved'), 'success');
       setJournalItems((prev) => prev.map((entry) => (
         entry.studentKey === item.studentKey
           ? { ...entry, teacherComment: draft }
           : entry
       )));
     } catch (error: any) {
-      addToast(error.message || 'Не удалось сохранить комментарий', 'error');
+      addToast(error.message || t('results.failedToSaveComment'), 'error');
     } finally {
       setSavingCommentKey(null);
     }
@@ -128,14 +128,14 @@ const QuizResults: React.FC = () => {
       <div className="h-full w-full overflow-y-auto custom-scrollbar p-6 md:p-8 space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-black text-white">Результаты и дневник</h1>
-            <p className="text-slate-400 text-sm">Курс: {selectedCourse?.title || 'не выбран'}</p>
+            <h1 className="text-2xl font-black text-white">{t('results.title')}</h1>
+            <p className="text-slate-400 text-sm">{t('results.course')}: {selectedCourse?.title || t('results.notSelected')}</p>
           </div>
           <button
             onClick={() => navigate('/ai')}
             className="px-4 py-2 bg-surface border border-border rounded-xl text-slate-300 hover:bg-white/5"
           >
-            Назад в AI
+            {t('results.backToAI')}
           </button>
         </div>
 
@@ -144,19 +144,19 @@ const QuizResults: React.FC = () => {
             onClick={() => setViewMode('results')}
             className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${viewMode === 'results' ? 'bg-primary text-white' : 'text-slate-300 hover:text-white'}`}
           >
-            Результаты
+            {t('results.resultsTab')}
           </button>
           <button
             onClick={() => setViewMode('journal')}
             className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${viewMode === 'journal' ? 'bg-primary text-white' : 'text-slate-300 hover:text-white'}`}
           >
-            Дневник
+            {t('results.journalTab')}
           </button>
         </div>
 
         {!selectedCourse ? (
           <div className="bg-surface border border-border rounded-2xl p-10 text-center text-slate-400">
-            Сначала выберите курс в левом меню
+            {t('results.selectCourseFirst')}
           </div>
         ) : viewMode === 'results' ? (
           <>
@@ -164,44 +164,44 @@ const QuizResults: React.FC = () => {
               <input
                 value={quizIdFilter}
                 onChange={(e) => setQuizIdFilter(e.target.value)}
-                placeholder="Фильтр по quizId (опционально)"
+                placeholder={t('results.filterPlaceholder')}
                 className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white"
               />
               <button
                 onClick={applyFilter}
                 className="px-4 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover"
               >
-                Применить
+                {t('results.apply')}
               </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="bg-surface border border-border rounded-xl p-4">
-                <p className="text-slate-400 text-xs">Всего попыток</p>
+                <p className="text-slate-400 text-xs">{t('results.totalAttempts')}</p>
                 <p className="text-2xl font-black text-white mt-1">{results.length}</p>
               </div>
               <div className="bg-surface border border-border rounded-xl p-4">
-                <p className="text-slate-400 text-xs">Средний балл</p>
+                <p className="text-slate-400 text-xs">{t('results.averageScore')}</p>
                 <p className="text-2xl font-black text-white mt-1">{formatNumber(averageScore, language)}%</p>
               </div>
               <div className="bg-surface border border-border rounded-xl p-4">
-                <p className="text-slate-400 text-xs">Текущий фильтр</p>
-                <p className="text-sm font-bold text-white mt-2 break-all">{quizIdFilter || 'Все тесты'}</p>
+                <p className="text-slate-400 text-xs">{t('results.currentFilter')}</p>
+                <p className="text-sm font-bold text-white mt-2 break-all">{quizIdFilter || t('results.allTests')}</p>
               </div>
             </div>
 
             <div className="bg-surface border border-border rounded-2xl overflow-hidden">
               <div className="grid grid-cols-[1.3fr_1.2fr_0.6fr_1fr] gap-3 px-4 py-3 text-xs font-bold text-slate-400 border-b border-border bg-background/30">
-                <div>Ученик</div>
-                <div>Тест</div>
-                <div>Балл</div>
-                <div>Дата</div>
+                <div>{t('results.student')}</div>
+                <div>{t('results.test')}</div>
+                <div>{t('results.score')}</div>
+                <div>{t('results.date')}</div>
               </div>
 
               {isLoadingResults ? (
-                <div className="p-8 text-center text-slate-400">Загрузка...</div>
+                <div className="p-8 text-center text-slate-400">{t('results.loading')}</div>
               ) : results.length === 0 ? (
-                <div className="p-8 text-center text-slate-400">Пока нет отправленных результатов</div>
+                <div className="p-8 text-center text-slate-400">{t('results.noResults')}</div>
               ) : (
                 results.map((item) => (
                   <div
@@ -225,25 +225,25 @@ const QuizResults: React.FC = () => {
           <>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="bg-surface border border-border rounded-xl p-4">
-                <p className="text-slate-400 text-xs">Учеников в дневнике</p>
+                <p className="text-slate-400 text-xs">{t('results.studentsInJournal')}</p>
                 <p className="text-2xl font-black text-white mt-1">{journalStats.totalStudents}</p>
               </div>
               <div className="bg-surface border border-border rounded-xl p-4">
-                <p className="text-slate-400 text-xs">Постоянные ученики</p>
+                <p className="text-slate-400 text-xs">{t('results.regularStudents')}</p>
                 <p className="text-2xl font-black text-white mt-1">{journalStats.regularStudents}</p>
-                <p className="text-[11px] text-slate-500">3+ попытки в курсе</p>
+                <p className="text-[11px] text-slate-500">{t('results.attemptsInCourse')}</p>
               </div>
               <div className="bg-surface border border-border rounded-xl p-4">
-                <p className="text-slate-400 text-xs">Средний балл курса</p>
+                <p className="text-slate-400 text-xs">{t('results.courseAverageScore')}</p>
                 <p className="text-2xl font-black text-white mt-1">{formatNumber(Math.round(journalStats.averageScore), language)}%</p>
               </div>
             </div>
 
             <div className="space-y-4">
               {isLoadingJournal ? (
-                <div className="bg-surface border border-border rounded-2xl p-8 text-center text-slate-400">Загрузка дневника...</div>
+                <div className="bg-surface border border-border rounded-2xl p-8 text-center text-slate-400">{t('results.loadingJournal')}</div>
               ) : journalItems.length === 0 ? (
-                <div className="bg-surface border border-border rounded-2xl p-8 text-center text-slate-400">Нет данных для дневника</div>
+                <div className="bg-surface border border-border rounded-2xl p-8 text-center text-slate-400">{t('results.noJournalData')}</div>
               ) : (
                 journalItems.map((item) => (
                   <div key={item.studentKey} className="bg-surface border border-border rounded-2xl p-4 md:p-5 space-y-4">
@@ -253,7 +253,7 @@ const QuizResults: React.FC = () => {
                           <p className="text-lg font-bold text-white">{item.studentName}</p>
                           {item.regular && (
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-primary/15 text-primary border border-primary/30">
-                              Постоянный
+                              {t('results.regular')}
                             </span>
                           )}
                           <span className={`material-symbols-outlined text-base ${item.trend === 'up' ? 'text-green-400' : item.trend === 'down' ? 'text-red-400' : 'text-slate-500'}`}>
@@ -261,7 +261,7 @@ const QuizResults: React.FC = () => {
                           </span>
                         </div>
                         <p className="text-xs text-slate-400 mt-1">
-                          Попыток: {formatNumber(item.attempts, language)} • Средний: {formatNumber(Math.round(item.averageScore), language)}% • Последний: {formatNumber(item.lastScore, language)}%
+                          {t('results.attempts')}: {formatNumber(item.attempts, language)} • {t('results.average')}: {formatNumber(Math.round(item.averageScore), language)}% • {t('results.last')}: {formatNumber(item.lastScore, language)}%
                         </p>
                       </div>
                     </div>
@@ -278,7 +278,7 @@ const QuizResults: React.FC = () => {
 
                     <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-4">
                       <div className="bg-background/40 border border-border/70 rounded-xl p-3">
-                        <p className="text-xs font-bold uppercase text-slate-400 mb-3">История попыток</p>
+                        <p className="text-xs font-bold uppercase text-slate-400 mb-3">{t('results.attemptHistory')}</p>
                         <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
                           {item.history.map((attempt) => (
                             <div key={attempt.resultId} className="flex items-center justify-between gap-3 bg-surface/40 rounded-lg p-2 text-xs">
@@ -287,7 +287,7 @@ const QuizResults: React.FC = () => {
                                   <span>{attempt.quizTitle}</span>
                                   {attempt.resultType === 'assignment' && (
                                     <span className={`px-1.5 py-0.5 rounded border text-[10px] ${attempt.status === 'graded' || attempt.status === 'reviewed' ? 'text-green-400 border-green-500/30 bg-green-500/10' : 'text-amber-300 border-amber-500/30 bg-amber-500/10'}`}>
-                                      {attempt.status === 'graded' || attempt.status === 'reviewed' ? 'проверено' : 'на проверке'}
+                                      {attempt.status === 'graded' || attempt.status === 'reviewed' ? t('results.graded') : t('results.onReview')}
                                     </span>
                                   )}
                                 </p>
@@ -302,11 +302,11 @@ const QuizResults: React.FC = () => {
                       </div>
 
                       <div className="bg-background/40 border border-border/70 rounded-xl p-3 space-y-2">
-                        <p className="text-xs font-bold uppercase text-slate-400">Комментарий учителя</p>
+                        <p className="text-xs font-bold uppercase text-slate-400">{t('results.teacherComment')}</p>
                         <textarea
                           value={commentDrafts[item.studentKey] ?? ''}
                           onChange={(e) => setCommentDrafts((prev) => ({ ...prev, [item.studentKey]: e.target.value }))}
-                          placeholder="Напишите рекомендации ученику..."
+                          placeholder={t('results.commentPlaceholder')}
                           className="w-full min-h-[120px] bg-background border border-border rounded-lg px-3 py-2 text-sm text-white"
                         />
                         <button
@@ -314,7 +314,7 @@ const QuizResults: React.FC = () => {
                           disabled={savingCommentKey === item.studentKey}
                           className="px-3 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary-hover disabled:opacity-60"
                         >
-                          {savingCommentKey === item.studentKey ? 'Сохранение...' : 'Сохранить комментарий'}
+                          {savingCommentKey === item.studentKey ? t('results.saving') : t('results.saveComment')}
                         </button>
                       </div>
                     </div>
