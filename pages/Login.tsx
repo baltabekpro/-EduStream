@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { AuthService } from '../lib/api';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 import { useLanguage } from '../context/LanguageContext';
 
 const Login: React.FC = () => {
@@ -60,13 +61,14 @@ const Login: React.FC = () => {
       </div>
 
       {/* Header */}
-      <header className="flex items-center justify-between px-8 py-6 z-10">
+      <header className="flex items-center justify-between px-8 py-6 z-10 gap-4">
         <div className="flex items-center gap-2">
             <div className="bg-primary/10 p-2 rounded-lg">
                 <span className="material-symbols-outlined text-primary text-2xl">school</span>
             </div>
             <h1 className="text-lg font-bold tracking-tight text-white">EduStream</h1>
         </div>
+        <LanguageSwitcher className="shrink-0" />
       </header>
 
       <main className="flex-1 flex items-center justify-center p-6 z-10">

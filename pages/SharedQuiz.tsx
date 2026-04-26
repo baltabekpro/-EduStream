@@ -5,6 +5,7 @@ import { PageTransition } from '../components/PageTransition';
 import type { SharedQuizPayload, SharedQuizResult } from '../types';
 import { useUser } from '../context/UserContext';
 import { useLanguage } from '../context/LanguageContext';
+import { recordStudentProgress } from '../lib/studentProgress';
 
 const QUESTION_TIME = 20;
 const MAX_ASSIGNMENT_FILE_SIZE = 10 * 1024 * 1024;
@@ -139,6 +140,15 @@ const SharedQuiz: React.FC = () => {
     setError('');
     try {
       const data = await ShareService.submit(normalizedCode, studentName.trim(), answers);
+      recordStudentProgress({
+        type: 'quiz',
+        title: quiz.title,
+        code: normalizedCode,
+        studentName: studentName.trim(),
+        score: data.score,
+        maxScore: data.total,
+        status: 'graded',
+      });
       setResult(data);
     } catch (e: any) {
       setError(e.message || t('shared.failedToSubmitAnswers'));
@@ -163,6 +173,15 @@ const SharedQuiz: React.FC = () => {
     try {
       const data = await ShareService.uploadAssignment(normalizedCode, effectiveStudentName, assignmentFile, assignmentText);
       setUploadMessage(data.message || t('shared.answerSentSuccessfully'));
+      recordStudentProgress({
+        type: 'assignment',
+        title: quiz?.title || t('shared.student'),
+        code: normalizedCode,
+        studentName: effectiveStudentName,
+        score: null,
+        maxScore: null,
+        status: 'submitted',
+      });
       setAssignmentFile(null);
       setAssignmentText('');
     } catch (e: any) {
