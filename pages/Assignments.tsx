@@ -36,6 +36,33 @@ const Assignments: React.FC = () => {
 
   const isImagePath = (value?: string) => /\.(png|jpe?g|bmp|tiff?|webp|gif)$/i.test(value || '');
 
+  const getLocalizedRegionLabel = (regionId?: string, label?: string) => {
+    const normalizedId = (regionId || '').trim().toLowerCase();
+    const normalizedLabel = (label || '').trim().toLowerCase();
+
+    if (normalizedId === 'text-response' || normalizedId === 'file-response') {
+      return t('ocr.region.studentAnswer');
+    }
+    if (normalizedId.startsWith('assignment-meta:')) {
+      return t('ocr.region.systemData');
+    }
+    if (normalizedId === 'assignment-ai-feedback') {
+      return t('ocr.region.aiReview');
+    }
+
+    if (['ответ ученика', 'student answer', 'оқушы жауабы'].includes(normalizedLabel)) {
+      return t('ocr.region.studentAnswer');
+    }
+    if (['служебные данные', 'service data', 'technical data', 'қызметтік деректер'].includes(normalizedLabel)) {
+      return t('ocr.region.systemData');
+    }
+    if (['ai проверка', 'ai review', 'ai evaluation', 'ai тексеру'].includes(normalizedLabel)) {
+      return t('ocr.region.aiReview');
+    }
+
+    return label || t('ocr.region.unknown');
+  };
+
   const loadMaterials = async () => {
     if (!selectedCourse?.id) {
       setMaterials([]);
@@ -365,7 +392,7 @@ const Assignments: React.FC = () => {
                 <div className="space-y-3">
                   {openedAnswerDetails.questions.map((region) => (
                     <div key={region.id} className="bg-background border border-border rounded-xl p-3">
-                      <p className="text-xs text-slate-400 mb-2">{region.label}</p>
+                      <p className="text-xs text-slate-400 mb-2">{getLocalizedRegionLabel(region.id, region.label)}</p>
                       <div className="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed">{region.ocrText || '—'}</div>
                     </div>
                   ))}

@@ -185,6 +185,11 @@ const translations: Translations = {
         'ocr.cancel': 'Отмена',
         'ocr.dontSave': 'Не сохранять',
         'ocr.studentFileTitle': 'Файл ученика',
+        'ocr.assignmentSubject': 'Задание',
+        'ocr.region.studentAnswer': 'Ответ ученика',
+        'ocr.region.systemData': 'Служебные данные',
+        'ocr.region.aiReview': 'AI проверка',
+        'ocr.region.unknown': 'Регион',
 
         // Materials Library
         'materials.linkCreated': 'Ссылка и код задания созданы',
@@ -846,6 +851,11 @@ const translations: Translations = {
         'ocr.cancel': 'Cancel',
         'ocr.dontSave': "Don't save",
         'ocr.studentFileTitle': 'Student file',
+        'ocr.assignmentSubject': 'Assignment',
+        'ocr.region.studentAnswer': 'Student answer',
+        'ocr.region.systemData': 'System data',
+        'ocr.region.aiReview': 'AI review',
+        'ocr.region.unknown': 'Region',
 
         // Materials Library
         'materials.linkCreated': 'Link and assignment code created',
@@ -1507,6 +1517,11 @@ const translations: Translations = {
         'ocr.cancel': 'Бас тарту',
         'ocr.dontSave': 'Сақтамау',
         'ocr.studentFileTitle': 'Оқушы файлы',
+        'ocr.assignmentSubject': 'Тапсырма',
+        'ocr.region.studentAnswer': 'Оқушы жауабы',
+        'ocr.region.systemData': 'Қызметтік деректер',
+        'ocr.region.aiReview': 'AI тексеру',
+        'ocr.region.unknown': 'Аймақ',
 
         // Materials Library
         'materials.linkCreated': 'Сілтеме және тапсырма коды жасалды',

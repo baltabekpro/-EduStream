@@ -25,6 +25,42 @@ const OCR: React.FC = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
 
+    const getLocalizedSubject = (subject?: string) => {
+        const normalized = (subject || '').trim().toLowerCase();
+        if (!normalized) return t('ocr.noSubject');
+        if (['задание', 'assignment', 'тапсырма'].includes(normalized)) {
+            return t('ocr.assignmentSubject');
+        }
+        return subject || t('ocr.noSubject');
+    };
+
+    const getLocalizedRegionLabel = (regionId?: string, label?: string) => {
+        const normalizedId = (regionId || '').trim().toLowerCase();
+        const normalizedLabel = (label || '').trim().toLowerCase();
+
+        if (normalizedId === 'text-response' || normalizedId === 'file-response') {
+            return t('ocr.region.studentAnswer');
+        }
+        if (normalizedId.startsWith('assignment-meta:')) {
+            return t('ocr.region.systemData');
+        }
+        if (normalizedId === 'assignment-ai-feedback') {
+            return t('ocr.region.aiReview');
+        }
+
+        if (['ответ ученика', 'student answer', 'оқушы жауабы'].includes(normalizedLabel)) {
+            return t('ocr.region.studentAnswer');
+        }
+        if (['служебные данные', 'service data', 'technical data', 'қызметтік деректер'].includes(normalizedLabel)) {
+            return t('ocr.region.systemData');
+        }
+        if (['ai проверка', 'ai review', 'ai evaluation', 'ai тексеру'].includes(normalizedLabel)) {
+            return t('ocr.region.aiReview');
+        }
+
+        return label || t('ocr.region.unknown');
+    };
+
         const isImagePath = (value?: string) => /\.(png|jpe?g|bmp|tiff?|webp|gif)$/i.test(value || '');
         const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://edustream-94-131-85-176.sslip.io/api/v1';
 
@@ -264,7 +300,7 @@ const OCR: React.FC = () => {
                                             <span className="font-bold text-white">{item.student.name}</span>
                                         </div>
                                     </td>
-                                        <td className="p-4 font-medium">{item.subject || t('ocr.noSubject')}</td>
+                                        <td className="p-4 font-medium">{getLocalizedSubject(item.subject)}</td>
                                     <td className="p-4">
                                         <div className="flex items-center gap-2">
                                             <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
@@ -384,7 +420,7 @@ const OCR: React.FC = () => {
                                          <span className="size-6 rounded bg-slate-700 flex items-center justify-center text-xs font-bold text-white">
                                              {idx + 1}
                                          </span>
-                                         <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{q.label}</span>
+                                         <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{getLocalizedRegionLabel(q.id, q.label)}</span>
                                      </div>
                                      <div className={`flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-bold uppercase ${q.confidence === 'Low' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-green-500/10 text-green-500'}`}>
                                          <span className="material-symbols-outlined text-sm">{q.confidence === 'Low' ? 'warning' : 'verified'}</span>

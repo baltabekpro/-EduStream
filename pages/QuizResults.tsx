@@ -29,6 +29,20 @@ const QuizResults: React.FC = () => {
   const [isLoadingJournal, setIsLoadingJournal] = useState(true);
 
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
+
+  const localizeWeakTopic = (topic: string) => {
+    const normalized = (topic || '').trim().toLowerCase();
+    if (['ответ ученика', 'student answer', 'оқушы жауабы'].includes(normalized)) {
+      return t('ocr.region.studentAnswer');
+    }
+    if (['служебные данные', 'service data', 'technical data', 'қызметтік деректер'].includes(normalized)) {
+      return t('ocr.region.systemData');
+    }
+    if (['ai проверка', 'ai review', 'ai evaluation', 'ai тексеру'].includes(normalized)) {
+      return t('ocr.region.aiReview');
+    }
+    return topic;
+  };
   const [savingCommentKey, setSavingCommentKey] = useState<string | null>(null);
 
   const loadResults = async (quizId?: string) => {
@@ -270,7 +284,7 @@ const QuizResults: React.FC = () => {
                       <div className="flex flex-wrap gap-2">
                         {item.weakTopics.map((topic) => (
                           <span key={topic} className="px-2 py-1 rounded-lg text-xs bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                            {topic}
+                            {localizeWeakTopic(topic)}
                           </span>
                         ))}
                       </div>
