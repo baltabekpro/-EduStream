@@ -66,6 +66,13 @@ const saveCompletedSubmission = (submission: CompletedSharedSubmission) => {
   localStorage.setItem(COMPLETED_SUBMISSIONS_STORAGE_KEY, JSON.stringify(next));
 };
 
+const isDuplicateSubmissionError = (error: unknown) => {
+  if (!(error instanceof ApiError)) return false;
+  if (error.code !== 409) return false;
+  const message = String(error.message || '').toLowerCase();
+  return message.includes('already submitted') || message.includes('уже отправили');
+};
+
 const SharedQuiz: React.FC = () => {
   const navigate = useNavigate();
   const { code } = useParams();
@@ -138,8 +145,22 @@ const SharedQuiz: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      const data = await ShareService.getByCode(normalizedCode, pw);
+      const data = await ShareService.getByCode(normalizedCode, pw, studentDisplayName.trim());
       setQuiz(data);
+
+      if (data.alreadySubmitted) {
+        saveCompletedSubmission({
+          resourceType: data.resourceType,
+          code: normalizedCode,
+          studentKey,
+          studentName: studentDisplayName.trim(),
+          title: data.title,
+          score: null,
+          total: null,
+          submittedAt: data.submittedAt || new Date().toISOString(),
+        });
+      }
+
       localStorage.setItem('lastOpenedShareCode', normalizedCode);
       setNeedPassword(false);
       setResult(null);
@@ -166,7 +187,7 @@ const SharedQuiz: React.FC = () => {
 
   useEffect(() => {
     load();
-  }, [code]);
+  }, [code, studentDisplayName, studentKey]);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -244,6 +265,20 @@ const SharedQuiz: React.FC = () => {
       });
       setResult(data);
     } catch (e: any) {
+      if (isDuplicateSubmissionError(e)) {
+        setError(t('shared.alreadySubmittedTitle'));
+        saveCompletedSubmission({
+          resourceType: 'quiz',
+          code: normalizedCode,
+          studentKey,
+          studentName: studentDisplayName.trim(),
+          title: quiz.title,
+          score: null,
+          total: null,
+          submittedAt: new Date().toISOString(),
+        });
+        return;
+      }
       setError(e.message || t('shared.failedToSubmitAnswers'));
     } finally {
       setSubmitting(false);
@@ -290,6 +325,20 @@ const SharedQuiz: React.FC = () => {
       setAssignmentFile(null);
       setAssignmentText('');
     } catch (e: any) {
+      if (isDuplicateSubmissionError(e)) {
+        setError(t('shared.alreadySubmittedTitle'));
+        saveCompletedSubmission({
+          resourceType: 'material',
+          code: normalizedCode,
+          studentKey,
+          studentName: effectiveStudentName,
+          title: quiz?.title || t('shared.student'),
+          score: null,
+          total: null,
+          submittedAt: new Date().toISOString(),
+        });
+        return;
+      }
       setError(e.message || t('shared.failedToSendAnswer'));
     } finally {
       setSubmitting(false);
@@ -459,7 +508,17 @@ const SharedQuiz: React.FC = () => {
         <div className="min-h-screen bg-background text-white p-4 md:p-8">
           <div className="max-w-3xl mx-auto space-y-6">
             <div className="bg-surface border border-border rounded-2xl p-5 space-y-3">
-              <h1 className="text-2xl font-black">{quiz.title}</h1>
+              <div className="flex items-start justify-between gap-3">
+                <h1 className="text-2xl font-black">{quiz.title}</h1>
+                <button
+                  type="button"
+                  onClick={handleLeave}
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-background text-slate-300 hover:text-white hover:border-primary/60 text-sm font-bold"
+                >
+                  <span className="material-symbols-outlined text-base">exit_to_app</span>
+                  {t('shared.leave')}
+                </button>
+              </div>
               <p className="text-slate-400 text-sm">{t('shared.assignmentInstruction')}</p>
               <div className="flex flex-wrap gap-2 text-xs">
                 <span className="px-2 py-1 rounded-full bg-background border border-border text-slate-300">{t('shared.assignmentStep1')}</span>

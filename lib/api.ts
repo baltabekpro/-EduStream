@@ -390,8 +390,11 @@ export const ShareService = {
         });
     },
 
-    async getByCode(shortCode: string, password?: string): Promise<SharedQuizPayload> {
-        const query = password ? `?password=${encodeURIComponent(password)}` : '';
+    async getByCode(shortCode: string, password?: string, studentName?: string): Promise<SharedQuizPayload> {
+        const params = new URLSearchParams();
+        if (password) params.set('password', password);
+        if (studentName && studentName.trim()) params.set('studentName', studentName.trim());
+        const query = params.toString() ? `?${params.toString()}` : '';
         return request<SharedQuizPayload>(`/share/${shortCode}${query}`, { skipAuth: true });
     },
 

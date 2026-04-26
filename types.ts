@@ -181,6 +181,8 @@ export interface SharedQuizPayload {
     resourceType: 'quiz' | 'material';
     shortCode: string;
     title: string;
+    alreadySubmitted?: boolean;
+    submittedAt?: string | null;
     quizId?: string;
     viewOnly: boolean;
     allowCopy: boolean;
