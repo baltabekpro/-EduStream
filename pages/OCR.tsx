@@ -81,7 +81,7 @@ const OCR: React.FC = () => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isDirty && viewMode === 'detail') {
         e.preventDefault();
-        e.returnValue = 'У вас есть несохраненные изменения. Вы уверены, что хотите покинуть страницу?';
+                e.returnValue = t('ocr.unsavedLeaveWarning');
         return e.returnValue;
       }
     };
@@ -96,7 +96,7 @@ const OCR: React.FC = () => {
           const data = await OCRService.getQueue();
           setQueue(data);
       } catch (e) {
-          addToast("Не удалось загрузить очередь OCR", "error");
+          addToast(t('ocr.failedToLoadQueue'), 'error');
       } finally {
           setLoadingQueue(false);
       }
@@ -108,7 +108,7 @@ const OCR: React.FC = () => {
           setCurrentWork(data);
           setManualScore(Number(data?.student?.accuracy ?? 0));
           setViewMode('detail');
-      } catch (e) { addToast("Не удалось загрузить детали работы", "error"); }
+      } catch (e) { addToast(t('ocr.failedToLoadDetails'), 'error'); }
   };
 
   const toggleSelection = (id: string) => {
@@ -132,10 +132,10 @@ const OCR: React.FC = () => {
           await OCRService.batchApprove(ids);
           setShowConfetti(true);
           incrementTimeSaved('worksChecked', count);
-          addToast(`Успешно проверено работ: ${count}`, "success");
+          addToast(`${t('ocr.batchApproved')}: ${count}`, 'success');
           setTimeout(() => setShowConfetti(false), 3000);
       } catch (e) {
-          addToast("Пакетная операция не выполнена", "error");
+          addToast(t('ocr.batchFailed'), 'error');
           loadQueue();
       }
   };
@@ -160,10 +160,10 @@ const OCR: React.FC = () => {
       try {
           await OCRService.updateResult(currentWork.id, { questions: currentWork.questions });
           incrementTimeSaved('worksChecked', 1);
-          addToast("Изменения сохранены", "success");
+          addToast(t('ocr.changesSaved'), 'success');
           setIsDirty(false);
           setShowUnsavedModal(false);
-      } catch (e) { addToast("Не удалось сохранить", "error"); }
+      } catch (e) { addToast(t('ocr.failedToSave'), 'error'); }
   };
 
   return (
@@ -331,7 +331,7 @@ const OCR: React.FC = () => {
                             src={currentWork.image} 
                             className="transition-transform duration-200 shadow-2xl"
                             style={{ transform: `scale(${zoom / 100})`, maxWidth: '90%', maxHeight: '90vh' }} 
-                            alt="Скан работы ученика" 
+                            alt={t('ocr.studentWorkScanAlt')} 
                         />
                      ) : (
                         <div className="w-[90%] max-w-2xl rounded-2xl border border-border bg-surface/70 p-6 text-slate-200">
@@ -340,25 +340,25 @@ const OCR: React.FC = () => {
                                     <span className="material-symbols-outlined">description</span>
                                 </div>
                                 <div>
-                                    <div className="text-sm font-bold text-white">Текстовый ответ ученика</div>
-                                    <div className="text-xs text-slate-400">Вложение не является изображением: {currentWork.image || 'без файла'}</div>
+                                    <div className="text-sm font-bold text-white">{t('ocr.studentTextAnswer')}</div>
+                                    <div className="text-xs text-slate-400">{t('ocr.attachmentNotImage')}: {currentWork.image || t('ocr.noFile')}</div>
                                 </div>
                             </div>
                             <div className="bg-background/70 border border-border rounded-xl p-4 whitespace-pre-wrap leading-relaxed text-sm">
-                                {currentWork.questions?.find(q => q.id === 'text-response')?.ocrText || 'Текст ответа не найден'}
+                                {currentWork.questions?.find(q => q.id === 'text-response')?.ocrText || t('ocr.answerTextNotFound')}
                             </div>
                             {getFileUrl(currentWork.image) && isInlinePreviewableFile(currentWork.image) && (
                                 <div className="mt-4 rounded-xl border border-border overflow-hidden bg-background/60">
                                     <iframe
                                         src={getFileUrl(currentWork.image)}
-                                        title="Файл ученика"
+                                        title={t('ocr.studentFileTitle')}
                                         className="w-full h-[420px]"
                                     />
                                 </div>
                             )}
                             {getFileUrl(currentWork.image) && !isInlinePreviewableFile(currentWork.image) && (
                                 <div className="mt-4 text-xs text-slate-400">
-                                    Этот формат может не поддерживать встроенный просмотр в браузере. Используйте скачивание файла.
+                                    {t('ocr.previewMayNotSupport')}
                                 </div>
                             )}
                             <div className="mt-4 flex flex-wrap gap-2">
@@ -367,7 +367,7 @@ const OCR: React.FC = () => {
                                     className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-slate-200 hover:bg-white/5 transition-colors"
                                 >
                                     <span className="material-symbols-outlined text-base">download</span>
-                                    Скачать файл
+                                    {t('ocr.downloadFile')}
                                 </button>
                             </div>
                         </div>
@@ -402,7 +402,7 @@ const OCR: React.FC = () => {
                                  {q.confidence === 'Low' && (
                                      <div className="mt-2 text-xs text-yellow-500/80 flex items-center gap-2">
                                          <span className="material-symbols-outlined text-sm">info</span>
-                                         Проверьте, пожалуйста, рукописный текст выше.
+                                         {t('ocr.checkHandwriting')}
                                      </div>
                                  )}
                             </div>
@@ -412,7 +412,7 @@ const OCR: React.FC = () => {
                     {/* Bottom Action Bar */}
                     <div className="p-6 border-t border-border bg-surface z-10 flex justify-between items-center shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
                         <div>
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Итоговый балл</span>
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">{t('ocr.finalScore')}</span>
                             <div className="flex items-center gap-2">
                                 <input 
                                     type="number" 
@@ -424,10 +424,10 @@ const OCR: React.FC = () => {
                             </div>
                         </div>
                         <div className="text-right">
-                             <p className="text-xs text-slate-500 mb-1">Прогресс ученика</p>
+                             <p className="text-xs text-slate-500 mb-1">{t('ocr.studentProgress')}</p>
                              <div className="text-white font-bold text-lg flex items-center gap-2">
                                  <span className="material-symbols-outlined text-green-500">trending_up</span>
-                                 Топ 10%
+                                 {t('ocr.topTenPercent')}
                              </div>
                         </div>
                     </div>
@@ -444,29 +444,29 @@ const OCR: React.FC = () => {
                         <div className="bg-yellow-500/10 p-2 rounded-lg">
                             <span className="material-symbols-outlined text-yellow-500">warning</span>
                         </div>
-                        <h3 className="text-xl font-bold text-white">Несохраненные изменения</h3>
+                        <h3 className="text-xl font-bold text-white">{t('ocr.unsavedChangesTitle')}</h3>
                     </div>
                     <p className="text-slate-400 mb-6">
-                        У вас есть несохраненные изменения. Если вы закроете сейчас, они будут потеряны.
+                        {t('ocr.unsavedChangesDesc')}
                     </p>
                     <div className="flex gap-3">
                         <button 
                             onClick={() => setShowUnsavedModal(false)}
                             className="flex-1 px-4 py-2 border border-border text-slate-300 rounded-xl font-bold hover:bg-white/5 hover:text-white transition-colors"
                         >
-                            Отмена
+                            {t('ocr.cancel')}
                         </button>
                         <button 
                             onClick={handleSave}
                             className="flex-1 px-4 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover transition-colors"
                         >
-                            Сохранить
+                            {t('ocr.save')}
                         </button>
                         <button 
                             onClick={handleForceClose}
                             className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-500 transition-colors"
                         >
-                            Не сохранять
+                            {t('ocr.dontSave')}
                         </button>
                     </div>
                 </div>

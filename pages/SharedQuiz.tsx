@@ -86,6 +86,7 @@ const SharedQuiz: React.FC = () => {
   const [assignmentText, setAssignmentText] = useState('');
   const [uploadMessage, setUploadMessage] = useState('');
   const [submissionNotice, setSubmissionNotice] = useState<string | null>(null);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
@@ -181,7 +182,11 @@ const SharedQuiz: React.FC = () => {
   }, [hasUnsavedWork, t]);
 
   const handleLeave = () => {
-    if (!window.confirm(t('shared.leaveConfirm'))) return;
+    setShowLeaveModal(true);
+  };
+
+  const confirmLeave = () => {
+    setShowLeaveModal(false);
     navigate(quiz?.resourceType === 'material' ? '/student-assignments' : '/student-tests');
   };
 
@@ -643,6 +648,31 @@ const SharedQuiz: React.FC = () => {
           {error && <p className="text-red-400 text-sm text-center">{error}</p>}
         </div>
       </div>
+      {showLeaveModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowLeaveModal(false)}></div>
+          <div className="relative w-full max-w-md bg-surface border border-border rounded-2xl p-6 shadow-2xl animate-fade-in">
+            <h3 className="text-lg font-bold text-white mb-3">{t('shared.leave')}</h3>
+            <p className="text-slate-400 text-sm mb-6">{t('shared.leaveConfirm')}</p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowLeaveModal(false)}
+                className="flex-1 px-4 py-2 border border-border text-slate-300 rounded-xl font-bold hover:bg-white/5 hover:text-white transition-colors"
+              >
+                {t('ocr.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={confirmLeave}
+                className="flex-1 px-4 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover transition-colors"
+              >
+                {t('shared.leave')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </PageTransition>
   );
 };
