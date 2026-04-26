@@ -147,6 +147,15 @@ const StudentDashboard: React.FC = () => {
                   ))}
                 </div>
               )}
+
+              <button
+                type="button"
+                onClick={() => navigate('/student-progress')}
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-background text-slate-300 hover:text-white hover:border-primary/60 text-sm font-bold"
+              >
+                <span className="material-symbols-outlined text-base">trending_up</span>
+                {t('student.progress.openDetailed')}
+              </button>
             </div>
           </div>
 

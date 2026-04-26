@@ -21,6 +21,7 @@ const SharedQuiz = lazy(() => import('./pages/SharedQuiz'));
 const QuizResults = lazy(() => import('./pages/QuizResults'));
 const Settings = lazy(() => import('./pages/Settings'));
 const StudentDashboard = lazy(() => import('./pages/StudentDashboard'));
+const StudentProgress = lazy(() => import('./pages/StudentProgress'));
 const StudentAssignments = lazy(() => import('./pages/StudentAssignments'));
 const StudentTests = lazy(() => import('./pages/StudentTests'));
 const Login = lazy(() => import('./pages/Login'));
@@ -86,6 +87,7 @@ const Layout: React.FC = () => {
 
     switch (path) {
       case '/student': return t('nav.myDashboard');
+      case '/student-progress': return t('nav.myProgress');
       case '/student-assignments': return t('nav.myAssignments');
       case '/student-tests': return t('nav.myTests');
       case '/dashboard': return t('nav.dashboard');
@@ -153,6 +155,7 @@ const App: React.FC = () => {
                       <Route element={<Layout />}>
                         <Route element={<RoleRoute allowedRoles={['student']} />}>
                           <Route path="/student" element={<StudentDashboard />} />
+                          <Route path="/student-progress" element={<StudentProgress />} />
                           <Route path="/student-assignments" element={<StudentAssignments />} />
                           <Route path="/student-tests" element={<StudentTests />} />
                         </Route>

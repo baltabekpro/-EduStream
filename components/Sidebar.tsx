@@ -22,6 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const menuItems = isStudent
     ? [
         { icon: 'school', label: t('nav.myDashboard'), path: '/student' },
+        { icon: 'monitoring', label: t('nav.myProgress'), path: '/student-progress' },
         { icon: 'assignment', label: t('nav.myAssignments'), path: '/student-assignments' },
         { icon: 'quiz', label: t('nav.myTests'), path: '/student-tests' },
         { icon: 'settings', label: t('nav.settings'), path: '/settings' },
