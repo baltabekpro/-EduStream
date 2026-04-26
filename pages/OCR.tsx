@@ -187,12 +187,12 @@ const OCR: React.FC = () => {
                     <div className="flex flex-col">
                         <h1 className="text-xl font-bold text-white tracking-tight">{t('nav.ocr')}</h1>
                         <p className="text-xs text-slate-400 mt-0.5">
-                            Система автоматически распознала текст с изображений. Проверьте точность и утвердите оценки.
+                            {t('ocr.autoRecognized')}
                         </p>
                     </div>
                 ) : (
                     <div className="flex flex-col">
-                        <span className="text-sm text-slate-400 font-medium uppercase tracking-wider">ПРОВЕРКА</span>
+                        <span className="text-sm text-slate-400 font-medium uppercase tracking-wider">{t('ocr.reviewMode')}</span>
                         <h1 className="text-xl font-bold text-white">{currentWork?.student.name}</h1>
                     </div>
                 )}
@@ -264,7 +264,7 @@ const OCR: React.FC = () => {
                                             <span className="font-bold text-white">{item.student.name}</span>
                                         </div>
                                     </td>
-                                    <td className="p-4 font-medium">{item.subject || 'Без предмета'}</td>
+                                        <td className="p-4 font-medium">{item.subject || t('ocr.noSubject')}</td>
                                     <td className="p-4">
                                         <div className="flex items-center gap-2">
                                             <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
@@ -281,7 +281,7 @@ const OCR: React.FC = () => {
                                             ? 'bg-red-500/10 text-red-400 border-red-500/20' 
                                             : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
                                         }`}>
-                                            {item.status === 'flagged' ? 'требует внимания' : 'на проверке'}
+                                            {item.status === 'flagged' ? t('ocr.status.flagged') : t('ocr.status.reviewing')}
                                         </span>
                                     </td>
                                     <td className="p-4 text-right">
@@ -298,7 +298,7 @@ const OCR: React.FC = () => {
                             <div className="size-20 bg-surface rounded-full flex items-center justify-center mb-4 shadow-inner">
                                 <span className="material-symbols-outlined text-4xl text-green-500/50">check</span>
                             </div>
-                            <h3 className="text-lg font-bold text-white mb-1">Все проверено!</h3>
+                            <h3 className="text-lg font-bold text-white mb-1">{t('ocr.allChecked')}</h3>
                             <p>{t('ocr.caughtUp')}</p>
                         </div>
                     )}
@@ -314,7 +314,7 @@ const OCR: React.FC = () => {
                 <div className="w-1/2 bg-[#050505] relative flex items-center justify-center overflow-hidden border-r border-border group">
                      {/* Toolbar */}
                      <div className="absolute top-6 left-1/2 -translate-x-1/2 flex gap-1 z-10 bg-surface/90 backdrop-blur border border-border/50 rounded-xl p-1.5 shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                         <button onClick={() => setZoom(z => z + 10)} className="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors" title="Увеличить">
+                         <button onClick={() => setZoom(z => z + 10)} className="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors" title={t('ocr.zoomIn')}>
                              <span className="material-symbols-outlined text-xl">add</span>
                          </button>
                          <div className="w-px bg-border/50 my-1 mx-1"></div>
@@ -322,7 +322,7 @@ const OCR: React.FC = () => {
                              {zoom}%
                          </button>
                          <div className="w-px bg-border/50 my-1 mx-1"></div>
-                         <button onClick={() => setZoom(z => Math.max(10, z - 10))} className="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors" title="Уменьшить">
+                         <button onClick={() => setZoom(z => Math.max(10, z - 10))} className="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors" title={t('ocr.zoomOut')}>
                              <span className="material-symbols-outlined text-xl">remove</span>
                          </button>
                      </div>

@@ -502,7 +502,7 @@ const AIWorkspace: React.FC = () => {
                 </div>
             ) : (
                 <div className="flex h-full items-center justify-center text-slate-500">
-                    Document not found. Upload a file to get started.
+                    {t('ai.documentNotFound')}. {t('ai.uploadFile')}.
                 </div>
             )}
         </div>
