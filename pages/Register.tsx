@@ -89,14 +89,14 @@ const Register: React.FC = () => {
                     <button
                         type="button"
                         onClick={() => setFormData(prev => ({ ...prev, role: 'teacher' }))}
-                        className={`rounded-lg border px-3 py-2 text-sm font-bold transition-colors ${formData.role === 'teacher' ? 'bg-primary/15 border-primary text-white' : 'bg-[#111827] border-border text-slate-300 hover:text-white'}`}
+                        className={`rounded-lg border px-3 py-2 text-sm font-bold transition-colors ${formData.role === 'teacher' ? 'bg-primary/15 border-primary text-white' : 'bg-background border-border text-slate-300 hover:text-white'}`}
                     >
                         Учитель
                     </button>
                     <button
                         type="button"
                         onClick={() => setFormData(prev => ({ ...prev, role: 'student' }))}
-                        className={`rounded-lg border px-3 py-2 text-sm font-bold transition-colors ${formData.role === 'student' ? 'bg-primary/15 border-primary text-white' : 'bg-[#111827] border-border text-slate-300 hover:text-white'}`}
+                        className={`rounded-lg border px-3 py-2 text-sm font-bold transition-colors ${formData.role === 'student' ? 'bg-primary/15 border-primary text-white' : 'bg-background border-border text-slate-300 hover:text-white'}`}
                     >
                         Ученик
                     </button>
@@ -114,7 +114,7 @@ const Register: React.FC = () => {
                         name="firstName"
                         value={formData.firstName}
                         onChange={handleChange}
-                        className="w-full bg-[#111827] border border-border rounded-lg py-2.5 px-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                        className="w-full bg-background border border-border rounded-lg py-2.5 px-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                         required
                         disabled={isLoading}
                     />
@@ -126,7 +126,7 @@ const Register: React.FC = () => {
                         name="lastName"
                         value={formData.lastName}
                         onChange={handleChange}
-                        className="w-full bg-[#111827] border border-border rounded-lg py-2.5 px-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                        className="w-full bg-background border border-border rounded-lg py-2.5 px-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                         required
                         disabled={isLoading}
                     />
@@ -140,7 +140,7 @@ const Register: React.FC = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full bg-[#111827] border border-border rounded-lg py-2.5 px-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                    className="w-full bg-background border border-border rounded-lg py-2.5 px-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                     placeholder="imya@school.edu"
                     required
                     disabled={isLoading}
@@ -154,7 +154,7 @@ const Register: React.FC = () => {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full bg-[#111827] border border-border rounded-lg py-2.5 px-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                    className="w-full bg-background border border-border rounded-lg py-2.5 px-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                     placeholder="••••••••"
                     required
                     disabled={isLoading}

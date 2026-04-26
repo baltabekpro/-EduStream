@@ -68,7 +68,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
       <aside className={`
         fixed md:static inset-y-0 left-0 z-50
-        w-72 border-r border-border bg-[#0f172a] flex flex-col justify-between p-4 h-full overflow-y-auto custom-scrollbar
+        w-72 border-r border-border bg-surface flex flex-col justify-between p-4 h-full overflow-y-auto custom-scrollbar
         transition-transform duration-300 ease-out shadow-2xl md:shadow-none
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>

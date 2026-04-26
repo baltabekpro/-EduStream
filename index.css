@@ -35,6 +35,15 @@
     color: rgb(15 23 42) !important;
   }
 
+  .theme-light [class*='bg-primary'].text-white,
+  .theme-light [class*='bg-blue-'].text-white,
+  .theme-light [class*='bg-red-'].text-white,
+  .theme-light [class*='bg-green-'].text-white,
+  .theme-light [class*='bg-orange-'].text-white,
+  .theme-light [class*='bg-amber-'].text-white {
+    color: rgb(255 255 255) !important;
+  }
+
   .theme-light .text-slate-300 {
     color: rgb(51 65 85) !important;
   }

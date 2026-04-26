@@ -490,7 +490,7 @@ const AIWorkspace: React.FC = () => {
         )}
 
         {/* Left: Document Viewer */}
-        <div ref={containerRef} className="hidden md:block w-1/2 border-r border-border bg-[#0a0c10] overflow-y-auto p-12 custom-scrollbar">
+        <div ref={containerRef} className="hidden md:block w-1/2 border-r border-border bg-background overflow-y-auto p-12 custom-scrollbar">
             {isLoadingDoc ? (
                  <div className="flex h-full items-center justify-center">
                     <span className="material-symbols-outlined animate-spin text-4xl text-primary">sync</span>
