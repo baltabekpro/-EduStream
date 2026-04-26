@@ -111,8 +111,14 @@ const SharedQuiz: React.FC = () => {
 
   const completedSubmission = useMemo(() => {
     if (!quiz) return null;
+    const allSubmissions = loadCompletedSubmissions();
     const recordKey = `${quiz.resourceType}:${normalizedCode}:${studentKey}`;
-    return loadCompletedSubmissions()[recordKey] || null;
+    const exactMatch = allSubmissions[recordKey];
+    if (exactMatch) return exactMatch;
+
+    const prefix = `${quiz.resourceType}:${normalizedCode}:`;
+    const fallbackMatch = Object.entries(allSubmissions).find(([key]) => key.startsWith(prefix));
+    return fallbackMatch?.[1] || null;
   }, [normalizedCode, quiz, studentKey]);
 
   const hasUnsavedWork = Boolean(
@@ -210,6 +216,32 @@ const SharedQuiz: React.FC = () => {
     setShowLeaveModal(false);
     navigate(quiz?.resourceType === 'material' ? '/student-assignments' : '/student-tests');
   };
+
+  const leaveModal = showLeaveModal ? (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowLeaveModal(false)}></div>
+      <div className="relative w-full max-w-md bg-surface border border-border rounded-2xl p-6 shadow-2xl animate-fade-in">
+        <h3 className="text-lg font-bold text-white mb-3">{t('shared.leave')}</h3>
+        <p className="text-slate-400 text-sm mb-6">{t('shared.leaveConfirm')}</p>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => setShowLeaveModal(false)}
+            className="flex-1 px-4 py-2 border border-border text-slate-300 rounded-xl font-bold hover:bg-white/5 hover:text-white transition-colors"
+          >
+            {t('ocr.cancel')}
+          </button>
+          <button
+            type="button"
+            onClick={confirmLeave}
+            className="flex-1 px-4 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover transition-colors"
+          >
+            {t('shared.leave')}
+          </button>
+        </div>
+      </div>
+    </div>
+  ) : null;
 
   const totalQuestions = quiz?.questions?.length || 0;
   const currentQuestion = quiz?.questions?.[currentIndex] || null;
@@ -565,6 +597,7 @@ const SharedQuiz: React.FC = () => {
             </div>
           </div>
         </div>
+        {leaveModal}
       </PageTransition>
     );
   }
@@ -707,31 +740,7 @@ const SharedQuiz: React.FC = () => {
           {error && <p className="text-red-400 text-sm text-center">{error}</p>}
         </div>
       </div>
-      {showLeaveModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowLeaveModal(false)}></div>
-          <div className="relative w-full max-w-md bg-surface border border-border rounded-2xl p-6 shadow-2xl animate-fade-in">
-            <h3 className="text-lg font-bold text-white mb-3">{t('shared.leave')}</h3>
-            <p className="text-slate-400 text-sm mb-6">{t('shared.leaveConfirm')}</p>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setShowLeaveModal(false)}
-                className="flex-1 px-4 py-2 border border-border text-slate-300 rounded-xl font-bold hover:bg-white/5 hover:text-white transition-colors"
-              >
-                {t('ocr.cancel')}
-              </button>
-              <button
-                type="button"
-                onClick={confirmLeave}
-                className="flex-1 px-4 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover transition-colors"
-              >
-                {t('shared.leave')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {leaveModal}
     </PageTransition>
   );
 };
