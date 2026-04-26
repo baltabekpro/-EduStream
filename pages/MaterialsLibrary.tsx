@@ -4,6 +4,7 @@ import { AIService, ShareService } from '../lib/api';
 import { PageTransition } from '../components/PageTransition';
 import { useToast } from '../components/Toast';
 import { useCourse } from '../context/CourseContext';
+import { useLanguage } from '../context/LanguageContext';
 import type { Material } from '../types';
 
 const ASSIGNMENT_LINKS_STORAGE_KEY = 'teacherAssignmentLinks';
@@ -25,6 +26,7 @@ const MaterialsLibrary: React.FC = () => {
   const navigate = useNavigate();
   const { addToast } = useToast();
   const { selectedCourse } = useCourse();
+  const { t } = useLanguage();
 
   const [items, setItems] = useState<Material[]>([]);
   const [query, setQuery] = useState('');
@@ -70,7 +72,7 @@ const MaterialsLibrary: React.FC = () => {
         const data = await AIService.getMaterials(selectedCourse.id);
         setItems(data);
       } catch (error: any) {
-        addToast(error.message || 'Не удалось загрузить библиотеку материалов', 'error');
+        addToast(error.message || t('materials.failedToLoad'), 'error');
       } finally {
         setIsLoading(false);
       }
@@ -101,14 +103,14 @@ const MaterialsLibrary: React.FC = () => {
       <div className="h-full w-full overflow-y-auto custom-scrollbar p-6 md:p-8 space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-black text-white">Библиотека файлов</h1>
-            <p className="text-slate-400 text-sm">Файлы курса: {selectedCourse?.title || 'курс не выбран'}.</p>
+            <h1 className="text-2xl font-black text-white">{t('materials.title')}</h1>
+            <p className="text-slate-400 text-sm">{t('materials.courseFiles')}: {selectedCourse?.title || t('materials.noCourseSelected')}.</p>
           </div>
           <button
             onClick={() => navigate('/dashboard')}
             className="px-4 py-2 bg-surface border border-border rounded-xl text-slate-300 hover:bg-white/5"
           >
-            На дашборд
+            {t('materials.backToDashboard')}
           </button>
         </div>
 
@@ -116,28 +118,28 @@ const MaterialsLibrary: React.FC = () => {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Поиск материала..."
+            placeholder={t('materials.searchPlaceholder')}
             className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white"
           />
         </div>
 
         {!selectedCourse ? (
-          <div className="bg-surface border border-border rounded-2xl p-10 text-center text-slate-400">Сначала выберите курс в левом меню</div>
+          <div className="bg-surface border border-border rounded-2xl p-10 text-center text-slate-400">{t('materials.selectCourseFirst')}</div>
         ) : isLoading ? (
-          <div className="bg-surface border border-border rounded-2xl p-10 text-center text-slate-400">Загрузка...</div>
+          <div className="bg-surface border border-border rounded-2xl p-10 text-center text-slate-400">{t('materials.loading')}</div>
         ) : filtered.length === 0 ? (
-          <div className="bg-surface border border-border rounded-2xl p-10 text-center text-slate-400">Материалы не найдены</div>
+          <div className="bg-surface border border-border rounded-2xl p-10 text-center text-slate-400">{t('materials.notFound')}</div>
         ) : (
           <div className="space-y-3">
             {!!Object.keys(assignmentLinks).length && (
               <div className="bg-surface border border-border rounded-2xl p-4 flex items-center justify-between gap-3">
-                <p className="text-sm text-slate-300">Опубликованных заданий: {Object.keys(assignmentLinks).length}</p>
+                <p className="text-sm text-slate-300">{t('materials.publishedCount')}: {Object.keys(assignmentLinks).length}</p>
                 <button
                   type="button"
                   onClick={() => setAssignmentLinks({})}
                   className="px-3 py-1.5 bg-background border border-border text-slate-300 rounded-lg text-xs font-bold hover:bg-white/5"
                 >
-                  Очистить сохранённые ссылки
+                  {t('materials.clearLinks')}
                 </button>
               </div>
             )}
@@ -148,7 +150,7 @@ const MaterialsLibrary: React.FC = () => {
                   <p className="text-slate-400 text-xs mt-1 truncate">{material.id}</p>
                   {assignmentLinks[material.id] && (
                     <div className="mt-3 bg-background border border-border rounded-lg p-3 space-y-2">
-                      <p className="text-xs text-slate-400">Задание опубликовано</p>
+                      <p className="text-xs text-slate-400">{t('materials.published')}</p>
                       <p className="text-sm font-black tracking-wider text-white">{assignmentLinks[material.id].code}</p>
                       <div className="flex flex-wrap gap-2">
                         <button
@@ -156,29 +158,29 @@ const MaterialsLibrary: React.FC = () => {
                           onClick={() => window.open(assignmentLinks[material.id].url, '_blank')}
                           className="px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary-hover"
                         >
-                          Открыть как ученик
+                          {t('materials.openAsStudent')}
                         </button>
                         <button
                           type="button"
                           onClick={async () => {
                             const code = assignmentLinks[material.id].code;
                             if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(code);
-                            addToast('Код скопирован', 'success');
+                            addToast(t('materials.codeCopied'), 'success');
                           }}
                           className="px-3 py-1.5 bg-surface border border-border text-slate-200 rounded-lg text-xs font-bold hover:bg-white/5"
                         >
-                          Копировать код
+                          {t('materials.copyCode')}
                         </button>
                         <button
                           type="button"
                           onClick={async () => {
                             const url = assignmentLinks[material.id].url;
                             if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(url);
-                            addToast('Ссылка скопирована', 'success');
+                            addToast(t('materials.linkCopied'), 'success');
                           }}
                           className="px-3 py-1.5 bg-surface border border-border text-slate-200 rounded-lg text-xs font-bold hover:bg-white/5"
                         >
-                          Копировать ссылку
+                          {t('materials.copyLink')}
                         </button>
                       </div>
                     </div>
@@ -188,14 +190,14 @@ const MaterialsLibrary: React.FC = () => {
                   onClick={() => navigate('/ai', { state: { docId: material.id } })}
                   className="px-4 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover"
                 >
-                  Открыть в AI
+                  {t('materials.openInAI')}
                 </button>
                 <button
                   onClick={() => handleCreateAssignment(material)}
                   disabled={sharingMaterialId === material.id}
                   className="px-4 py-2 bg-surface border border-border text-slate-200 rounded-xl font-bold hover:bg-white/5 disabled:opacity-60"
                 >
-                  {sharingMaterialId === material.id ? 'Создаю...' : assignmentLinks[material.id] ? 'Обновить ссылку' : 'Создать задание'}
+                  {sharingMaterialId === material.id ? t('materials.creating') : assignmentLinks[material.id] ? t('materials.updateLink') : t('materials.createAssignment')}
                 </button>
               </div>
             ))}

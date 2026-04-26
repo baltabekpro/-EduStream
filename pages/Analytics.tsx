@@ -69,7 +69,7 @@ const Analytics: React.FC = () => {
           <div className="flex items-center justify-center h-full text-slate-400">
               <div className="text-center">
                   <span className="material-symbols-outlined text-6xl mb-4">bar_chart</span>
-                  <p>Выберите курс для просмотра аналитики</p>
+                  <p>{t('analytics.noCourseSelected')}</p>
               </div>
           </div>
       );
@@ -88,8 +88,8 @@ const Analytics: React.FC = () => {
           <div className="flex items-center justify-center h-full text-slate-400">
               <div className="text-center">
                   <span className="material-symbols-outlined text-6xl mb-4">insights</span>
-                  <p>Нет данных для отображения</p>
-                  <p className="text-sm mt-2">Загрузите материалы и создайте тесты</p>
+                  <p>{t('analytics.noDataTitle')}</p>
+                  <p className="text-sm mt-2">{t('analytics.noDataDesc')}</p>
               </div>
           </div>
       );
@@ -141,7 +141,7 @@ const Analytics: React.FC = () => {
                     className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all active:scale-95 print:hidden"
                 >
                     <span className="material-symbols-outlined text-lg">picture_as_pdf</span>
-                    Экспорт PDF
+                    {t('analytics.exportPdf')}
                 </button>
                 <div className="text-right">
                     <div className="text-4xl font-black text-white">{formatNumber(parseFloat(averageScore), language)}%</div>
@@ -152,18 +152,18 @@ const Analytics: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-surface border border-border rounded-xl p-4">
-                <p className="text-xs text-slate-400 uppercase font-bold">Постоянные ученики</p>
+                <p className="text-xs text-slate-400 uppercase font-bold">{t('analytics.regularStudentsTitle')}</p>
                 <p className="text-2xl font-black text-white mt-1">{formatNumber(regularStudents, language)}</p>
-                <p className="text-xs text-slate-500 mt-1">3+ выполненных теста в курсе</p>
+                <p className="text-xs text-slate-500 mt-1">{t('analytics.regularStudentsDesc')}</p>
             </div>
             <div className="bg-surface border border-border rounded-xl p-4">
-                <p className="text-xs text-slate-400 uppercase font-bold">Всего активных</p>
+                <p className="text-xs text-slate-400 uppercase font-bold">{t('analytics.activeStudentsTitle')}</p>
                 <p className="text-2xl font-black text-white mt-1">{formatNumber(sortedStudents.length, language)}</p>
-                <p className="text-xs text-slate-500 mt-1">учеников с результатами</p>
+                <p className="text-xs text-slate-500 mt-1">{t('analytics.activeStudentsDesc')}</p>
             </div>
             <div className="bg-surface border border-border rounded-xl p-4">
-                <p className="text-xs text-slate-400 uppercase font-bold">Как стать постоянным</p>
-                <p className="text-sm text-slate-300 mt-1">Выполнять задания на сайте минимум 3 раза</p>
+                <p className="text-xs text-slate-400 uppercase font-bold">{t('analytics.howToBecomeRegularTitle')}</p>
+                <p className="text-sm text-slate-300 mt-1">{t('analytics.howToBecomeRegularDesc')}</p>
             </div>
         </div>
 
