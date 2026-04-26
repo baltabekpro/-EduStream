@@ -7,6 +7,7 @@ import { SettingsProvider } from './context/SettingsContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { UserProvider } from './context/UserContext';
 import { useUser } from './context/UserContext';
+import { useLanguage } from './context/LanguageContext';
 
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const OCR = lazy(() => import('./pages/OCR'));
@@ -78,12 +79,13 @@ const HomeRedirect: React.FC = () => {
 const Layout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
+  const { t } = useLanguage();
 
   const getPageTitle = (path: string) => {
     if (path.startsWith('/quiz/')) return t('nav.results');
 
     switch (path) {
-      case '/student': return t('nav.myOffice');
+      case '/student': return t('nav.myDashboard');
       case '/student-assignments': return t('nav.myAssignments');
       case '/student-tests': return t('nav.myTests');
       case '/dashboard': return t('nav.dashboard');
