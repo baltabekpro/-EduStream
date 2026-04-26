@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ShareService, ApiError } from '../lib/api';
 import { PageTransition } from '../components/PageTransition';
 import type { SharedQuizPayload, SharedQuizResult } from '../types';
@@ -34,6 +34,7 @@ const renderAssignmentHtml = (raw: string) => {
 };
 
 const SharedQuiz: React.FC = () => {
+  const navigate = useNavigate();
   const { code } = useParams();
   const { user } = useUser();
   const { t } = useLanguage();
@@ -58,6 +59,16 @@ const SharedQuiz: React.FC = () => {
   const [streak, setStreak] = useState(0);
   const [showReveal, setShowReveal] = useState(false);
   const [answerAccepted, setAnswerAccepted] = useState<boolean | null>(null);
+
+  const hasUnsavedWork = Boolean(
+    quiz && !result && (
+      assignmentFile
+      || assignmentText.trim()
+      || Object.values(answers).some((answer) => answer.trim().length > 0)
+      || currentIndex > 0
+      || showReveal
+    )
+  );
 
   useEffect(() => {
     const profileName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
@@ -106,6 +117,25 @@ const SharedQuiz: React.FC = () => {
   useEffect(() => {
     load();
   }, [code]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!hasUnsavedWork) return;
+
+      event.preventDefault();
+      event.returnValue = t('shared.leaveWarning');
+      return event.returnValue;
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedWork, t]);
+
+  const handleLeave = () => {
+    if (!window.confirm(t('shared.leaveConfirm'))) return;
+
+    navigate(quiz?.resourceType === 'material' ? '/student-assignments' : '/student-tests');
+  };
 
   const totalQuestions = quiz?.questions?.length || 0;
   const currentQuestion = quiz?.questions?.[currentIndex] || null;
@@ -357,8 +387,21 @@ const SharedQuiz: React.FC = () => {
     <PageTransition>
       <div className="min-h-screen bg-background text-white p-4 md:p-8">
         <div className="max-w-3xl mx-auto space-y-6">
-          <div className="bg-surface border border-border rounded-2xl p-5">
-            <h1 className="text-2xl font-black">{quiz.title}</h1>
+          <div className="bg-surface border border-border rounded-2xl p-5 space-y-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-black">{quiz.title}</h1>
+                <p className="text-slate-400 text-sm mt-1">{quiz.resourceType === 'material' ? t('student.assignments.title') : t('student.tests.title')}</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleLeave}
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-background text-slate-300 hover:text-white hover:border-primary/60 text-sm font-bold"
+              >
+                <span className="material-symbols-outlined text-base">exit_to_app</span>
+                {t('shared.leave')}
+              </button>
+            </div>
             <p className="text-slate-400 text-sm mt-1">Режим в стиле Kahoot: таймер, серия и очки</p>
             <input
               value={studentName}

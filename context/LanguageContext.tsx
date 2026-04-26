@@ -561,6 +561,9 @@ const translations: Translations = {
         'shared.failedToSendAnswer': 'Не удалось отправить ответ',
         'shared.unsupportedFileType': 'Неподдерживаемый тип файла. Разрешены: pdf, docx, txt и изображения',
         'shared.fileTooLarge': 'Файл слишком большой. Максимум 10MB',
+        'shared.leave': 'Выйти',
+        'shared.leaveConfirm': 'Вы уверены, что хотите выйти? Несохранённые данные будут потеряны.',
+        'shared.leaveWarning': 'У вас есть несохранённые данные. Если вы покинете страницу, они будут потеряны.',
 
         // Onboarding
         'onboarding.createCourse': 'Создайте курс',
@@ -1162,6 +1165,9 @@ const translations: Translations = {
         'shared.failedToSendAnswer': 'Failed to send answer',
         'shared.unsupportedFileType': 'Unsupported file type. Allowed: pdf, docx, txt and images',
         'shared.fileTooLarge': 'File too large. Maximum 10MB',
+        'shared.leave': 'Leave',
+        'shared.leaveConfirm': 'Are you sure you want to leave? Unsaved data will be lost.',
+        'shared.leaveWarning': 'You have unsaved data. If you leave the page, it will be lost.',
 
         // Onboarding
         'onboarding.createCourse': 'Create a course',
@@ -1763,6 +1769,9 @@ const translations: Translations = {
         'shared.failedToSendAnswer': 'Жауапты жіберу мүмкін болмады',
         'shared.unsupportedFileType': 'Қолдау көрсетілмейтін файл түрі. Рұқсат етілген: pdf, docx, txt және суреттер',
         'shared.fileTooLarge': 'Файл тым үлкен. Максимум 10MB',
+        'shared.leave': 'Шығу',
+        'shared.leaveConfirm': 'Шығуды қалайсыз ба? Сақталмаған деректер жоғалады.',
+        'shared.leaveWarning': 'Сақталмаған деректер бар. Бетті тастасаңыз, олар жоғалады.',
 
         // Onboarding
         'onboarding.createCourse': 'Курс жасаңыз',
