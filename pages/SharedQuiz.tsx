@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ShareService, ApiError } from '../lib/api';
 import { PageTransition } from '../components/PageTransition';
@@ -12,6 +12,18 @@ const MAX_ASSIGNMENT_FILE_SIZE = 10 * 1024 * 1024;
 const ALLOWED_ASSIGNMENT_EXTENSIONS = ['pdf', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff', 'webp'];
 const STUDENT_NAME_STORAGE_KEY = 'studentDisplayName';
 const SHARE_CODE_PATTERN = /^[A-Za-z0-9_-]{6,32}$/;
+const COMPLETED_SUBMISSIONS_STORAGE_KEY = 'sharedSubmissionHistory';
+
+type CompletedSharedSubmission = {
+  resourceType: 'quiz' | 'material';
+  code: string;
+  studentKey: string;
+  studentName: string;
+  title: string;
+  score: number | null;
+  total: number | null;
+  submittedAt: string;
+};
 
 const escapeHtml = (raw: string) => raw
   .replace(/&/g, '&amp;')
@@ -33,6 +45,27 @@ const renderAssignmentHtml = (raw: string) => {
   return html;
 };
 
+const loadCompletedSubmissions = (): Record<string, CompletedSharedSubmission> => {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') return {};
+
+  try {
+    const raw = localStorage.getItem(COMPLETED_SUBMISSIONS_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
+const saveCompletedSubmission = (submission: CompletedSharedSubmission) => {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') return;
+
+  const next = loadCompletedSubmissions();
+  next[`${submission.resourceType}:${submission.code}:${submission.studentKey}`] = submission;
+  localStorage.setItem(COMPLETED_SUBMISSIONS_STORAGE_KEY, JSON.stringify(next));
+};
+
 const SharedQuiz: React.FC = () => {
   const navigate = useNavigate();
   const { code } = useParams();
@@ -52,6 +85,7 @@ const SharedQuiz: React.FC = () => {
   const [assignmentFile, setAssignmentFile] = useState<File | null>(null);
   const [assignmentText, setAssignmentText] = useState('');
   const [uploadMessage, setUploadMessage] = useState('');
+  const [submissionNotice, setSubmissionNotice] = useState<string | null>(null);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
@@ -60,8 +94,21 @@ const SharedQuiz: React.FC = () => {
   const [showReveal, setShowReveal] = useState(false);
   const [answerAccepted, setAnswerAccepted] = useState<boolean | null>(null);
 
+  const studentDisplayName = useMemo(() => {
+    const profileName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
+    return profileName || studentName.trim() || t('shared.student');
+  }, [studentName, t, user?.firstName, user?.lastName]);
+
+  const studentKey = studentDisplayName.trim().toLowerCase();
+
+  const completedSubmission = useMemo(() => {
+    if (!quiz) return null;
+    const recordKey = `${quiz.resourceType}:${normalizedCode}:${studentKey}`;
+    return loadCompletedSubmissions()[recordKey] || null;
+  }, [normalizedCode, quiz, studentKey]);
+
   const hasUnsavedWork = Boolean(
-    quiz && !result && (
+    quiz && !result && !submissionNotice && (
       assignmentFile
       || assignmentText.trim()
       || Object.values(answers).some((answer) => answer.trim().length > 0)
@@ -102,6 +149,8 @@ const SharedQuiz: React.FC = () => {
       setStreak(0);
       setShowReveal(false);
       setAnswerAccepted(null);
+      setSubmissionNotice(null);
+      setUploadMessage('');
     } catch (e: any) {
       if (e instanceof ApiError && e.code === 401) {
         setNeedPassword(true);
@@ -133,7 +182,6 @@ const SharedQuiz: React.FC = () => {
 
   const handleLeave = () => {
     if (!window.confirm(t('shared.leaveConfirm'))) return;
-
     navigate(quiz?.resourceType === 'material' ? '/student-assignments' : '/student-tests');
   };
 
@@ -162,22 +210,32 @@ const SharedQuiz: React.FC = () => {
 
   const submit = async () => {
     if (!normalizedCode || !quiz) return;
-    if (!studentName.trim()) {
+    if (!studentDisplayName.trim()) {
       setError(t('shared.enterNameBeforeSubmit'));
       return;
     }
     setSubmitting(true);
     setError('');
     try {
-      const data = await ShareService.submit(normalizedCode, studentName.trim(), answers);
+      const data = await ShareService.submit(normalizedCode, studentDisplayName.trim(), answers);
       recordStudentProgress({
         type: 'quiz',
         title: quiz.title,
         code: normalizedCode,
-        studentName: studentName.trim(),
+        studentName: studentDisplayName.trim(),
         score: data.score,
         maxScore: data.total,
         status: 'graded',
+      });
+      saveCompletedSubmission({
+        resourceType: 'quiz',
+        code: normalizedCode,
+        studentKey,
+        studentName: studentDisplayName.trim(),
+        title: quiz.title,
+        score: data.score,
+        total: data.total,
+        submittedAt: new Date().toISOString(),
       });
       setResult(data);
     } catch (e: any) {
@@ -188,21 +246,23 @@ const SharedQuiz: React.FC = () => {
   };
 
   const submitAssignment = async () => {
-    if (!normalizedCode) {
-      return;
-    }
+    if (!normalizedCode) return;
     if (!assignmentFile && !assignmentText.trim()) {
       setError(t('shared.addFileOrText'));
       return;
     }
+
     const profileName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
     const effectiveStudentName = profileName || studentName.trim() || t('shared.student');
     setSubmitting(true);
     setError('');
     setUploadMessage('');
+
     try {
       const data = await ShareService.uploadAssignment(normalizedCode, effectiveStudentName, assignmentFile, assignmentText);
+      const submittedAt = new Date().toISOString();
       setUploadMessage(data.message || t('shared.answerSentSuccessfully'));
+      setSubmissionNotice(data.message || t('shared.answerSentSuccessfully'));
       recordStudentProgress({
         type: 'assignment',
         title: quiz?.title || t('shared.student'),
@@ -211,6 +271,16 @@ const SharedQuiz: React.FC = () => {
         score: null,
         maxScore: null,
         status: 'submitted',
+      });
+      saveCompletedSubmission({
+        resourceType: 'material',
+        code: normalizedCode,
+        studentKey,
+        studentName: effectiveStudentName,
+        title: quiz?.title || t('shared.student'),
+        score: null,
+        total: null,
+        submittedAt,
       });
       setAssignmentFile(null);
       setAssignmentText('');
@@ -292,8 +362,8 @@ const SharedQuiz: React.FC = () => {
       <PageTransition>
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-surface border border-border rounded-2xl p-6 space-y-4">
-            <h1 className="text-xl font-black text-white">Тест защищён паролем</h1>
-            <p className="text-slate-400 text-sm">Введите пароль, чтобы открыть тест.</p>
+            <h1 className="text-xl font-black text-white">{t('shared.passwordProtected')}</h1>
+            <p className="text-slate-400 text-sm">{t('shared.enterPassword')}</p>
             <input
               type="password"
               value={password}
@@ -304,7 +374,7 @@ const SharedQuiz: React.FC = () => {
               onClick={() => load(password)}
               className="w-full bg-primary text-white rounded-xl py-3 font-bold hover:bg-primary-hover"
             >
-              Открыть
+              {t('shared.open')}
             </button>
             {error && <p className="text-red-400 text-sm">{error}</p>}
           </div>
@@ -317,42 +387,96 @@ const SharedQuiz: React.FC = () => {
     return (
       <PageTransition>
         <div className="min-h-screen bg-background flex items-center justify-center text-slate-400 p-4">
-          {error || 'Тест не найден'}
+          {error || t('shared.notFound')}
+        </div>
+      </PageTransition>
+    );
+  }
+
+  if (completedSubmission && !result && !submissionNotice) {
+    return (
+      <PageTransition>
+        <div className="min-h-screen bg-background text-white p-4 md:p-8 flex items-center justify-center">
+          <div className="w-full max-w-xl bg-surface border border-border rounded-2xl p-6 space-y-4 text-center">
+            <div className="mx-auto size-14 rounded-full bg-primary/15 text-primary flex items-center justify-center">
+              <span className="material-symbols-outlined text-3xl">task_alt</span>
+            </div>
+            <h1 className="text-2xl font-black">{t('shared.alreadySubmittedTitle')}</h1>
+            <p className="text-slate-400 text-sm">
+              {completedSubmission.resourceType === 'material' ? t('shared.alreadySubmittedAssignmentDesc') : t('shared.alreadySubmittedQuizDesc')}
+            </p>
+            <p className="text-xs text-slate-500">
+              {t('shared.alreadySubmittedAt')}: {new Date(completedSubmission.submittedAt).toLocaleString()}
+            </p>
+            <div className="flex flex-wrap justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => navigate(completedSubmission.resourceType === 'material' ? '/student-assignments' : '/student-tests')}
+                className="px-4 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover"
+              >
+                {completedSubmission.resourceType === 'material' ? t('shared.backToAssignments') : t('shared.backToTests')}
+              </button>
+            </div>
+          </div>
         </div>
       </PageTransition>
     );
   }
 
   if (quiz.resourceType === 'material') {
+    if (submissionNotice) {
+      return (
+        <PageTransition>
+          <div className="min-h-screen bg-background text-white p-4 md:p-8 flex items-center justify-center">
+            <div className="w-full max-w-xl bg-surface border border-border rounded-2xl p-6 space-y-4 text-center">
+              <div className="mx-auto size-14 rounded-full bg-green-500/15 text-green-400 flex items-center justify-center">
+                <span className="material-symbols-outlined text-3xl">done</span>
+              </div>
+              <h1 className="text-2xl font-black">{t('shared.submissionSentTitle')}</h1>
+              <p className="text-slate-400 text-sm">{submissionNotice}</p>
+              <div className="flex flex-wrap justify-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => navigate('/student-assignments')}
+                  className="px-4 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover"
+                >
+                  {t('shared.backToAssignments')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </PageTransition>
+      );
+    }
+
     return (
       <PageTransition>
         <div className="min-h-screen bg-background text-white p-4 md:p-8">
           <div className="max-w-3xl mx-auto space-y-6">
             <div className="bg-surface border border-border rounded-2xl p-5 space-y-3">
               <h1 className="text-2xl font-black">{quiz.title}</h1>
-              <p className="text-slate-400 text-sm">Выполните задание и загрузите документ для проверки учителем.</p>
+              <p className="text-slate-400 text-sm">{t('shared.assignmentInstruction')}</p>
               <div className="flex flex-wrap gap-2 text-xs">
-                <span className="px-2 py-1 rounded-full bg-background border border-border text-slate-300">1. Добавьте текст и/или файл</span>
-                <span className="px-2 py-1 rounded-full bg-background border border-border text-slate-300">2. Отправьте ответ</span>
-                <span className="px-2 py-1 rounded-full bg-background border border-border text-slate-300">Имя подставится автоматически</span>
+                <span className="px-2 py-1 rounded-full bg-background border border-border text-slate-300">{t('shared.assignmentStep1')}</span>
+                <span className="px-2 py-1 rounded-full bg-background border border-border text-slate-300">{t('shared.assignmentStep2')}</span>
+                <span className="px-2 py-1 rounded-full bg-background border border-border text-slate-300">{t('shared.assignmentStep3')}</span>
               </div>
               {quiz.description && (
                 <div
                   className="bg-background border border-border rounded-lg p-3 text-sm text-slate-300"
                   dangerouslySetInnerHTML={{ __html: renderAssignmentHtml(quiz.description) }}
-                >
-                </div>
+                />
               )}
             </div>
 
             <div className="bg-surface border border-border rounded-2xl p-5 space-y-4">
               <div className="w-full bg-background border border-border rounded-lg px-3 py-2 text-slate-300 text-sm">
-                {t('shared.student')}: {( `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || studentName || t('shared.student'))}
+                {t('shared.student')}: {studentDisplayName}
               </div>
               <textarea
                 value={assignmentText}
                 onChange={(e) => setAssignmentText(e.target.value)}
-                placeholder="Текстовый ответ (опционально)"
+                placeholder={t('shared.assignmentTextPlaceholder')}
                 className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white min-h-28"
               />
               <input
@@ -361,20 +485,18 @@ const SharedQuiz: React.FC = () => {
                 accept=".pdf,.docx,.txt,.png,.jpg,.jpeg,.bmp,.tif,.tiff,.webp"
                 className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white"
               />
-              <p className="text-xs text-slate-400">Поддерживаются: PDF, DOCX, TXT и фото (PNG/JPG/BMP/TIFF/WEBP), до 10MB.</p>
-              {assignmentFile && (
-                <p className="text-xs text-slate-400">Выбран файл: {assignmentFile.name}</p>
-              )}
+              <p className="text-xs text-slate-400">{t('shared.assignmentSupportedFiles')}</p>
+              {assignmentFile && <p className="text-xs text-slate-400">{t('shared.assignmentSelectedFile')}: {assignmentFile.name}</p>}
               <button
                 type="button"
                 onClick={submitAssignment}
                 disabled={submitting || (!assignmentFile && !assignmentText.trim())}
                 className="w-full bg-primary text-white rounded-xl py-3 font-bold hover:bg-primary-hover disabled:opacity-60"
               >
-                {submitting ? 'Отправка...' : 'Отправить ответ'}
+                {submitting ? t('shared.submitting') : t('shared.submitAnswer')}
               </button>
               {uploadMessage && <p className="text-green-400 text-sm">{uploadMessage}</p>}
-              {uploadMessage && <p className="text-xs text-slate-400">При необходимости вы можете дополнить ответ и отправить повторно.</p>}
+              {uploadMessage && <p className="text-xs text-slate-400">{t('shared.assignmentFollowUp')}</p>}
               {error && <p className="text-red-400 text-sm">{error}</p>}
             </div>
           </div>
@@ -402,7 +524,7 @@ const SharedQuiz: React.FC = () => {
                 {t('shared.leave')}
               </button>
             </div>
-            <p className="text-slate-400 text-sm mt-1">Режим в стиле Kahoot: таймер, серия и очки</p>
+            <p className="text-slate-400 text-sm mt-1">{t('shared.quizMode')}</p>
             <input
               value={studentName}
               onChange={(e) => {
@@ -410,20 +532,20 @@ const SharedQuiz: React.FC = () => {
                 setStudentName(value);
                 localStorage.setItem(STUDENT_NAME_STORAGE_KEY, value);
               }}
-              placeholder="Ваше имя"
+              placeholder={t('shared.yourName')}
               className="mt-4 w-full bg-background border border-border rounded-lg px-3 py-2 text-white"
             />
             <div className="mt-4 grid grid-cols-3 gap-2 text-center">
               <div className="bg-background border border-border rounded-lg p-2">
-                <p className="text-[10px] uppercase text-slate-500">Прогресс</p>
+                <p className="text-[10px] uppercase text-slate-500">{t('shared.progressLabel')}</p>
                 <p className="font-bold text-white">{Math.min(currentIndex + (showReveal ? 1 : 0), totalQuestions)} / {totalQuestions}</p>
               </div>
               <div className="bg-background border border-border rounded-lg p-2">
-                <p className="text-[10px] uppercase text-slate-500">Стрик</p>
+                <p className="text-[10px] uppercase text-slate-500">{t('shared.streakLabel')}</p>
                 <p className="font-bold text-yellow-400">x{streak}</p>
               </div>
               <div className="bg-background border border-border rounded-lg p-2">
-                <p className="text-[10px] uppercase text-slate-500">Очки</p>
+                <p className="text-[10px] uppercase text-slate-500">{t('shared.pointsLabel')}</p>
                 <p className="font-bold text-primary">{points}</p>
               </div>
             </div>
@@ -434,7 +556,7 @@ const SharedQuiz: React.FC = () => {
               {currentQuestion && (
                 <div className="bg-surface border border-border rounded-2xl p-5 space-y-4">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="font-bold">Вопрос {currentIndex + 1} из {totalQuestions}</p>
+                    <p className="font-bold">{t('shared.question')} {currentIndex + 1} {t('shared.of')} {totalQuestions}</p>
                     <div className={`px-3 py-1 rounded-full text-xs font-bold ${timeLeft <= 5 ? 'bg-red-500/20 text-red-300' : 'bg-primary/20 text-primary'}`}>
                       {timeLeft}s
                     </div>
@@ -462,7 +584,7 @@ const SharedQuiz: React.FC = () => {
                         value={answers[currentQuestion.id] || ''}
                         onChange={(e) => setAnswers((prev) => ({ ...prev, [currentQuestion.id]: e.target.value }))}
                         className="w-full bg-background border border-border rounded-lg px-3 py-2 min-h-20"
-                        placeholder="Введите ответ"
+                        placeholder={t('shared.enterAnswer')}
                         disabled={showReveal}
                       />
                       {!showReveal && (
@@ -471,7 +593,7 @@ const SharedQuiz: React.FC = () => {
                           onClick={() => evaluateAndReveal(currentQuestion.id, answers[currentQuestion.id] || '')}
                           className="px-4 py-2 bg-primary text-white rounded-lg font-bold hover:bg-primary-hover"
                         >
-                          Ответить
+                          {t('shared.answer')}
                         </button>
                       )}
                     </div>
@@ -479,7 +601,7 @@ const SharedQuiz: React.FC = () => {
 
                   {showReveal && (
                     <div className={`rounded-lg p-3 text-sm font-bold ${answerAccepted ? 'bg-green-500/10 text-green-300 border border-green-500/30' : 'bg-red-500/10 text-red-300 border border-red-500/30'}`}>
-                      {answerAccepted ? 'Ответ принят! +очки за скорость 🎉' : 'Время вышло, переходим дальше ⚡'}
+                      {answerAccepted ? t('shared.answerAccepted') : t('shared.timeOut')}
                     </div>
                   )}
 
@@ -489,14 +611,14 @@ const SharedQuiz: React.FC = () => {
                         onClick={goToNextQuestion}
                         className="px-4 py-2 bg-primary text-white rounded-lg font-bold hover:bg-primary-hover"
                       >
-                        {currentIndex >= totalQuestions - 1 ? 'Завершить тест' : 'Следующий вопрос'}
+                        {currentIndex >= totalQuestions - 1 ? t('shared.finishTest') : t('shared.nextQuestion')}
                       </button>
                     ) : (
                       <button
                         onClick={handleTimeExpired}
                         className="px-4 py-2 bg-surface border border-border text-slate-300 rounded-lg font-bold hover:bg-white/5"
                       >
-                        Пропустить
+                        {t('shared.skip')}
                       </button>
                     )}
                   </div>
@@ -505,16 +627,16 @@ const SharedQuiz: React.FC = () => {
 
               {submitting && (
                 <div className="bg-surface border border-border rounded-xl p-4 text-center text-slate-300">
-                  Отправка результатов...
+                  {t('shared.submittingResults')}
                 </div>
               )}
             </>
           ) : (
             <div className="bg-surface border border-border rounded-2xl p-6 text-center space-y-3">
               <div className="text-3xl font-black text-primary">{result.score}%</div>
-              <p className="text-slate-300">Правильных ответов: {result.correct} из {result.total}</p>
-              <p className="text-slate-300">Игровые очки: {points}</p>
-              <p className="text-slate-400 text-sm">Результат отправлен учителю.</p>
+              <p className="text-slate-300">{t('shared.correctAnswersPrefix')} {result.correct} {t('shared.of')} {result.total}</p>
+              <p className="text-slate-300">{t('shared.gamePoints')}: {points}</p>
+              <p className="text-slate-400 text-sm">{t('shared.resultSent')}</p>
             </div>
           )}
 
