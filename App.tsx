@@ -6,6 +6,7 @@ import { CourseProvider } from './context/CourseContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { UserProvider } from './context/UserContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { useUser } from './context/UserContext';
 import { useLanguage } from './context/LanguageContext';
 
@@ -140,55 +141,57 @@ const Layout: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
         <SettingsProvider>
-            <ToastProvider>
+          <ToastProvider>
             <CourseProvider>
               <UserProvider>
                 <HashRouter>
-                <Suspense fallback={<RouteLoader />}>
-                  <Routes>
+                  <Suspense fallback={<RouteLoader />}>
+                    <Routes>
                       <Route path="/login" element={<Login />} />
                       <Route path="/register" element={<Register />} />
-                      
+
                       <Route element={<ProtectedRoute />}>
-                      <Route element={<Layout />}>
-                        <Route element={<RoleRoute allowedRoles={['student']} />}>
-                          <Route path="/student" element={<StudentDashboard />} />
-                          <Route path="/student-progress" element={<StudentProgress />} />
-                          <Route path="/student-assignments" element={<StudentAssignments />} />
-                          <Route path="/student-tests" element={<StudentTests />} />
-                        </Route>
+                        <Route element={<Layout />}>
+                          <Route element={<RoleRoute allowedRoles={['student']} />}>
+                            <Route path="/student" element={<StudentDashboard />} />
+                            <Route path="/student-progress" element={<StudentProgress />} />
+                            <Route path="/student-assignments" element={<StudentAssignments />} />
+                            <Route path="/student-tests" element={<StudentTests />} />
+                          </Route>
 
-                        <Route element={<RoleRoute allowedRoles={['teacher', 'admin']} />}>
-                          <Route path="/dashboard" element={<Dashboard />} />
-                          <Route path="/assignments" element={<Assignments />} />
-                          <Route path="/ocr" element={<OCR />} />
-                          <Route path="/analytics" element={<Analytics />} />
-                          <Route path="/ai" element={<AIWorkspace />} />
-                          <Route path="/materials-library" element={<MaterialsLibrary />} />
-                          <Route path="/quiz/:quizId" element={<TeacherQuizPreview />} />
-                          <Route path="/quiz-results" element={<QuizResults />} />
-                          <Route path="/library" element={<Library />} />
-                        </Route>
+                          <Route element={<RoleRoute allowedRoles={['teacher', 'admin']} />}>
+                            <Route path="/dashboard" element={<Dashboard />} />
+                            <Route path="/assignments" element={<Assignments />} />
+                            <Route path="/ocr" element={<OCR />} />
+                            <Route path="/analytics" element={<Analytics />} />
+                            <Route path="/ai" element={<AIWorkspace />} />
+                            <Route path="/materials-library" element={<MaterialsLibrary />} />
+                            <Route path="/quiz/:quizId" element={<TeacherQuizPreview />} />
+                            <Route path="/quiz-results" element={<QuizResults />} />
+                            <Route path="/library" element={<Library />} />
+                          </Route>
 
-                        <Route element={<RoleRoute allowedRoles={['teacher', 'student', 'admin']} />}>
-                          <Route path="/settings" element={<Settings />} />
+                          <Route element={<RoleRoute allowedRoles={['teacher', 'student', 'admin']} />}>
+                            <Route path="/settings" element={<Settings />} />
+                          </Route>
                         </Route>
                       </Route>
-                      </Route>
 
-                        <Route path="/shared/:code" element={<SharedQuiz />} />
+                      <Route path="/shared/:code" element={<SharedQuiz />} />
 
                       <Route path="/" element={<HomeRedirect />} />
-                  </Routes>
-                </Suspense>
+                    </Routes>
+                  </Suspense>
                 </HashRouter>
               </UserProvider>
             </CourseProvider>
-            </ToastProvider>
+          </ToastProvider>
         </SettingsProvider>
-    </LanguageProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 };
 

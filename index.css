@@ -2,11 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-primary: 17 82 212;
+  --color-primary-hover: 13 66 175;
+  --color-background: 15 23 42;
+  --color-surface: 30 41 59;
+  --color-surface-lighter: 51 65 85;
+  --color-border: 51 65 85;
+  --color-text: 248 250 252;
+  --color-text-soft: 148 163 184;
+}
+
+.theme-light {
+  --color-primary: 17 82 212;
+  --color-primary-hover: 13 66 175;
+  --color-background: 248 250 252;
+  --color-surface: 255 255 255;
+  --color-surface-lighter: 241 245 249;
+  --color-border: 203 213 225;
+  --color-text: 15 23 42;
+  --color-text-soft: 71 85 105;
+}
+
 @layer base {
   body {
     font-family: 'Inter', sans-serif;
-    background-color: #0f172a;
-    color: #f8fafc;
+    background-color: rgb(var(--color-background));
+    color: rgb(var(--color-text));
+  }
+
+  .theme-light .text-white {
+    color: rgb(15 23 42) !important;
+  }
+
+  .theme-light .text-slate-300 {
+    color: rgb(51 65 85) !important;
+  }
+
+  .theme-light .text-slate-400,
+  .theme-light .text-slate-500 {
+    color: rgb(71 85 105) !important;
+  }
+
+  .theme-light .bg-slate-900\/50 {
+    background-color: rgb(241 245 249 / 0.9) !important;
+  }
+
+  .theme-light .border-slate-600,
+  .theme-light .border-slate-700 {
+    border-color: rgb(203 213 225) !important;
+  }
+
+  .theme-light .bg-slate-700,
+  .theme-light .bg-slate-800 {
+    background-color: rgb(226 232 240) !important;
   }
 }
 

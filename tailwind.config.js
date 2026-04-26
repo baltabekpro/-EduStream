@@ -17,12 +17,12 @@ export default {
         sans: ['Inter', 'sans-serif'],
       },
       colors: {
-        primary: '#1152d4',
-        'primary-hover': '#0d42af',
-        background: '#0f172a',
-        surface: '#1e293b',
-        'surface-lighter': '#334155',
-        border: '#334155',
+        primary: 'rgb(var(--color-primary) / <alpha-value>)',
+        'primary-hover': 'rgb(var(--color-primary-hover) / <alpha-value>)',
+        background: 'rgb(var(--color-background) / <alpha-value>)',
+        surface: 'rgb(var(--color-surface) / <alpha-value>)',
+        'surface-lighter': 'rgb(var(--color-surface-lighter) / <alpha-value>)',
+        border: 'rgb(var(--color-border) / <alpha-value>)',
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',

@@ -6,6 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useUser } from '../context/UserContext';
 import { PageTransition } from '../components/PageTransition';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import ThemeSwitcher from '../components/ThemeSwitcher';
 
 const DRAWN_AVATARS = [
     'https://api.dicebear.com/7.x/adventurer/svg?seed=Aru&backgroundColor=b6e3f4,c0aede,d1d4f9',
@@ -201,6 +202,18 @@ const Settings: React.FC = () => {
                                         </div>
                                     </div>
                                     <LanguageSwitcher />
+                                </div>
+
+                                <div className="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-amber-500/10 text-amber-400 rounded-lg">
+                                            <span className="material-symbols-outlined">light_mode</span>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-white">{t('settings.theme')}</p>
+                                        </div>
+                                    </div>
+                                    <ThemeSwitcher />
                                 </div>
 
                                 <a
