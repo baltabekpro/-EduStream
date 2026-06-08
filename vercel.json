@@ -1,4 +1,7 @@
 {
+  "env": {
+    "BACKEND_URL": "https://172-207-57-215.sslip.io"
+  },
   "rewrites": [
     {
       "source": "/api/v1/(.*)",

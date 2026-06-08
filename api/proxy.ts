@@ -1,6 +1,24 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const BACKEND = 'https://94-131-90-78.sslip.io';
+const DEFAULT_BACKEND = 'https://172-207-57-215.sslip.io';
+
+function getBackendBaseUrl() {
+  const configured =
+    process.env.BACKEND_URL ||
+    process.env.API_BASE_URL ||
+    process.env.VITE_API_BASE_URL ||
+    DEFAULT_BACKEND;
+
+  return configured.replace(/\/api\/v1\/?$/, '').replace(/\/$/, '');
+}
+
+function appendQueryParam(params: URLSearchParams, key: string, value: string | string[]) {
+  if (Array.isArray(value)) {
+    value.forEach((item) => params.append(key, item));
+  } else {
+    params.append(key, value);
+  }
+}
 
 export const config = {
   api: {
@@ -11,15 +29,19 @@ export const config = {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // proxyPath is passed from vercel.json rewrite
-  const proxyPath = req.query.proxyPath as string || '';
-  
+  const proxyPath = req.query.proxyPath || '';
+
   // Reconstruct query string without proxyPath
-  const queryObj = { ...req.query };
-  delete queryObj.proxyPath;
-  const qsParams = new URLSearchParams(queryObj as Record<string, string>);
+  const qsParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(req.query)) {
+    if (key === 'proxyPath' || value === undefined) continue;
+    appendQueryParam(qsParams, key, value);
+  }
   const qs = qsParams.toString();
-  
-  const targetUrl = `${BACKEND}/api/v1/${proxyPath}${qs ? `?${qs}` : ''}`;
+
+  const backend = getBackendBaseUrl();
+  const normalizedProxyPath = Array.isArray(proxyPath) ? proxyPath.join('/') : proxyPath;
+  const targetUrl = `${backend}/api/v1/${normalizedProxyPath}${qs ? `?${qs}` : ''}`;
 
   const HOP_BY_HOP = new Set([
     'host', 'connection', 'keep-alive', 'transfer-encoding',

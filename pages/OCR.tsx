@@ -62,7 +62,7 @@ const OCR: React.FC = () => {
     };
 
         const isImagePath = (value?: string) => /\.(png|jpe?g|bmp|tiff?|webp|gif)$/i.test(value || '');
-        const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://edustream-94-131-85-176.sslip.io/api/v1';
+        const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://172-207-57-215.sslip.io/api/v1';
 
         const getFileUrl = (value?: string) => {
             const raw = (value || '').trim();

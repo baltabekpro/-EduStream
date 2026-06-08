@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+const backendUrl = process.env.BACKEND_URL || 'https://172-207-57-215.sslip.io';
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
@@ -13,7 +15,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api/v1': {
-        target: 'https://edustream-94-131-85-176.sslip.io',
+        target: backendUrl,
         changeOrigin: true,
         secure: true
       }
